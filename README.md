@@ -26,3 +26,8 @@ This README would normally document whatever steps are necessary to get your app
 ### Who do I talk to? ###
 
 本工程为移植freemodbus slave工程。
+
+以下不使用
+实现串口FIFO 的DEBUG功能
+其中COM0做为调试口
+实现DEBUG功能控制功能
