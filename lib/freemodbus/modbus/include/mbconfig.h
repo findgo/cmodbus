@@ -1,35 +1,6 @@
-/* 
- * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
- * Copyright (c) 2006 Christian Walter <wolti@sil.at>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * File: $Id: mbconfig.h,v 1.15 2010/06/06 13:54:40 wolti Exp $
- */
 
-#ifndef _MB_CONFIG_H
-#define _MB_CONFIG_H
+#ifndef __MB_CONFIG_H
+#define __MB_CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,7 +46,10 @@ extern "C" {
 #ifndef MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS
 #define MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    ( 0 )
 #endif
-
+/* use port close ?? */
+#ifndef MB_PORT_HAS_CLOSE
+#define MB_PORT_HAS_CLOSE 0
+#endif
 /*! \brief Maximum number of Modbus functions codes the protocol stack
  *    should support.
  *
@@ -98,46 +72,37 @@ extern "C" {
 /*! \brief If the <em>Report Slave ID</em> function should be enabled. */
 #define MB_FUNC_OTHER_REP_SLAVEID_ENABLED       (  1 )
 
+/*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
+#define MB_FUNC_READ_HOLDING_ENABLED            (  1 )
+/*! \brief If the <em>Write Single Register</em> function should be enabled. */
+#define MB_FUNC_WRITE_HOLDING_ENABLED           (  1 )
+/*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
+#define MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
+/*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
+#define MB_FUNC_READWRITE_HOLDING_ENABLED       (  1 )
+
 /*! \brief If the <em>Read Input Registers</em> function should be enabled. */
 #define MB_FUNC_READ_INPUT_ENABLED              (  1 )
 
-/*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
-#define MB_FUNC_READ_HOLDING_ENABLED            (  1 )
-
-/*! \brief If the <em>Write Single Register</em> function should be enabled. */
-#define MB_FUNC_WRITE_HOLDING_ENABLED           (  1 )
-
-/*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
-#define MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
-
 /*! \brief If the <em>Read Coils</em> function should be enabled. */
 #define MB_FUNC_READ_COILS_ENABLED              (  1 )
-
 /*! \brief If the <em>Write Coils</em> function should be enabled. */
 #define MB_FUNC_WRITE_COIL_ENABLED              (  1 )
-
 /*! \brief If the <em>Write Multiple Coils</em> function should be enabled. */
 #define MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
 
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
-/*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
-#define MB_FUNC_READWRITE_HOLDING_ENABLED       (  1 )
-
 /*device channel must be unique (0 - 7) and cannot be changed by user */
 #define MB_DEV_CHANNEL_SIZE_MAX ( 7 )  
-
-#ifndef MB_PORT_HAS_CLOSE
-#define MB_PORT_HAS_CLOSE 0
-#endif
 
 /*! \ingroup modbus
  * \brief Use the default Modbus TCP port (502)
  */
 #define MB_TCP_PORT_USE_DEFAULT     (502)   
 
-/* Private define for reg ------------------------------------------------------------*/
+/* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 3 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
@@ -145,6 +110,6 @@ extern "C" {
 
 /*! @} */
 #ifdef __cplusplus
-    }
+}
 #endif
 #endif

@@ -1,7 +1,7 @@
 
 
-#ifndef _MB_UTILS_H
-#define _MB_UTILS_H
+#ifndef __MB_UTILS_H
+#define __MB_UTILS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,7 +14,6 @@ extern "C" {
 
 #include "modbus.h"
 
-uint16_t usMBCRC16( uint8_t * pucFrame, uint16_t usLen );
 eMBException prveMBError2Exception( eMBErrorCode eErrorCode );
 
 #ifdef __cplusplus

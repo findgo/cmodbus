@@ -1,19 +1,6 @@
 
-/* ----------------------- System includes ----------------------------------*/
-#include "stdlib.h"
-#include "string.h"
-
-/* ----------------------- Platform includes --------------------------------*/
-#include "port.h"
-
-/* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbconfig.h"
 #include "mbascii.h"
-#include "mbframe.h"
 
-#include "mbcrc.h"
-#include "mbport.h"
 
 #if MB_ASCII_ENABLED > 0
 
@@ -37,21 +24,16 @@ typedef enum
     STATE_TX_NOTIFY,            /*!< ASCII Notify sender that the frame has been sent. */
 } eMBSndState;
 
-
-
 typedef enum
 {
     BYTE_HIGH_NIBBLE,           /*!< Character for high nibble of byte. */
     BYTE_LOW_NIBBLE             /*!< Character for low nibble of byte. */
 } eMBBytePos;
 
-/* ----------------------- Static functions ---------------------------------*/
-static uint8_t    prvucMBCHAR2BIN( uint8_t ucCharacter );
-static uint8_t    prvucMBBIN2CHAR( uint8_t ucByte );
-static uint8_t    prvucMBLRC( uint8_t * pPdu, uint16_t usLen );
-
-static volatile eMBBytePos eBytePos;
-static volatile uint8_t ucMBLFCharacter;
+/* private funciton */
+static uint8_t __prvxMBCHAR2BIN(uint8_t ucCharacter);
+static uint8_t __prvxMBBIN2CHAR(uint8_t ucByte);
+static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen);
 
 /* ----------------------- Start implementation -----------------------------*/
 eMBErrorCode eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBParity eParity)
@@ -59,8 +41,7 @@ eMBErrorCode eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBPar
     eMBErrorCode eStatus = MB_ENOERR;
     (void)dev;
     
-    ENTER_CRITICAL_SECTION(  );
-    ucMBLFCharacter = MB_ASCII_DEFAULT_LF;
+    ENTER_CRITICAL_SECTION();
 
     if( xMBPortSerialInit( ucPort, ulBaudRate, 7, eParity ) != true ){
         eStatus = MB_EPORTERR;
@@ -73,19 +54,19 @@ eMBErrorCode eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBPar
     return eStatus;
 }
 
-void eMBASCIIStart(void *dev)
+void vMBASCIIStart(void *dev)
 {
     ENTER_CRITICAL_SECTION(  );
-    vMBPortSerialEnable((mb_device_t *)dev->port, true, false );
-    (mb_device_t *)dev->rcvState = STATE_RX_IDLE;
+    vMBPortSerialEnable(((mb_device_t *)dev)->port, true, false );
+    ((mb_device_t *)dev)->rcvState = STATE_RX_IDLE;
     EXIT_CRITICAL_SECTION(  );
 }
 
-void eMBASCIIStop(void *dev)
+void vMBASCIIStop(void *dev)
 {
     ENTER_CRITICAL_SECTION(  );
-    vMBPortSerialEnable((mb_device_t *)dev->port, false, false );
-    vMBPortTimersDisable((mb_device_t *)dev->port);
+    vMBPortSerialEnable(((mb_device_t *)dev)->port, false, false );
+    vMBPortTimersDisable(((mb_device_t *)dev)->port);
     EXIT_CRITICAL_SECTION(  );
 }
 
@@ -94,12 +75,12 @@ eMBErrorCode eMBASCIIReceive(mb_device_t *pdev,uint8_t * pucRcvAddress, uint8_t 
     eMBErrorCode    eStatus = MB_ENOERR;
     mb_device_t *dev = (mb_device_t *)pdev;
 
-    ENTER_CRITICAL_SECTION(  );
+    ENTER_CRITICAL_SECTION();
     assert( dev->rcvAduBufrPos < MB_ADU_SIZE_MAX );
 
     /* Length and LRC check */
-    if( ( dev->rcvAduBufrPos >= MB_ADU_ASCII_SIZE_MIN )
-        && ( prvucMBLRC( ( uint8_t * )dev->AduBuf, dev->rcvAduBufrPos ) == 0 ) ){
+    if( (dev->rcvAduBufrPos >= MB_ADU_ASCII_SIZE_MIN)
+        && ( __prvxMBLRC((uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0 ) ){
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
@@ -108,23 +89,23 @@ eMBErrorCode eMBASCIIReceive(mb_device_t *pdev,uint8_t * pucRcvAddress, uint8_t 
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */
-        *pusLength = ( uint16_t )( dev->rcvAduBufrPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_LRC );
+        *pusLength = (uint16_t)(dev->rcvAduBufrPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_LRC);
 
         /* Return the start of the Modbus PDU to the caller. */
-        *pPdu = ( uint8_t * ) &dev->AduBuf[MB_SER_ADU_PDU_OFFSET];
+        *pPdu = (uint8_t *)&dev->AduBuf[MB_SER_ADU_PDU_OFFSET];
     }
     else{
         eStatus = MB_EIO;
     }
-    EXIT_CRITICAL_SECTION(  );
+    EXIT_CRITICAL_SECTION();
     
     return eStatus;
 }
 
 eMBErrorCode eMBASCIISend(mb_device_t *pdev, uint8_t ucSlaveAddress, const uint8_t * pPdu, uint16_t usLength )
 {
-    eMBErrorCode    eStatus = MB_ENOERR;
-    uint8_t           usLRC;
+    eMBErrorCode eStatus = MB_ENOERR;
+    uint8_t usLRC;
     uint8_t *pAdu;
     mb_device_t *dev = (mb_device_t *)pdev;
     
@@ -136,7 +117,7 @@ eMBErrorCode eMBASCIISend(mb_device_t *pdev, uint8_t ucSlaveAddress, const uint8
     if( dev->rcvState == STATE_RX_IDLE ){
         
         /* First byte before the Modbus-PDU is the slave address. */
-        pAdu = ( uint8_t * )pPdu - 1;
+        pAdu = (uint8_t *)pPdu - 1;
         dev->sndAduBufCount = 1;
 
         /* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
@@ -144,7 +125,7 @@ eMBErrorCode eMBASCIISend(mb_device_t *pdev, uint8_t ucSlaveAddress, const uint8
         dev->sndAduBufCount += usLength;
 
         /* Calculate LRC checksum for Modbus-Serial-Line-PDU. */
-        usLRC = prvucMBLRC( ( uint8_t * ) pAdu, dev->sndAduBufCount );
+        usLRC = __prvxMBLRC( (uint8_t *)pAdu, dev->sndAduBufCount );
         dev->AduBuf[dev->sndAduBufCount++] = usLRC;
 
         /* Activate the transmitter. */
@@ -167,7 +148,7 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
 
     assert( dev->sndState == STATE_TX_IDLE );
 
-    ( void )xMBPortSerialGetByte(dev->port, (char *) &ucByte );
+    (void)xMBPortSerialGetByte(dev->port, (char *)&ucByte );
     switch ( dev->rcvState ){
         /* A new character is received. If the character is a ':' the input
          * buffer is cleared. A CR-character signals the end of the data
@@ -179,21 +160,21 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
         vMBPortTimersEnable(dev->port);
         if( ucByte == ':' ){
             /* Empty receive buffer. */
-            eBytePos = BYTE_HIGH_NIBBLE;
+            dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
             dev->rcvAduBufrPos = 0;
         }
         else if( ucByte == MB_ASCII_DEFAULT_CR ){
             dev->rcvState = STATE_RX_WAIT_EOF;
         }
         else{
-            ucResult = prvucMBCHAR2BIN( ucByte );
-            switch ( eBytePos ){
+            ucResult = __prvxMBCHAR2BIN( ucByte );
+            switch (dev->AsciiBytePos){
                 /* High nibble of the byte comes first. We check for
                  * a buffer overflow here. */
             case BYTE_HIGH_NIBBLE:
                 if( dev->rcvAduBufrPos < MB_ADU_SIZE_MAX ){
                     dev->AduBuf[dev->rcvAduBufrPos] = ( uint8_t )( ucResult << 4 );
-                    eBytePos = BYTE_LOW_NIBBLE;
+                    dev->AsciiBytePos = BYTE_LOW_NIBBLE;
                     break;
                 }
                 else{
@@ -208,14 +189,14 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
             case BYTE_LOW_NIBBLE:
                 dev->AduBuf[dev->rcvAduBufrPos] |= ucResult;
                 dev->rcvAduBufrPos++;
-                eBytePos = BYTE_HIGH_NIBBLE;
+                dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
                 break;
             }
         }
         break;
 
     case STATE_RX_WAIT_EOF:
-        if( ucByte == ucMBLFCharacter ){
+        if( ucByte == MB_ASCII_DEFAULT_LF ){
             /* Disable character timeout timer because all characters are
              * received. */
             vMBPortTimersDisable(dev->port);
@@ -223,11 +204,11 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
             dev->rcvState = STATE_RX_IDLE;
 
             /* Notify the caller of eMBASCIIReceive that a new frame was received. */
-            xNeedPoll = xMBEventPost(dev, EV_FRAME_RECEIVED);
+            xNeedPoll = xMBSemGive(dev);
         }
         else if( ucByte == ':' ){
             /* Empty receive buffer and back to receive state. */
-            eBytePos = BYTE_HIGH_NIBBLE;
+            dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
             dev->rcvAduBufrPos = 0;
             dev->rcvState = STATE_RX_RCV;
 
@@ -246,7 +227,7 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
             vMBPortTimersEnable(dev->port);
             /* Reset the input buffers to store the frame. */
             dev->rcvAduBufrPos = 0;
-            eBytePos = BYTE_HIGH_NIBBLE;
+            dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
             dev->rcvState = STATE_RX_RCV;
         }
         break;
@@ -268,9 +249,9 @@ bool xMBASCIITransmitFSM(  mb_device_t *dev)
          * the character ':'. */
     case STATE_TX_START:
         ucByte = ':';
-        xMBPortSerialPutByte( ( char )ucByte );
+        xMBPortSerialPutByte(dev->port, (char)ucByte );
         dev->sndState = STATE_TX_DATA;
-        eBytePos = BYTE_HIGH_NIBBLE;
+        dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
         break;
 
         /* Send the data block. Each data byte is encoded as a character hex
@@ -279,32 +260,31 @@ bool xMBASCIITransmitFSM(  mb_device_t *dev)
          * to end the transmission. */
     case STATE_TX_DATA:
         if( dev->sndAduBufCount > 0 ){
-            switch ( eBytePos ){
-                
+            switch(dev->AsciiBytePos){
             case BYTE_HIGH_NIBBLE:
-                ucByte = prvucMBBIN2CHAR( ( uint8_t )( dev->AduBuf[dev->sndAduBufPos] >> 4 ) );
-                xMBPortSerialPutByte( (char) ucByte );
-                eBytePos = BYTE_LOW_NIBBLE;
+                ucByte = __prvxMBBIN2CHAR( ( uint8_t )(dev->AduBuf[dev->sndAduBufPos] >> 4) );
+                xMBPortSerialPutByte(dev->port, (char)ucByte);
+                dev->AsciiBytePos = BYTE_LOW_NIBBLE;
                 break;
 
             case BYTE_LOW_NIBBLE:
-                ucByte = prvucMBBIN2CHAR( ( uint8_t )( dev->AduBuf[dev->sndAduBufPos] & 0x0F ) );
-                xMBPortSerialPutByte( (char)ucByte );
+                ucByte = __prvxMBBIN2CHAR((uint8_t)(dev->AduBuf[dev->sndAduBufPos] & 0x0F) );
+                xMBPortSerialPutByte(dev->port, (char)ucByte);
                 dev->sndAduBufPos++;
                 dev->sndAduBufCount--;                
-                eBytePos = BYTE_HIGH_NIBBLE;
+                dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
                 break;
             }
         }
         else{
-            xMBPortSerialPutByte( MB_ASCII_DEFAULT_CR );
+            xMBPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_CR);
             dev->sndState = STATE_TX_END;
         }
         break;
 
         /* Finish the frame by sending a LF character. */
     case STATE_TX_END:
-        xMBPortSerialPutByte( (char)ucMBLFCharacter );
+        xMBPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_LF );
         /* We need another state to make sure that the CR character has
          * been sent. */
         dev->sndState = STATE_TX_NOTIFY;
@@ -344,7 +324,7 @@ bool xMBASCIITimerT1SExpired(  mb_device_t *dev)
         break;
 
     default:
-        assert( ( dev->rcvState == STATE_RX_RCV ) || ( dev->rcvState == STATE_RX_WAIT_EOF ) );
+        assert( (dev->rcvState == STATE_RX_RCV) || (dev->rcvState == STATE_RX_WAIT_EOF) );
         break;
     }
     vMBPortTimersDisable(dev->port);
@@ -354,7 +334,7 @@ bool xMBASCIITimerT1SExpired(  mb_device_t *dev)
 }
 
 
-static uint8_t prvucMBCHAR2BIN( uint8_t ucCharacter )
+static uint8_t __prvxMBCHAR2BIN( uint8_t ucCharacter )
 {
     if( ( ucCharacter >= '0' ) && ( ucCharacter <= '9' ) ){
         return ( uint8_t )( ucCharacter - '0' );
@@ -367,7 +347,7 @@ static uint8_t prvucMBCHAR2BIN( uint8_t ucCharacter )
     }
 }
 
-static uint8_t prvucMBBIN2CHAR( uint8_t ucByte )
+static uint8_t __prvxMBBIN2CHAR( uint8_t ucByte )
 {
     if( ucByte <= 0x09 ){
         return ( uint8_t )( '0' + ucByte );
@@ -384,7 +364,7 @@ static uint8_t prvucMBBIN2CHAR( uint8_t ucByte )
 }
 
 
-static uint8_t prvucMBLRC( uint8_t * pPdu, uint16_t usLen )
+static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
 {
     uint8_t ucLRC = 0;  /* LRC char initialized */
 
@@ -394,7 +374,7 @@ static uint8_t prvucMBLRC( uint8_t * pPdu, uint16_t usLen )
     }
 
     /* Return twos complement */
-    ucLRC = ( uint8_t ) ( -((char) ucLRC ) );
+    ucLRC = (uint8_t) ( -((char)ucLRC) );
     
     return ucLRC;
 }

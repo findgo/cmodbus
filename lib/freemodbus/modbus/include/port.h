@@ -7,8 +7,6 @@ extern "C" {
 #endif
 
 #include "mbcpu.h"
-    
-/* ----------------------- Type definitions ---------------------------------*/
 
 /*! \ingroup modbus
  * \brief Parity used for characters in serial mode.
@@ -24,9 +22,7 @@ typedef enum
     MB_PAR_EVEN                 /*!< Even parity. */
 } eMBParity;
 
-
 /* ------------ Serial port functions ----------------------------*/
-
 bool xMBPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, eMBParity eParity);
 
 void vMBPortClose(uint8_t port);

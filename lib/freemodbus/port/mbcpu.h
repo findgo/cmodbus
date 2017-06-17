@@ -11,7 +11,7 @@
 
 #define assert(expr) 
 
-#define ENTER_CRITICAL_SECTION( )     __set_PRIMASK(1)
-#define EXIT_CRITICAL_SECTION( )       __set_PRIMASK(0);
+#define ENTER_CRITICAL_SECTION()     __set_PRIMASK(1)
+#define EXIT_CRITICAL_SECTION()       __set_PRIMASK(0)
 
 #endif

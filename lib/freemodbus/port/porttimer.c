@@ -1,5 +1,7 @@
 #include "port.h"
 #include "modbus.h"
+#include "mbrtu.h"
+
 //STM32相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"

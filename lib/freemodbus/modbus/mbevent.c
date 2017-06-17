@@ -7,7 +7,7 @@
   * @param  None
   * @retval None
   */
-bool xMBEventInit(mb_device_t *dev)
+bool xMBSemBinaryInit(mb_device_t *dev)
 {
     dev->xEventInFlag = false;
     
@@ -19,7 +19,7 @@ bool xMBEventInit(mb_device_t *dev)
   * @param  None
   * @retval None
   */
-bool xMBEventPost(mb_device_t *dev)
+bool xMBSemGive(mb_device_t *dev)
 {
   dev->xEventInFlag = true;
   return true;
@@ -30,7 +30,7 @@ bool xMBEventPost(mb_device_t *dev)
   * @param  None
   * @retval None
   */
-bool xMBEventGet(mb_device_t *dev)
+bool xMBSemTake(mb_device_t *dev)
 {  
   //若有事件更新
     if( dev->xEventInFlag ){

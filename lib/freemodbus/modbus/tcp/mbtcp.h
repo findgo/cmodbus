@@ -12,14 +12,13 @@ extern "C" {
 #include "mbcpu.h"
 
 #include "modbus.h"
-#include "mbutils.h"
 
-eMBErrorCode eMBTCPDoInit(uint16_t ucTCPPort);
-void eMBTCPStart(mb_device_t *dev);
-void eMBTCPStop(mb_device_t *dev);
-void eMBTCPClose(mb_device_t *dev);
-eMBErrorCode eMBTCPReceive(mb_device_t *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
-eMBErrorCode eMBTCPSend(mb_device_t *dev, uint8_t _unused, const uint8_t *pPdu,uint16_t usLength );
+eMBErrorCode eMBTCPInit(uint16_t ucTCPPort);
+void vMBTCPStart(void *dev);
+void vMBTCPStop(void *dev);
+void vMBTCPClose(void *dev);
+eMBErrorCode eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
+eMBErrorCode eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu,uint16_t usLength );
 
 #ifdef __cplusplus
 }

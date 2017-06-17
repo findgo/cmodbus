@@ -32,20 +32,20 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
 #if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, eMBFuncReportSlaveID},
 #endif
-#if MB_FUNC_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMBFuncReadInputRegister},
-#endif
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
     {MB_FUNC_READ_HOLDING_REGISTER, eMBFuncReadHoldingRegister},
-#endif
-#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBFuncWriteMultipleHoldingRegister},
 #endif
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
     {MB_FUNC_WRITE_REGISTER, eMBFuncWriteHoldingRegister},
 #endif
+#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
+        {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBFuncWriteMultipleHoldingRegister},
+#endif
 #if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
     {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBFuncReadWriteMultipleHoldingRegister},
+#endif
+#if MB_FUNC_READ_INPUT_ENABLED > 0
+    {MB_FUNC_READ_INPUT_REGISTER, eMBFuncReadInputRegister},
 #endif
 #if MB_FUNC_READ_COILS_ENABLED > 0
     {MB_FUNC_READ_COILS, eMBFuncReadCoils},
@@ -81,9 +81,9 @@ eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t u
     switch (eMode){
 #if MB_RTU_ENABLED > 0
     case MB_RTU:
-        dev->pvMBStartCur = eMBRTUStart;
-        dev->pvMBStopCur = eMBRTUStop;
-        dev->pvMBCloseCur = eMBRTUClose;
+        dev->pvMBStartCur = vMBRTUStart;
+        dev->pvMBStopCur = vMBRTUStop;
+        dev->pvMBCloseCur = vMBRTUClose;
         dev->peMBSendCur = eMBRTUSend;
         dev->peMBReceivedCur = eMBRTUReceive;
 
@@ -92,9 +92,9 @@ eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t u
 #endif
 #if MB_ASCII_ENABLED > 0
     case MB_ASCII:
-        dev->pvMBStartCur = eMBASCIIStart;
-        dev->pvMBStopCur = eMBASCIIStop;
-        dev->pvMBCloseCur = eMBASCIIClose;
+        dev->pvMBStartCur = vMBASCIIStart;
+        dev->pvMBStopCur = vMBASCIIStop;
+        dev->pvMBCloseCur = vMBASCIIClose;
         dev->peMBSendCur = eMBASCIISend;
         dev->peMBReceivedCur = eMBASCIIReceive;
         
@@ -109,7 +109,7 @@ eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t u
         return eStatus;
     }
     
-    if(!xMBEventInit(dev)){
+    if(!xMBSemBinaryInit(dev)){
         /* port dependent event module initalization failed. */
         eStatus = MB_EPORTERR;
     }
@@ -129,17 +129,17 @@ eMBErrorCode eMBTCPOpen(mb_device_t *dev,uint8_t channel, uint16_t ucTCPPort)
 {
     eMBErrorCode eStatus = MB_ENOERR;
 
-    if(( eStatus = eMBTCPDoInit( ucTCPPort ) ) != MB_ENOERR){
+    if(( eStatus = eMBTCPInit( ucTCPPort ) ) != MB_ENOERR){
          dev->devstate = DEV_STATE_DISABLED;
     }
-    else if(!xMBEventInit(dev)){
+    else if(!xMBSemBinaryInit(dev)){
         /* Port dependent event module initalization failed. */
         eStatus = MB_EPORTERR;
     }
     else{ 
-        dev->pvMBStartCur = eMBTCPStart;
-        dev->pvMBStopCur = eMBTCPStop;
-        dev->pvMBCloseCur = eMBTCPClose;
+        dev->pvMBStartCur = vMBTCPStart;
+        dev->pvMBStopCur = vMBTCPStop;
+        dev->pvMBCloseCur = vMBTCPClose;
         dev->peMBSendCur = eMBTCPReceive;
         dev->peMBReceivedCur = eMBTCPSend;
                 
@@ -196,7 +196,7 @@ eMBErrorCode eMBClose(mb_device_t *dev)
     return MB_EILLSTATE;
 }
 
-void eMBPoll(void)
+void vMBPoll(void)
 {
     mb_device_t *curdev = mb_dev_head;    
 
@@ -248,7 +248,7 @@ eMBErrorCode eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandle
 //__align(2)  
 //static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
 
-eMBErrorCode mb_reg_create(mb_device_t *dev,
+eMBErrorCode eMBRegCreate(mb_device_t *dev,
                                 uint8_t *regbuf,
                                 uint16_t reg_holding_addr_start,
                                 uint16_t reg_holding_num,
@@ -267,17 +267,17 @@ eMBErrorCode mb_reg_create(mb_device_t *dev,
 
     regs = (mb_reg_t *)&dev->regs;
 
-    regs->reg_holding_addr_start =  reg_holding_addr_start;
-    regs->reg_holding_num    =  reg_holding_num;
-    regs->reg_input_addr_start   =  reg_input_addr_start;    
-    regs->reg_input_num      =  reg_input_num;
+    regs->reg_holding_addr_start = reg_holding_addr_start;
+    regs->reg_holding_num = reg_holding_num;
+    regs->reg_input_addr_start = reg_input_addr_start;    
+    regs->reg_input_num = reg_input_num;
         
-    regs->reg_coils_addr_start   =  reg_coils_addr_start;
-    regs->reg_coils_num      =  reg_coils_num;
-    regs->reg_discrete_addr_start =  reg_discrete_addr_start;
-    regs->reg_discrete_num   =  reg_discrete_num;
+    regs->reg_coils_addr_start = reg_coils_addr_start;
+    regs->reg_coils_num = reg_coils_num;
+    regs->reg_discrete_addr_start = reg_discrete_addr_start;
+    regs->reg_discrete_num = reg_discrete_num;
 
-    regs->pReghold  = (uint16_t *)&regbuf[0];
+    regs->pReghold = (uint16_t *)&regbuf[0];
     
     lens = reg_holding_num * sizeof(uint16_t);
     regs->pReginput = (uint16_t *)&regbuf[lens];
@@ -311,7 +311,7 @@ static eMBErrorCode eMBADUFramehandle(mb_device_t *dev)
 
     /* Check if there is a event available. If not return control to caller.
      * Otherwise we will handle the event. */
-    if(xMBEventGet(dev)){
+    if(xMBSemTake(dev)){
             
         /* parser a adu fram */
         eStatus = dev->peMBReceivedCur(dev, &ucRcvAddress, &pPduFrame, &usLength );

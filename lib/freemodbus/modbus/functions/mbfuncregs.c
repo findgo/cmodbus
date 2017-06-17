@@ -1,6 +1,86 @@
 
 #include "mbfunc.h"
 
+/**
+  * @brief  保持寄存器处理函数，保持寄存器可读，可读可写
+  * @param  regs          操作寄存器指针
+  *         pucRegBuffer  读操作时--返回数据指针，写操作时--输入数据指针
+  *         usAddress     寄存器起始地址
+  *         usNRegs       寄存器长度
+  *         eMode         操作方式，读或者写
+  * @retval eStatus       寄存器状态
+  */
+static eMBErrorCode __eMBRegHoldingCB(mb_reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, eMBRegisterMode eMode)
+{
+    int16_t iRegIndex;
+  
+    if( ((int16_t)usAddress >= regs->reg_holding_addr_start) \
+        && ((usAddress + usNRegs) <= (regs->reg_holding_addr_start + regs->reg_holding_num))){
+        
+        //offset index
+        iRegIndex = (int16_t)( usAddress - regs->reg_holding_addr_start);
+        switch (eMode){
+        case MB_REG_READ:
+            while( usNRegs > 0 )
+            {
+                //high byte
+                *pucRegBuffer++ = (uint8_t)( regs->pReghold[iRegIndex] >> 8 );
+                //low byte
+                *pucRegBuffer++ = (uint8_t)( regs->pReghold[iRegIndex] & 0xFF );
+                iRegIndex++;
+                usNRegs--;
+            }
+            break;
+
+        case MB_REG_WRITE:
+            while( usNRegs > 0 )
+            {
+                regs->pReghold[iRegIndex] = *pucRegBuffer++ << 8;
+                regs->pReghold[iRegIndex] |= *pucRegBuffer++;
+                iRegIndex++;
+                usNRegs--;
+            }
+            break;
+        }
+
+        return MB_ENOERR;
+    }
+        
+    return MB_ENOREG;
+}
+/**
+  * @brief  输入寄存器处理函数，输入寄存器可读，但不可写。
+  * @param  regs          操作寄存器指针
+  *         pucRegBuffer  返回数据指针
+  *         usAddress     寄存器起始地址
+  *         usNRegs       寄存器长度
+  * @retval eStatus       寄存器状态
+  */
+
+static eMBErrorCode __eMBRegInputCB(mb_reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs)
+{
+    int16_t iRegIndex;
+  
+    if(((int16_t) usAddress >= regs->reg_input_addr_start ) \
+        && ( usAddress + usNRegs) <= regs->reg_input_addr_start + regs->reg_input_num ){
+        
+        //offset index
+        iRegIndex = ( int16_t )( usAddress - regs->reg_input_addr_start);
+
+        while( usNRegs > 0 )
+        {
+            //high byte
+            *pucRegBuffer++ = ( uint8_t )( regs->pReginput[iRegIndex] >> 8 );
+            //low byte
+            *pucRegBuffer++ = ( uint8_t )( regs->pReginput[iRegIndex] & 0xFF );
+            iRegIndex++;
+            usNRegs--;
+        }
+        return MB_ENOERR;
+    }
+
+    return MB_ENOREG;
+}
 
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
 eMBException eMBFuncWriteHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
@@ -15,7 +95,7 @@ eMBException eMBFuncWriteHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t
         usRegAddress |= ( uint16_t )( pPdu[MB_PDU_FUNC_WRITE_ADDR_OFF + 1] );
 
         /* Make callback to update the value. */
-        eRegStatus = eMBRegHoldingCB(regs,&pPdu[MB_PDU_FUNC_WRITE_VALUE_OFF],
+        eRegStatus = __eMBRegHoldingCB(regs,&pPdu[MB_PDU_FUNC_WRITE_VALUE_OFF],
                                       usRegAddress, 1, MB_REG_WRITE );
 
         /* If an error occured convert it into a Modbus exception. */
@@ -57,7 +137,7 @@ eMBException eMBFuncWriteMultipleHoldingRegister(mb_reg_t *regs, uint8_t * pPdu,
             
             /* Make callback to update the register values. */
             eRegStatus =
-                eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
+                __eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
                                  usRegAddress, usRegCount, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
@@ -121,7 +201,7 @@ eMBException eMBFuncReadHoldingRegister(mb_reg_t *regs, uint8_t * pPdu, uint16_t
             *usLen += 1;
 
             /* Make callback to fill the buffer. */
-            eRegStatus = eMBRegHoldingCB(regs,pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
+            eRegStatus = __eMBRegHoldingCB(regs,pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
                 eStatus = prveMBError2Exception( eRegStatus );
@@ -178,7 +258,7 @@ eMBException eMBFuncReadWriteMultipleHoldingRegister(mb_reg_t *regs, uint8_t *pP
             && ( ( 2 * usRegWriteCount ) == ucRegWriteByteCount ) ){
             
             /* Make callback to update the register values. */
-            eRegStatus = eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
+            eRegStatus = __eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
                                           usRegWriteAddress, usRegWriteCount, MB_REG_WRITE );
 
             if( eRegStatus == MB_ENOERR ){
@@ -197,7 +277,7 @@ eMBException eMBFuncReadWriteMultipleHoldingRegister(mb_reg_t *regs, uint8_t *pP
 
                 /* Make the read callback. */
                 eRegStatus =
-                    eMBRegHoldingCB(regs, pucFrameCur, usRegReadAddress, usRegReadCount, MB_REG_READ );
+                    __eMBRegHoldingCB(regs, pucFrameCur, usRegReadAddress, usRegReadCount, MB_REG_READ );
                 if( eRegStatus == MB_ENOERR ){
                     *usLen += 2 * usRegReadCount;
                 }
@@ -252,7 +332,7 @@ eMBException eMBFuncReadInputRegister(mb_reg_t *regs, uint8_t * pPdu, uint16_t *
             *usLen += 1;
 
             eRegStatus =
-                eMBRegInputCB(regs, pucFrameCur, usRegAddress, usRegCount );
+                __eMBRegInputCB(regs, pucFrameCur, usRegAddress, usRegCount );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){

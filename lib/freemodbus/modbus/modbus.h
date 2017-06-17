@@ -8,6 +8,7 @@
 #include "mbcpu.h"
 
 #include "port.h"
+
 /*! \ingroup modbus
  * \brief Modbus serial transmission modes (RTU/ASCII).
  *
@@ -21,7 +22,7 @@ typedef enum
     MB_ASCII,   /*!< ASCII transmission mode. */
     MB_TCP      /*!< TCP mode. */
 } eMBMode;
-
+    
 typedef enum
 {
     DEV_STATE_NOT_INITIALIZED,
@@ -63,7 +64,6 @@ typedef struct
 }mb_reg_t;
 
 typedef eMBException (*pxMBFunctionHandler)(mb_reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
-
 typedef void (*pActionHandle)(void *dev);
 typedef eMBErrorCode (*pActionReceive)(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
 typedef eMBErrorCode (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
@@ -73,17 +73,14 @@ typedef struct
     uint16_t port; // ¶Ë¿ÚºÅ
     uint8_t slaveid;
     eMBMode currentMode;
+    
     eMBDevState devstate;
     
     bool xEventInFlag; // for event?
+    uint8_t reserved0;
     
-    volatile uint8_t sndState;
-    volatile uint8_t rcvState;
-    uint16_t sndAduBufCount;
-    uint16_t sndAduBufPos;
-    uint16_t rcvAduBufrPos;
-    volatile uint8_t  AduBuf[MB_ADU_SIZE_MAX];
-
+    volatile uint8_t AsciiBytePos; // only for ascii
+    
     mb_reg_t regs;
     
     pActionHandle pvMBStartCur;
@@ -93,6 +90,13 @@ typedef struct
     pActionSend peMBSendCur;
     
     void *next;
+    
+    volatile uint8_t sndState;
+    volatile uint8_t rcvState;
+    volatile uint16_t sndAduBufCount;
+    volatile uint16_t sndAduBufPos;
+    volatile uint16_t rcvAduBufrPos;
+    volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }mb_device_t;
 
 /*! \ingroup modbus
@@ -143,9 +147,8 @@ eMBErrorCode eMBTCPOpen(mb_device_t *dev,uint8_t channel, uint16_t ucTCPPort);
 eMBErrorCode eMBClose(mb_device_t *dev);
 eMBErrorCode eMBStart(mb_device_t *dev);
 eMBErrorCode eMBStop(mb_device_t *dev);
-void eMBPoll(void);
-
-eMBErrorCode mb_reg_create(mb_device_t *dev,
+void vMBPoll(void);
+eMBErrorCode eMBRegCreate(mb_device_t *dev,
                             uint8_t *regbuf,
                             uint16_t reg_holding_addr_start,
                             uint16_t reg_holding_num,
@@ -155,8 +158,6 @@ eMBErrorCode mb_reg_create(mb_device_t *dev,
                             uint16_t reg_coils_num,
                             uint16_t reg_discrete_addr_start,
                             uint16_t reg_discrete_num);
-
-
 
 #endif
 

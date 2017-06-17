@@ -332,7 +332,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls>--gnu</MiscControls>
+              <MiscControls></MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,DEBUG_MSG</Define>
               <Undefine></Undefine>
               <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\freemodbus\modbus;..\lib\freemodbus\modbus\include;..\lib\freemodbus\modbus\rtu;..\lib\freemodbus\port</IncludePath>
@@ -651,11 +651,6 @@
               <FileName>mbfuncbits.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\lib\freemodbus\modbus\functions\mbfuncbits.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfunccb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfunccb.c</FilePath>
             </File>
             <File>
               <FileName>mbfuncregs.c</FileName>

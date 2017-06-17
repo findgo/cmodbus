@@ -7,7 +7,7 @@
 #define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
 
 /* ----------------------- Start implementation -----------------------------*/
-eMBErrorCode eMBTCPDoInit(uint16_t ucTCPPort)
+eMBErrorCode eMBTCPInit(uint16_t ucTCPPort)
 {
     if( xMBTCPPortInit( ucTCPPort ) == false )
         return MB_EPORTERR;
@@ -15,18 +15,18 @@ eMBErrorCode eMBTCPDoInit(uint16_t ucTCPPort)
     return MB_ENOERR;
 }
 
-void eMBTCPStart(  mb_device_t *dev)
+void vMBTCPStart(  void *dev)
 {
 
 }
 
-void eMBTCPStop(  mb_device_t *dev)
+void vMBTCPStop(  void *dev)
 {
     /* Make sure that no more clients are connected. */
     vMBTCPPortDisable( );
 }
 
-eMBErrorCode eMBTCPReceive(mb_device_t *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
+eMBErrorCode eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
 {
     eMBErrorCode    eStatus = MB_EIO;
     uint8_t          *pucMBTCPFrame;
@@ -57,10 +57,10 @@ eMBErrorCode eMBTCPReceive(mb_device_t *dev, uint8_t *pucRcvAddress, uint8_t **p
     return eStatus;
 }
 
-eMBErrorCode eMBTCPSend(mb_device_t *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
+eMBErrorCode eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
 {
-    uint8_t          *pAdu = ( uint8_t * ) pPdu - MB_TCP_ADU_PDU_OFFSET;
-    uint16_t          usTCPAduLength = usLength + MB_TCP_ADU_PDU_OFFSET;
+    uint8_t *pAdu = ( uint8_t * ) pPdu - MB_TCP_ADU_PDU_OFFSET;
+    uint16_t usTCPAduLength = usLength + MB_TCP_ADU_PDU_OFFSET;
 
     /* The MBAP header is already initialized because the caller calls this
      * function with the buffer returned by the previous call. Therefore we 

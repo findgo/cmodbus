@@ -5,8 +5,8 @@
 #include "modbus.h"
 
 /* ----------------------- Supporting functions -----------------------------*/
-bool xMBEventInit(mb_device_t *dev);
-bool xMBEventPost(mb_device_t *dev);
-bool xMBEventGet(mb_device_t *dev);
+bool xMBSemBinaryInit(mb_device_t *dev);
+bool xMBSemGive(mb_device_t *dev);
+bool xMBSemTake(mb_device_t *dev);
 
 #endif

@@ -1,6 +1,6 @@
 
-#ifndef _MB_FUNC_H
-#define _MB_FUNC_H
+#ifndef __MB_FUNC_H
+#define __MB_FUNC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,6 @@ extern "C" {
 
 #include "modbus.h"
 #include "mbutils.h"
-#include "mbfunccb.h"
 
 // read holding input coil disc 
 #define MB_PDU_FUNC_READ_SIZE               ( 4 )
@@ -42,6 +41,23 @@ extern "C" {
 #define MB_PDU_FUNC_READWRITE_BYTECNT_OFF       ( MB_PDU_DATA_OFF + 8 )
 #define MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF  ( MB_PDU_DATA_OFF + 9 )
 #define MB_PDU_FUNC_READWRITE_SIZE_MIN          ( 9 )
+
+/*! \ingroup modbus
+ * \brief If register should be written or read.
+ *
+ * This value is passed to the callback functions which support either
+ * reading or writing register values. Writing means that the application
+ * registers should be updated and reading means that the modbus protocol
+ * stack needs to know the current register values.
+ *
+ * \see eMBRegHoldingCB( ), eMBRegCoilsCB( ), eMBRegDiscreteCB( ) and 
+ *   eMBRegInputCB( ).
+ */
+typedef enum
+{
+    MB_REG_READ,                /*!< Read register values and pass to protocol stack. */
+    MB_REG_WRITE                /*!< Update register values. */
+} eMBRegisterMode;
 
 #if MB_FUNC_OTHER_REP_SLAVEID_BUF > 0
 eMBException eMBFuncReportSlaveID(mb_reg_t *regs, uint8_t *pPdu, uint16_t * usLen);

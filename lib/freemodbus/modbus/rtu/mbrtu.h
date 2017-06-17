@@ -18,9 +18,9 @@ extern "C" {
 #include "port.h"
 
 eMBErrorCode eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,eMBParity eParity);
-void eMBRTUStart(void *dev);
-void eMBRTUStop(void *dev);
-void eMBRTUClose(void *dev);
+void vMBRTUStart(void *dev);
+void vMBRTUStop(void *dev);
+void vMBRTUClose(void *dev);
 eMBErrorCode eMBRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
 eMBErrorCode eMBRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
