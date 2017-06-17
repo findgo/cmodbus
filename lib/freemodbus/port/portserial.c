@@ -1,37 +1,12 @@
-/*
- * FreeModbus Libary: BARE Port
- * Copyright (C) 2006 Christian Walter <wolti@sil.at>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * File: $Id: portserial.c,v 1.1 2006/08/22 21:35:13 wolti Exp $
- */
 
 #include "port.h"
-
-/* ----------------------- Modbus includes ----------------------------------*/
-#include "mb.h"
-#include "mbport.h"
+#include "modbus.h"
 
 //STM32操作相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-/* ----------------------- static functions ---------------------------------*/
-static void prvvUARTTxReadyISR( void );
-static void prvvUARTRxISR( void );
+extern mb_device_t device1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -40,34 +15,32 @@ static void prvvUARTRxISR( void );
   *         xTxEnable 发送使能
   * @retval None
   */
-void
-vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
+void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable )
 {
-  if(xRxEnable)
-  {
-    //使能接收和接收中断
-    USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-    //MAX485操作 低电平为接收模式
-    GPIO_ResetBits(GPIOD,GPIO_Pin_8);
-  }
-  else
-  {
-    USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); 
-    //MAX485操作 高电平为发送模式
-    GPIO_SetBits(GPIOD,GPIO_Pin_8);
-  }
 
-  if(xTxEnable)
-  {
-    //使能发送完成中断
-    USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-  }
-  else
-  {
-    //禁止发送完成中断
-    USART_ITConfig(USART1, USART_IT_TC, DISABLE);
-  }
-  
+    (void)port;
+
+    if(xRxEnable){
+        //使能接收和接收中断
+        USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+        //MAX485操作 低电平为接收模式
+        GPIO_ResetBits(GPIOD,GPIO_Pin_8);
+    }
+    else{
+        USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); 
+        //MAX485操作 高电平为发送模式
+        GPIO_SetBits(GPIOD,GPIO_Pin_8);
+    }
+
+    if(xTxEnable){
+        //使能发送完成中断
+        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+    }
+    else{
+        //禁止发送完成中断
+        USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+    }
+
 }
 
 /**
@@ -78,16 +51,16 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
   *         eParity     校验位 
   * @retval None
   */
-BOOL
-xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity eParity )
+bool xMBPortSerialInit( uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, eMBParity eParity )
 {
+  GPIO_InitTypeDef GPIO_InitStructure;
+  USART_InitTypeDef USART_InitStructure;
+  NVIC_InitTypeDef NVIC_InitStructure;  
+    
   (void)ucPORT;     //不修改串口
   (void)ucDataBits; //不修改数据位长度
   (void)eParity;    //不修改校验格式
   
-  GPIO_InitTypeDef GPIO_InitStructure;
-  USART_InitTypeDef USART_InitStructure;
-
   //使能USART1，GPIOA
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | 
             RCC_APB2Periph_USART1, ENABLE);
@@ -114,7 +87,6 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
   //使能USART1
   USART_Cmd(USART1, ENABLE);
   
-  NVIC_InitTypeDef NVIC_InitStructure;
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
   //设定USART1 中断优先级
   NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
@@ -131,7 +103,7 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOD, &GPIO_InitStructure); 
 
-  return TRUE;
+  return true;
 }
 
 /**
@@ -139,12 +111,14 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
   * @param  None
   * @retval None
   */
-BOOL
-xMBPortSerialPutByte( CHAR ucByte )
+bool xMBPortSerialPutByte(uint8_t port, char ucByte )
 {
+  (void)port;
+  
   //发送数据
   USART_SendData(USART1, ucByte);
-  return TRUE;
+  
+  return true;
 }
 
 /**
@@ -152,12 +126,13 @@ xMBPortSerialPutByte( CHAR ucByte )
   * @param  None
   * @retval None
   */
-BOOL
-xMBPortSerialGetByte( CHAR * pucByte )
+bool xMBPortSerialGetByte(uint8_t port, char *pucByte )
 {
-  //接收数据
-  *pucByte = USART_ReceiveData(USART1);
-  return TRUE;
+    (void)port;
+    
+    *pucByte = USART_ReceiveData(USART1);
+    
+    return true;
 }
 
 /* Create an interrupt handler for the transmit buffer empty interrupt
@@ -166,27 +141,14 @@ xMBPortSerialGetByte( CHAR * pucByte )
  * a new character can be sent. The protocol stack will then call 
  * xMBPortSerialPutByte( ) to send the character.
  */
-static void prvvUARTTxReadyISR( void )
-{
-  //mb.c eMBInit函数中
-  //pxMBFrameCBTransmitterEmpty = xMBRTUTransmitFSM 
-  //发送状态机
-  pxMBFrameCBTransmitterEmpty();
-}
+
 
 /* Create an interrupt handler for the receive interrupt for your target
  * processor. This function should then call pxMBFrameCBByteReceived( ). The
  * protocol stack will then call xMBPortSerialGetByte( ) to retrieve the
  * character.
  */
-static void prvvUARTRxISR( void )
-{
-  //mb.c eMBInit函数中
-  //pxMBFrameCBByteReceived = xMBRTUReceiveFSM
-  //接收状态机
-  pxMBFrameCBByteReceived();
-}
-
+ 
 /**
   * @brief  USART1中断服务函数
   * @param  None
@@ -195,20 +157,26 @@ static void prvvUARTRxISR( void )
 void USART1_IRQHandler(void)
 {
   //发生接收中断
-  if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET)
-  {
-    prvvUARTRxISR(); 
-    //清除中断标志位    
-    USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
-  }
+    if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+        //mb.c eMBInit函数中
+        //pxMBFrameCBByteReceived = xMBRTUReceiveFSM
+        //接收状态机
+        xMBRTUReceiveFSM(&device1);
+    
+        //清除中断标志位    
+        USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
+    }
   
   //发生完成中断
-  if(USART_GetITStatus(USART1, USART_IT_TC) == SET)
-  {
-    prvvUARTTxReadyISR();
-    //清除中断标志
-    USART_ClearITPendingBit(USART1, USART_IT_TC);
-  }
+    if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
+        //mb.c eMBInit函数中
+
+        //发送状态机
+        xMBRTUTransmitFSM(&device1);
+        
+        //清除中断标志
+        USART_ClearITPendingBit(USART1, USART_IT_TC);
+    }
   
   //测试看是否可以去除 2012-07-23
   //溢出-如果发生溢出需要先读SR,再读DR寄存器 则可清除不断入中断的问题

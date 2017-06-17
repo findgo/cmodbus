@@ -1,23 +1,36 @@
 #include "app_cfg.h"
 
 //for driver
-#include "mb.h"
+#include "modbus.h"
 
 static void prvClockInit(void);
 static void prvnvicInit(void);
+
+mb_device_t device1;
+static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
+    {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa};
 
 int main(void)
 {	
 	prvClockInit();
 	prvnvicInit();
 	//Systick_Configuration();
-    eMBInit(MB_RTU, 0x01, 0x00, 9600, MB_PAR_NONE);
-    eMBEnable();
+    eMBOpen(&device1,0,MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
+    mb_reg_create(&device1,
+                    dev1regbuf,
+                    0,
+                    REG_HOLDING_NREGS ,
+                    0,
+                    REG_INPUT_NREGS,
+                    0,
+                    REG_COILS_SIZE,
+                    0,
+                    REG_DISCRETE_SIZE);
+    eMBStart(&device1);
    
 	while(1)
 	{
         eMBPoll();
-
 	}
 	//Should never reach this point!
 }

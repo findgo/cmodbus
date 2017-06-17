@@ -32,7 +32,7 @@
 #define _MB_CONFIG_H
 
 #ifdef __cplusplus
-PR_BEGIN_EXTERN_C
+extern "C" {
 #endif
 /* ----------------------- Defines ------------------------------------------*/
 /*! \defgroup modbus_cfg Modbus Configuration
@@ -125,8 +125,26 @@ PR_BEGIN_EXTERN_C
 /*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
 #define MB_FUNC_READWRITE_HOLDING_ENABLED       (  1 )
 
+/*device channel must be unique (0 - 7) and cannot be changed by user */
+#define MB_DEV_CHANNEL_SIZE_MAX ( 7 )  
+
+#ifndef MB_PORT_HAS_CLOSE
+#define MB_PORT_HAS_CLOSE 0
+#endif
+
+/*! \ingroup modbus
+ * \brief Use the default Modbus TCP port (502)
+ */
+#define MB_TCP_PORT_USE_DEFAULT     (502)   
+
+/* Private define for reg ------------------------------------------------------------*/
+#define REG_HOLDING_NREGS     ( 3 )
+#define REG_INPUT_NREGS       ( 3 )
+#define REG_COILS_SIZE        (8 * 2)
+#define REG_DISCRETE_SIZE     (8 * 1)
+
 /*! @} */
 #ifdef __cplusplus
-    PR_END_EXTERN_C
+    }
 #endif
 #endif

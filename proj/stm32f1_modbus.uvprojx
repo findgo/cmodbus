@@ -335,7 +335,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,DEBUG_MSG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\freemodbus\modbus\include;..\lib\freemodbus\modbus\rtu;..\lib\freemodbus\port</IncludePath>
+              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\freemodbus\modbus;..\lib\freemodbus\modbus\include;..\lib\freemodbus\modbus\rtu;..\lib\freemodbus\port</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -623,31 +623,6 @@
           <GroupName>freemodbus</GroupName>
           <Files>
             <File>
-              <FileName>mbfunccoils.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfunccoils.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfuncdiag.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncdiag.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfuncdisc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncdisc.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfuncholding.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncholding.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfuncinput.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncinput.c</FilePath>
-            </File>
-            <File>
               <FileName>mbfuncother.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\lib\freemodbus\modbus\functions\mbfuncother.c</FilePath>
@@ -663,30 +638,35 @@
               <FilePath>..\lib\freemodbus\modbus\rtu\mbrtu.c</FilePath>
             </File>
             <File>
-              <FileName>mbcrc.c</FileName>
+              <FileName>mbevent.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\rtu\mbcrc.c</FilePath>
+              <FilePath>..\lib\freemodbus\modbus\mbevent.c</FilePath>
             </File>
             <File>
-              <FileName>mb.c</FileName>
+              <FileName>modbus.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\mb.c</FilePath>
+              <FilePath>..\lib\freemodbus\modbus\modbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>mbfuncbits.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncbits.c</FilePath>
+            </File>
+            <File>
+              <FileName>mbfunccb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\freemodbus\modbus\functions\mbfunccb.c</FilePath>
+            </File>
+            <File>
+              <FileName>mbfuncregs.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncregs.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>modbusport</GroupName>
           <Files>
-            <File>
-              <FileName>mbuser.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\mbuser.c</FilePath>
-            </File>
-            <File>
-              <FileName>portevent.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\port\portevent.c</FilePath>
-            </File>
             <File>
               <FileName>portserial.c</FileName>
               <FileType>1</FileType>

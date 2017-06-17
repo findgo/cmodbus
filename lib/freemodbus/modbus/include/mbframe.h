@@ -1,38 +1,9 @@
-/* 
- * FreeModbus Libary: A portable Modbus implementation for Modbus ASCII/RTU.
- * Copyright (c) 2006 Christian Walter <wolti@sil.at>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * File: $Id: mbframe.h,v 1.9 2006/12/07 22:10:34 wolti Exp $
- */
 
 #ifndef _MB_FRAME_H
 #define _MB_FRAME_H
 
 #ifdef __cplusplus
-PR_BEGIN_EXTERN_C
+extern "C" {
 #endif
 
 /*!
@@ -41,7 +12,7 @@ PR_BEGIN_EXTERN_C
  * dependent on the underlying transport.
  *
  * <code>
- * <------------------------ MODBUS SERIAL LINE PDU (1) ------------------->
+ * <------------------------ MODBUS SERIAL LINE ADU (1) ------------------->
  *              <----------- MODBUS PDU (1') ---------------->
  *  +-----------+---------------+----------------------------+-------------+
  *  | Address   | Function Code | Data                       | CRC/LRC     |
@@ -49,16 +20,57 @@ PR_BEGIN_EXTERN_C
  *  |           |               |                                   |
  * (2)        (3/2')           (3')                                (4)
  *
- * (1)  ... MB_SER_PDU_SIZE_MAX = 256
- * (2)  ... MB_SER_PDU_ADDR_OFF = 0
- * (3)  ... MB_SER_PDU_PDU_OFF  = 1
- * (4)  ... MB_SER_PDU_SIZE_CRC = 2
+ * (1)  ... MB_ADU_SIZE_MAX = 256
+ * (2)  ... MB_SER_ADU_ADDR_OFFSET = 0
+ * (3)  ... MB_SER_ADU_PDU_OFFSET  = 1
+ * (4)  ... MB_SER_ADU_SIZE_CRC = 2
+ *      ... MB_SER_ADU_SIZE_LRC = 1
  *
  * (1') ... MB_PDU_SIZE_MAX     = 253
- * (2') ... MB_PDU_FUNC_OFF     = 0
- * (3') ... MB_PDU_DATA_OFF     = 1
+ * (2') ... MB_PDU_FUNC_OFFSET     = 0
+ * (3') ... MB_PDU_DATA_OFFSET     = 1
  * </code>
  */
+ 
+ /*!
+ * <------------------------ MODBUS TCP/IP ADU(1) ------------------------->
+ *                              <----------- MODBUS PDU (1') -------------->
+ *  +-----------+---------------+------------------------------------------+
+ *  | TID | PID | Length | UID  | Function Code  | Data                    |
+ *  +-----------+---------------+------------------------------------------+
+ *  |     |     |        |      |                                           
+ * (2)   (3)   (4)      (5)    (6)                                          
+ *
+ * (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte) 
+ * (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
+ * (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)
+ * (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
+ * (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
+ *
+ * (1)  ... Modbus TCP/IP Application Data Unit
+ * (1') ... Modbus Protocol Data Unit
+ */
+
+/* RS232 / RS485 ADU -- TCP MODBUS ADU */
+#define MB_ADU_SIZE_MAX           256
+#define MB_ADU_ASCII_SIZE_MIN     3       /*!< Minimum size of a Modbus ASCII frame. */
+#define MB_ADU_RTU_SIZE_MIN       4       /*!< Minimum size of a Modbus RTU frame. */
+#define MB_ADU_TCP_SIZE_MIN       8       /*!< Minimum size of a Modbus TCP frame. */
+
+/* MODBUS SERIAL RTU/ASCII Defines*/
+#define MB_SER_ADU_SIZE_ADDR   1  /*!< Size of ADDRESS field in ADU. */
+#define MB_SER_ADU_SIZE_CRC    2  /*!< Size of CRC field in ADU. */
+#define MB_SER_ADU_SIZE_LRC    1  /*!< Size of CRC field in ADU. */
+#define MB_SER_ADU_ADDR_OFFSET 0  /*!< Offset of slave address in Ser-ADU. */
+#define MB_SER_ADU_PDU_OFFSET  1  /*!< Offset of Modbus-PDU in Ser-ADU. */
+
+/* MODBUS TCP  ADU Defines*/
+#define MB_TCP_ADU_SIZE_MBAP           7   /*!< Size of MBAP header field in ADU. */
+#define MB_TCP_ADU_TID_OFFSET          0
+#define MB_TCP_ADU_PID_OFFSET          2
+#define MB_TCP_ADU_LEN_OFFSET          4
+#define MB_TCP_ADU_UID_OFFSET          6
+#define MB_TCP_ADU_PDU_OFFSET          7
 
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_PDU_SIZE_MAX     253 /*!< Maximum size of a PDU. */
@@ -66,22 +78,8 @@ PR_BEGIN_EXTERN_C
 #define MB_PDU_FUNC_OFF     0   /*!< Offset of function code in PDU. */
 #define MB_PDU_DATA_OFF     1   /*!< Offset for response data in PDU. */
 
-/* ----------------------- Prototypes  0-------------------------------------*/
-typedef void    ( *pvMBFrameStart ) ( void );
-
-typedef void    ( *pvMBFrameStop ) ( void );
-
-typedef eMBErrorCode( *peMBFrameReceive ) ( UCHAR * pucRcvAddress,
-                                            UCHAR ** pucFrame,
-                                            USHORT * pusLength );
-
-typedef eMBErrorCode( *peMBFrameSend ) ( UCHAR slaveAddress,
-                                         const UCHAR * pucFrame,
-                                         USHORT usLength );
-
-typedef void( *pvMBFrameClose ) ( void );
-
 #ifdef __cplusplus
-PR_END_EXTERN_C
+}
 #endif
 #endif
+
