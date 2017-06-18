@@ -142,7 +142,7 @@ uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
   * @retval eStatus       寄存器状态
   */
   /* 根据定义，这里只处理线圈状态数据*/
-static eMBErrorCode __eMBRegCoilsCB(mb_reg_t *regs,uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, eMBRegisterMode eMode )
+static mb_ErrorCode_t __eMBRegCoilsCB(mb_Reg_t *regs,uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
     uint16_t usBitOffset;
@@ -177,7 +177,7 @@ static eMBErrorCode __eMBRegCoilsCB(mb_reg_t *regs,uint8_t *pucRegBuffer, uint16
     return MB_ENOREG;
 }
 
-static eMBErrorCode __eMBRegDiscreteCB(mb_reg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
+static mb_ErrorCode_t __eMBRegDiscreteCB(mb_Reg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
 {
   int16_t iNDiscrete = (int16_t)usNDiscrete;
   uint16_t usBitOffset;
@@ -200,15 +200,15 @@ static eMBErrorCode __eMBRegDiscreteCB(mb_reg_t *regs, uint8_t * pucRegBuffer, u
 }
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
-eMBException eMBFuncReadCoils(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCount;
     uint8_t  ucNBytes;
     uint8_t  *pucFrameCur;
 
-    eMBException eStatus = MB_EX_NONE;
-    eMBErrorCode eRegStatus;
+    eMBException_t eStatus = MB_EX_NONE;
+    mb_ErrorCode_t eRegStatus;
 
     if( *usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN ) ){
         usRegAddress = ( uint16_t )( pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8 );
@@ -270,13 +270,13 @@ eMBException eMBFuncReadCoils(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 #endif
 
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
-eMBException eMBFuncWriteCoil(mb_reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
+eMBException_t eMBFuncWriteCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
     uint8_t  ucBuf[2];
 
-    eMBException    eStatus = MB_EX_NONE;
-    eMBErrorCode    eRegStatus;
+    eMBException_t    eStatus = MB_EX_NONE;
+    mb_ErrorCode_t    eRegStatus;
 
     if( *usLen == ( MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN ) ){
         
@@ -317,15 +317,15 @@ eMBException eMBFuncWriteCoil(mb_reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException eMBFuncWriteMultipleCoils(mb_reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
+eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCnt;
     uint8_t  ucByteCount;
     uint8_t  ucByteCountVerify;
 
-    eMBException    eStatus = MB_EX_NONE;
-    eMBErrorCode    eRegStatus;
+    eMBException_t    eStatus = MB_EX_NONE;
+    mb_ErrorCode_t    eRegStatus;
 
     if(*usLen > (MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN )){
         
@@ -378,15 +378,15 @@ eMBException eMBFuncWriteMultipleCoils(mb_reg_t *regs,uint8_t * pPdu, uint16_t *
 #endif
 
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException eMBFuncReadDiscreteInputs(mb_reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
+eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usDiscreteCnt;
     uint8_t  ucNBytes;
     uint8_t  *pucFrameCur;
 
-    eMBException eStatus = MB_EX_NONE;
-    eMBErrorCode eRegStatus;
+    eMBException_t eStatus = MB_EX_NONE;
+    mb_ErrorCode_t eRegStatus;
 
     if(*usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN )){
 

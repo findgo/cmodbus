@@ -57,46 +57,46 @@ typedef enum
 {
     MB_REG_READ,                /*!< Read register values and pass to protocol stack. */
     MB_REG_WRITE                /*!< Update register values. */
-} eMBRegisterMode;
+} mb_RegisterMode_t;
 
 #if MB_FUNC_OTHER_REP_SLAVEID_BUF > 0
-eMBException eMBFuncReportSlaveID(mb_reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_READ_INPUT_ENABLED > 0
-eMBException eMBFuncReadInputRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncReadInputRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
-eMBException eMBFuncReadHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncReadHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
-eMBException eMBFuncWriteHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncWriteHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-eMBException eMBFuncWriteMultipleHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWriteMultipleHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
-eMBException eMBFuncReadCoils(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen );
+eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen );
 #endif
 
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
-eMBException eMBFuncWriteCoil(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWriteCoil(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException eMBFuncWriteMultipleCoils(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException eMBFuncReadDiscreteInputs(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
-eMBException eMBFuncReadWriteMultipleHoldingRegister(mb_reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncReadWriteMultipleHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #ifdef __cplusplus

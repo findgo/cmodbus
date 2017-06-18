@@ -36,9 +36,9 @@ static uint8_t __prvxMBBIN2CHAR(uint8_t ucByte);
 static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen);
 
 /* ----------------------- Start implementation -----------------------------*/
-eMBErrorCode eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBParity eParity)
+mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
     (void)dev;
     
     ENTER_CRITICAL_SECTION();
@@ -57,23 +57,25 @@ eMBErrorCode eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBPar
 void vMBASCIIStart(void *dev)
 {
     ENTER_CRITICAL_SECTION(  );
-    vMBPortSerialEnable(((mb_device_t *)dev)->port, true, false );
-    ((mb_device_t *)dev)->rcvState = STATE_RX_IDLE;
+    vMBPortSerialEnable(((mb_Device_t *)dev)->port, true, false );
+    ((mb_Device_t *)dev)->rcvState = STATE_RX_IDLE;
     EXIT_CRITICAL_SECTION(  );
 }
 
 void vMBASCIIStop(void *dev)
 {
     ENTER_CRITICAL_SECTION(  );
-    vMBPortSerialEnable(((mb_device_t *)dev)->port, false, false );
-    vMBPortTimersDisable(((mb_device_t *)dev)->port);
+    vMBPortSerialEnable(((mb_Device_t *)dev)->port, false, false );
+    vMBPortTimersDisable(((mb_Device_t *)dev)->port);
     EXIT_CRITICAL_SECTION(  );
 }
-
-eMBErrorCode eMBASCIIReceive(mb_device_t *pdev,uint8_t * pucRcvAddress, uint8_t **pPdu, uint16_t * pusLength)
+void vMBASCIIClose(void *dev)
 {
-    eMBErrorCode    eStatus = MB_ENOERR;
-    mb_device_t *dev = (mb_device_t *)pdev;
+}
+mb_ErrorCode_t eMBASCIIReceive(void *pdev,uint8_t * pucRcvAddress, uint8_t **pPdu, uint16_t * pusLength)
+{
+    mb_ErrorCode_t    eStatus = MB_ENOERR;
+    mb_Device_t *dev = (mb_Device_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
     assert( dev->rcvAduBufrPos < MB_ADU_SIZE_MAX );
@@ -102,12 +104,13 @@ eMBErrorCode eMBASCIIReceive(mb_device_t *pdev,uint8_t * pucRcvAddress, uint8_t 
     return eStatus;
 }
 
-eMBErrorCode eMBASCIISend(mb_device_t *pdev, uint8_t ucSlaveAddress, const uint8_t * pPdu, uint16_t usLength )
+mb_ErrorCode_t eMBASCIISend(void *pdev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength )
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
     uint8_t usLRC;
     uint8_t *pAdu;
-    mb_device_t *dev = (mb_device_t *)pdev;
+    uint8_t ucByte;
+    mb_Device_t *dev = (mb_Device_t *)pdev;
     
     ENTER_CRITICAL_SECTION(  );
     /* Check if the receiver is still in idle state. If not we where too
@@ -130,21 +133,29 @@ eMBErrorCode eMBASCIISend(mb_device_t *pdev, uint8_t ucSlaveAddress, const uint8
 
         /* Activate the transmitter. */
         dev->sndState = STATE_TX_START;
+
+        ucByte = ':';
+        /* start the first transmitter then into serial tc interrupt */
+        xMBPortSerialPutByte(dev->port,(char)ucByte);
+        dev->sndAduBufPos = 0;
+        dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
+        dev->sndState = STATE_TX_DATA;
+      
         vMBPortSerialEnable(dev->port, false, true );
     }
     else{
         eStatus = MB_EIO;
     }
-    EXIT_CRITICAL_SECTION(  );
+    EXIT_CRITICAL_SECTION();
     
     return eStatus;
 }
 
-bool xMBASCIIReceiveFSM(  mb_device_t *dev)
+bool xMBASCIIReceiveFSM(  mb_Device_t *dev)
 {
-    bool            xNeedPoll = false;
-    uint8_t           ucByte;
-    uint8_t           ucResult;
+    bool xNeedPoll = false;
+    uint8_t ucByte;
+    uint8_t ucResult;
 
     assert( dev->sndState == STATE_TX_IDLE );
 
@@ -236,7 +247,7 @@ bool xMBASCIIReceiveFSM(  mb_device_t *dev)
     return xNeedPoll;
 }
 
-bool xMBASCIITransmitFSM(  mb_device_t *dev)
+bool xMBASCIITransmitFSM(  mb_Device_t *dev)
 {
     bool xNeedPoll = false;
     uint8_t ucByte;
@@ -250,8 +261,9 @@ bool xMBASCIITransmitFSM(  mb_device_t *dev)
     case STATE_TX_START:
         ucByte = ':';
         xMBPortSerialPutByte(dev->port, (char)ucByte );
-        dev->sndState = STATE_TX_DATA;
+        dev->sndAduBufPos = 0;
         dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
+        dev->sndState = STATE_TX_DATA;
         break;
 
         /* Send the data block. Each data byte is encoded as a character hex
@@ -312,7 +324,7 @@ bool xMBASCIITransmitFSM(  mb_device_t *dev)
     return xNeedPoll;
 }
 
-bool xMBASCIITimerT1SExpired(  mb_device_t *dev)
+bool xMBASCIITimerT1SExpired(  mb_Device_t *dev)
 {
     switch (dev->rcvState ){
         /* If we have a timeout we go back to the idle state and wait for
@@ -370,7 +382,7 @@ static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
 
     while( usLen-- )
     {
-        ucLRC += *pPdu++;   /* Add buffer byte without carry */
+        ucLRC += *pucFrame++;   /* Add buffer byte without carry */
     }
 
     /* Return twos complement */

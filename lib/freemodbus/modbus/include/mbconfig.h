@@ -18,7 +18,7 @@ extern "C" {
  *  @{
  */
 /*! \brief If Modbus ASCII support is enabled. */
-#define MB_ASCII_ENABLED                        (  0 )
+#define MB_ASCII_ENABLED                        (  1 )
 
 /*! \brief If Modbus RTU support is enabled. */
 #define MB_RTU_ENABLED                          (  1 )
@@ -94,19 +94,20 @@ extern "C" {
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
-/*device channel must be unique (0 - 7) and cannot be changed by user */
-#define MB_DEV_CHANNEL_SIZE_MAX ( 7 )  
-
 /*! \ingroup modbus
  * \brief Use the default Modbus TCP port (502)
  */
 #define MB_TCP_PORT_USE_DEFAULT     (502)   
+
+/* dynamic memory allocation ENABLE*/
+#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (0)
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 3 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
 #define REG_DISCRETE_SIZE     (8 * 1)
+
 
 /*! @} */
 #ifdef __cplusplus

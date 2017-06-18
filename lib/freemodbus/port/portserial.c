@@ -2,11 +2,13 @@
 #include "port.h"
 #include "modbus.h"
 #include "mbrtu.h"
+#include "mbascii.h"
+
 //STM32操作相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern mb_device_t device1;
+extern mb_Device_t device1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -51,7 +53,7 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable )
   *         eParity     校验位 
   * @retval None
   */
-bool xMBPortSerialInit( uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, eMBParity eParity )
+bool xMBPortSerialInit( uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity )
 {
   GPIO_InitTypeDef GPIO_InitStructure;
   USART_InitTypeDef USART_InitStructure;
@@ -161,8 +163,8 @@ void USART1_IRQHandler(void)
         //mb.c eMBInit函数中
         //pxMBFrameCBByteReceived = xMBRTUReceiveFSM
         //接收状态机
-        xMBRTUReceiveFSM(&device1);
-    
+        //xMBRTUReceiveFSM(&device1);
+        xMBASCIIReceiveFSM(&device1);
         //清除中断标志位    
         USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
     }
@@ -172,8 +174,8 @@ void USART1_IRQHandler(void)
         //mb.c eMBInit函数中
 
         //发送状态机
-        xMBRTUTransmitFSM(&device1);
-        
+        //xMBRTUTransmitFSM(&device1);
+        xMBASCIITransmitFSM(&device1);
         //清除中断标志
         USART_ClearITPendingBit(USART1, USART_IT_TC);
     }

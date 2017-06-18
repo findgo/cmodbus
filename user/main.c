@@ -6,19 +6,19 @@
 static void prvClockInit(void);
 static void prvnvicInit(void);
 
-mb_device_t device1;
+mb_Device_t device1;
 static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa};
-mb_device_t device2;
+mb_Device_t device2;
 int main(void)
 {	
-    eMBErrorCode status;
+    mb_ErrorCode_t status;
 
 	prvClockInit();
 	prvnvicInit();
 	//Systick_Configuration();
-     
-    status = eMBOpen(&device1,0,MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
+#if 0     
+    status = eMBOpen(&device1,MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
     if(status == MB_ENOERR){
        status = eMBRegCreate(&device1,
                         dev1regbuf,
@@ -33,21 +33,24 @@ int main(void)
        if(status == MB_ENOERR)
             (void)eMBStart(&device1);
     }
-//    status = eMBOpen(&device2,1,MB_RTU, 0x02, 0, 9600, MB_PAR_NONE);
-//    if(status == MB_ENOERR){
-//       status = eMBRegCreate(&device2,
-//                        dev1regbuf,
-//                        0,
-//                        REG_HOLDING_NREGS ,
-//                        0,
-//                        REG_INPUT_NREGS,
-//                        0,
-//                        REG_COILS_SIZE,
-//                        0,
-//                        REG_DISCRETE_SIZE);
-//       if(status == MB_ENOERR)
-//            (void)eMBStart(&device2);
-//    }
+#else
+    status = eMBOpen(&device1,MB_ASCII, 0x01, 0, 9600, MB_PAR_NONE);
+    if(status == MB_ENOERR){
+       status = eMBRegCreate(&device1,
+                        dev1regbuf,
+                        0,
+                        REG_HOLDING_NREGS ,
+                        0,
+                        REG_INPUT_NREGS,
+                        0,
+                        REG_COILS_SIZE,
+                        0,
+                        REG_DISCRETE_SIZE);
+       if(status == MB_ENOERR)
+            (void)eMBStart(&device1);
+    }
+
+#endif
 	while(1)
 	{
         vMBPoll();

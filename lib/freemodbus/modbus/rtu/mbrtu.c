@@ -21,9 +21,9 @@ typedef enum
 static uint16_t __prvxMBCRC16(uint8_t * pucFrame, uint16_t usLen);
 
 /* ----------------------- Start implementation -----------------------------*/
-eMBErrorCode eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, eMBParity eParity )
+mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
     uint32_t usTimerT35_50us;
     (void)dev;
     
@@ -67,9 +67,9 @@ void vMBRTUStart(void *dev)
      * to STATE_RX_IDLE. This makes sure that we delay startup of the
      * modbus protocol stack until the bus is free.
      */
-    ((mb_device_t *)dev)->rcvState = STATE_RX_INIT;
-    vMBPortSerialEnable(((mb_device_t *)dev)->port, true, false );
-    vMBPortTimersEnable(((mb_device_t *)dev)->port);
+    ((mb_Device_t *)dev)->rcvState = STATE_RX_INIT;
+    vMBPortSerialEnable(((mb_Device_t *)dev)->port, true, false );
+    vMBPortTimersEnable(((mb_Device_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -77,8 +77,8 @@ void vMBRTUStart(void *dev)
 void vMBRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    vMBPortSerialEnable(((mb_device_t *)dev)->port, false, false );
-    vMBPortTimersDisable(((mb_device_t *)dev)->port);
+    vMBPortSerialEnable(((mb_Device_t *)dev)->port, false, false );
+    vMBPortTimersDisable(((mb_Device_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
 void vMBRTUClose(void *dev)
@@ -87,10 +87,10 @@ void vMBRTUClose(void *dev)
 
 
 }
-eMBErrorCode eMBRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
+mb_ErrorCode_t eMBRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
 {
-    eMBErrorCode    eStatus = MB_ENOERR;
-    mb_device_t *dev = (mb_device_t *)pdev;
+    mb_ErrorCode_t    eStatus = MB_ENOERR;
+    mb_Device_t *dev = (mb_Device_t *)pdev;
 
     assert( dev->rcvAduBufrPos < MB_ADU_SIZE_MAX );
 
@@ -121,12 +121,12 @@ eMBErrorCode eMBRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, ui
     return eStatus;
 }
 
-eMBErrorCode eMBRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength )
+mb_ErrorCode_t eMBRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength )
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
     uint16_t usCRC16;
     uint8_t *pAdu;
-    mb_device_t *dev = (mb_device_t *)pdev;
+    mb_Device_t *dev = (mb_Device_t *)pdev;
     
     ENTER_CRITICAL_SECTION(  );
     /* Check if the receiver is still in idle state. If not we where to
@@ -165,7 +165,7 @@ eMBErrorCode eMBRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu, 
     return eStatus;
 }
 
-bool xMBRTUReceiveFSM(  mb_device_t *dev)
+bool xMBRTUReceiveFSM(  mb_Device_t *dev)
 {
     bool            xTaskNeedSwitch = false;
     uint8_t           ucByte;
@@ -222,7 +222,7 @@ bool xMBRTUReceiveFSM(  mb_device_t *dev)
     return xTaskNeedSwitch;
 }
 
-bool xMBRTUTransmitFSM(  mb_device_t *dev)
+bool xMBRTUTransmitFSM(  mb_Device_t *dev)
 {
     assert( dev->rcvState == STATE_RX_IDLE );
 
@@ -253,7 +253,7 @@ bool xMBRTUTransmitFSM(  mb_device_t *dev)
     return true;
 }
 
-bool xMBRTUTimerT35Expired(  mb_device_t *dev)
+bool xMBRTUTimerT35Expired(  mb_Device_t *dev)
 {
     bool xNeedPoll = false;
 

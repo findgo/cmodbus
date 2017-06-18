@@ -14,7 +14,8 @@ extern "C" {
 
 #include "modbus.h"
 
-eMBException prveMBError2Exception( eMBErrorCode eErrorCode );
+eMBException_t prveMBError2Exception( mb_ErrorCode_t eErrorCode );
+const char *xMBstr2Error(eMBException_t excode);
 
 #ifdef __cplusplus
 }

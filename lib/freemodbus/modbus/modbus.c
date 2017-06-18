@@ -18,12 +18,11 @@ typedef struct
     uint8_t ucFunctionCode;
     pxMBFunctionHandler pxHandler;
 } xMBFunctionHandler;
+static mb_Device_t *__dev_search(uint8_t port);
+static mb_ErrorCode_t __dev_add(mb_Device_t *dev);
+static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev);
 
-static eMBErrorCode __dev_add(uint8_t channel, mb_device_t *dev);
-static eMBErrorCode eMBADUFramehandle(mb_device_t *dev);
-
-static mb_device_t *mb_dev_head = NULL;
-static uint8_t mb_dev_mask = 0;
+static mb_Device_t *mb_dev_head = NULL;
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
@@ -61,11 +60,50 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
 #endif
 };
 
-#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED
-eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t ucSlaveAddress, 
-                        uint8_t ucPort, uint32_t ulBaudRate, eMBParity eParity )
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0
+
+uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
+                            uint16_t reg_input_num,
+                            uint16_t reg_coils_num,
+                            uint16_t reg_discrete_num)
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    uint32_t size;
+
+    size = reg_holding_num * sizeof(uint16_t);    
+    size +=  reg_input_num * sizeof(uint16_t);
+    size += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+    size += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+
+    return size;
+}
+
+mb_Device_t *xMBBaseDeviceNew(void)
+{
+    mb_Device_t *dev;
+    
+    dev = mb_malloc(sizeof(mb_Device_t));
+    if(dev == NULL)
+        return NULL;
+
+    return dev;
+}
+uint8_t *xMBRegBufNew(uint32_t size)
+{
+    uint8_t *pregbuf;
+    
+    pregbuf = mb_malloc(size);
+    if(pregbuf == NULL)
+        return NULL;
+
+    return pregbuf;    
+}
+#endif
+
+#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED
+mb_ErrorCode_t eMBOpen(mb_Device_t *dev, mb_Mode_t eMode, uint8_t ucSlaveAddress, 
+                        uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
+{
+    mb_ErrorCode_t eStatus = MB_ENOERR;
 
     /* check preconditions */
     if((ucSlaveAddress == MB_ADDRESS_BROADCAST) \
@@ -117,7 +155,7 @@ eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t u
         dev->currentMode = eMode;
         dev->devstate = DEV_STATE_DISABLED;
 
-        eStatus = __dev_add(channel,dev);
+        eStatus = __dev_add(dev);
     }
     
     return eStatus;
@@ -125,9 +163,9 @@ eMBErrorCode eMBOpen(mb_device_t *dev, uint8_t channel, eMBMode eMode, uint8_t u
 #endif
 
 #if MB_TCP_ENABLED > 0
-eMBErrorCode eMBTCPOpen(mb_device_t *dev,uint8_t channel, uint16_t ucTCPPort)
+mb_ErrorCode_t eMBTCPOpen(mb_Device_t *dev, uint16_t ucTCPPort)
 {
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
 
     if(( eStatus = eMBTCPInit( ucTCPPort ) ) != MB_ENOERR){
          dev->devstate = DEV_STATE_DISABLED;
@@ -148,14 +186,62 @@ eMBErrorCode eMBTCPOpen(mb_device_t *dev,uint8_t channel, uint16_t ucTCPPort)
         dev->currentMode = MB_TCP;
         dev->devstate = DEV_STATE_DISABLED;
 
-        eStatus = __dev_add(channel,dev);
+        eStatus = __dev_add(dev);
     }
     
     return eStatus;
 }
 #endif
 
-eMBErrorCode eMBStart(mb_device_t *dev)
+//__align(2)  
+//static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
+
+mb_ErrorCode_t eMBRegCreate(mb_Device_t *dev,
+                                uint8_t *regbuf,
+                                uint16_t reg_holding_addr_start,
+                                uint16_t reg_holding_num,
+                                uint16_t reg_input_addr_start,
+                                uint16_t reg_input_num,
+                                uint16_t reg_coils_addr_start,
+                                uint16_t reg_coils_num,
+                                uint16_t reg_discrete_addr_start,
+                                uint16_t reg_discrete_num)
+{
+    uint32_t lens;
+    mb_Reg_t *regs;
+
+    if(dev == NULL || regbuf == NULL)
+        return MB_EINVAL;
+
+    regs = (mb_Reg_t *)&dev->regs;
+
+    regs->reg_holding_addr_start = reg_holding_addr_start;
+    regs->reg_holding_num = reg_holding_num;
+    regs->reg_input_addr_start = reg_input_addr_start;    
+    regs->reg_input_num = reg_input_num;
+        
+    regs->reg_coils_addr_start = reg_coils_addr_start;
+    regs->reg_coils_num = reg_coils_num;
+    regs->reg_discrete_addr_start = reg_discrete_addr_start;
+    regs->reg_discrete_num = reg_discrete_num;
+
+    regs->pReghold = (uint16_t *)&regbuf[0];
+    
+    lens = reg_holding_num * sizeof(uint16_t);
+    regs->pReginput = (uint16_t *)&regbuf[lens];
+    
+    lens +=  reg_input_num * sizeof(uint16_t);
+    regs->pRegCoil = &regbuf[lens];
+    
+    lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+    regs->pRegDisc = &regbuf[lens];
+    
+    lens += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+    
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBStart(mb_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -169,7 +255,7 @@ eMBErrorCode eMBStart(mb_device_t *dev)
     return MB_ENOERR;
 }
 
-eMBErrorCode eMBStop(mb_device_t *dev)
+mb_ErrorCode_t eMBStop(mb_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -182,7 +268,7 @@ eMBErrorCode eMBStop(mb_device_t *dev)
     return MB_ENOERR;
 }
 
-eMBErrorCode eMBClose(mb_device_t *dev)
+mb_ErrorCode_t eMBClose(mb_Device_t *dev)
 {
     // must be stop first then it can close
     if( dev->devstate == DEV_STATE_DISABLED ){
@@ -198,17 +284,17 @@ eMBErrorCode eMBClose(mb_device_t *dev)
 
 void vMBPoll(void)
 {
-    mb_device_t *curdev = mb_dev_head;    
+    mb_Device_t *curdev = mb_dev_head;    
 
      while(curdev){
         eMBADUFramehandle(curdev);
         curdev = curdev->next;
     }
 }
-eMBErrorCode eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandler )
+mb_ErrorCode_t eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandler )
 {
     int i;
-    eMBErrorCode eStatus;
+    mb_ErrorCode_t eStatus;
 
     if((ucFunctionCode >= MB_FUNC_MIN) && (ucFunctionCode <= MB_FUNC_MAX)){
         ENTER_CRITICAL_SECTION(  );
@@ -245,64 +331,16 @@ eMBErrorCode eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandle
     return eStatus;
 }
 
-//__align(2)  
-//static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-
-eMBErrorCode eMBRegCreate(mb_device_t *dev,
-                                uint8_t *regbuf,
-                                uint16_t reg_holding_addr_start,
-                                uint16_t reg_holding_num,
-                                uint16_t reg_input_addr_start,
-                                uint16_t reg_input_num,
-                                uint16_t reg_coils_addr_start,
-                                uint16_t reg_coils_num,
-                                uint16_t reg_discrete_addr_start,
-                                uint16_t reg_discrete_num)
-{
-    uint32_t lens;
-    mb_reg_t *regs;
-
-    if(dev == NULL || regbuf == NULL)
-        return MB_EINVAL;
-
-    regs = (mb_reg_t *)&dev->regs;
-
-    regs->reg_holding_addr_start = reg_holding_addr_start;
-    regs->reg_holding_num = reg_holding_num;
-    regs->reg_input_addr_start = reg_input_addr_start;    
-    regs->reg_input_num = reg_input_num;
-        
-    regs->reg_coils_addr_start = reg_coils_addr_start;
-    regs->reg_coils_num = reg_coils_num;
-    regs->reg_discrete_addr_start = reg_discrete_addr_start;
-    regs->reg_discrete_num = reg_discrete_num;
-
-    regs->pReghold = (uint16_t *)&regbuf[0];
-    
-    lens = reg_holding_num * sizeof(uint16_t);
-    regs->pReginput = (uint16_t *)&regbuf[lens];
-    
-    lens +=  reg_input_num * sizeof(uint16_t);
-    regs->pRegCoil = &regbuf[lens];
-    
-    lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
-    regs->pRegDisc = &regbuf[lens];
-    
-    lens += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
-    
-    return MB_ENOERR;
-}
-
-static eMBErrorCode eMBADUFramehandle(mb_device_t *dev)
+static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev)
 {
     uint8_t *pPduFrame; // pdu fram
     uint8_t ucRcvAddress;
     uint8_t ucFunctionCode;
     uint16_t usLength;
-    eMBException eException;
+    eMBException_t eException;
 
     int i;
-    eMBErrorCode eStatus = MB_ENOERR;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
     if( dev->devstate != DEV_STATE_ENABLED ){
@@ -356,19 +394,12 @@ static eMBErrorCode eMBADUFramehandle(mb_device_t *dev)
     return MB_ENOERR;
 }
 
-static eMBErrorCode __dev_add(uint8_t channel, mb_device_t *dev)
+static mb_ErrorCode_t __dev_add(mb_Device_t *dev)
 {
-    uint8_t mask;
-
-    if(channel > MB_DEV_CHANNEL_SIZE_MAX)
-        return MB_EINCHANNEL;
-
-    mask = (uint8_t)1 << channel;
     
-    if(mb_dev_mask & mask)
-        return MB_ECHANNELEXIST;
-    
-    mb_dev_mask |= mask;
+    if(__dev_search(dev->port))
+        return MB_EDEVEXIST;
+
     if(mb_dev_head == NULL){
         dev->next = NULL;
         mb_dev_head = dev;
@@ -380,3 +411,27 @@ static eMBErrorCode __dev_add(uint8_t channel, mb_device_t *dev)
     
     return MB_ENOERR;
 }
+
+/* RTU 和 ASCII 的硬件口是唯一的，不可重复
+ * TCP service 端口也是唯一的
+ */
+static mb_Device_t *__dev_search(uint8_t port)
+{
+    mb_Device_t *srh = NULL;
+    
+    if(mb_dev_head == NULL)
+        return NULL;
+
+    srh = mb_dev_head;
+
+    while(srh)
+    {
+        if(srh->port == port)
+            return srh;
+
+        srh = srh->next;
+    }
+
+    return NULL;
+}
+

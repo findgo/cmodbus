@@ -41,10 +41,10 @@ static uint16_t   usMBSlaveIDLen;
 
 /* ----------------------- Start implementation -----------------------------*/
 
-eMBErrorCode eMBSetSlaveID(mb_reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
+mb_ErrorCode_t eMBSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
                 uint8_t const *pucAdditional, uint16_t usAdditionalLen )
 {
-    eMBErrorCode    eStatus = MB_ENOERR;
+    mb_ErrorCode_t    eStatus = MB_ENOERR;
 
     /* the first byte and second byte in the buffer is reserved for
      * the parameter ucSlaveID and the running flag. The rest of
@@ -67,7 +67,7 @@ eMBErrorCode eMBSetSlaveID(mb_reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
     return eStatus;
 }
 
-eMBException eMBFuncReportSlaveID(mb_reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+eMBException_t eMBFuncReportSlaveID(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     memcpy( &pPdu[MB_PDU_DATA_OFF], &ucMBSlaveID[0], ( size_t )usMBSlaveIDLen );
     *usLen = ( uint16_t )( MB_PDU_DATA_OFF + usMBSlaveIDLen );

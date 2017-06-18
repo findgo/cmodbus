@@ -20,10 +20,10 @@ typedef enum
     MB_PAR_NONE,                /*!< No parity. */
     MB_PAR_ODD,                 /*!< Odd parity. */
     MB_PAR_EVEN                 /*!< Even parity. */
-} eMBParity;
+} mb_Parity_t;
 
 /* ------------ Serial port functions ----------------------------*/
-bool xMBPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, eMBParity eParity);
+bool xMBPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity);
 
 void vMBPortClose(uint8_t port);
 

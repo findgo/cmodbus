@@ -1,13 +1,14 @@
 #include "port.h"
 #include "modbus.h"
 #include "mbrtu.h"
+#include "mbascii.h"
 
 //STM32相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
 
-extern mb_device_t device1;
+extern mb_Device_t device1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -93,6 +94,9 @@ void TIM4_IRQHandler(void)
         //清除定时器T4溢出中断标志位
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 
-        xMBRTUTimerT35Expired(&device1);
+        //xMBRTUTimerT35Expired(&device1);
+    
+        xMBASCIITimerT1SExpired(&device1);
+        
     }
 }

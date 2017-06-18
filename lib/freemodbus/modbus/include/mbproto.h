@@ -63,7 +63,7 @@ typedef enum
     MB_EX_MEMORY_PARITY_ERROR = 0x08,
     MB_EX_GATEWAY_PATH_FAILED = 0x0A,
     MB_EX_GATEWAY_TGT_FAILED = 0x0B
-} eMBException;
+} eMBException_t;
 
 #ifdef __cplusplus
 }

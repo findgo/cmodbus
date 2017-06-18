@@ -7,7 +7,7 @@
 #define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
 
 /* ----------------------- Start implementation -----------------------------*/
-eMBErrorCode eMBTCPInit(uint16_t ucTCPPort)
+mb_ErrorCode_t eMBTCPInit(uint16_t ucTCPPort)
 {
     if( xMBTCPPortInit( ucTCPPort ) == false )
         return MB_EPORTERR;
@@ -26,9 +26,9 @@ void vMBTCPStop(  void *dev)
     vMBTCPPortDisable( );
 }
 
-eMBErrorCode eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
+mb_ErrorCode_t eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
 {
-    eMBErrorCode    eStatus = MB_EIO;
+    mb_ErrorCode_t    eStatus = MB_EIO;
     uint8_t          *pucMBTCPFrame;
     uint16_t          usLength;
     uint16_t          usPID;
@@ -57,7 +57,7 @@ eMBErrorCode eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, ui
     return eStatus;
 }
 
-eMBErrorCode eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
+mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
 {
     uint8_t *pAdu = ( uint8_t * ) pPdu - MB_TCP_ADU_PDU_OFFSET;
     uint16_t usTCPAduLength = usLength + MB_TCP_ADU_PDU_OFFSET;

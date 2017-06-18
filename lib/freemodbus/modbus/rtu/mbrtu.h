@@ -17,17 +17,17 @@ extern "C" {
 
 #include "port.h"
 
-eMBErrorCode eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,eMBParity eParity);
+mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,mb_Parity_t eParity);
 void vMBRTUStart(void *dev);
 void vMBRTUStop(void *dev);
 void vMBRTUClose(void *dev);
-eMBErrorCode eMBRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
-eMBErrorCode eMBRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+mb_ErrorCode_t eMBRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+mb_ErrorCode_t eMBRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-bool xMBRTUReceiveFSM(  mb_device_t *dev);
-bool xMBRTUTransmitFSM(  mb_device_t *dev);
-bool xMBRTUTimerT15Expired(  mb_device_t *dev);
-bool xMBRTUTimerT35Expired(  mb_device_t *dev);
+bool xMBRTUReceiveFSM(  mb_Device_t *dev);
+bool xMBRTUTransmitFSM(  mb_Device_t *dev);
+bool xMBRTUTimerT15Expired(  mb_Device_t *dev);
+bool xMBRTUTimerT35Expired(  mb_Device_t *dev);
 
 #ifdef __cplusplus
 }
