@@ -2,6 +2,8 @@
 
 #include "mbrtu.h"
 
+#if MB_RTU_ENABLED > 0
+
 /* ----------------------- Type definitions ---------------------------------*/
 typedef enum
 {
@@ -350,4 +352,5 @@ static uint16_t __prvxMBCRC16(uint8_t *pucFrame, uint16_t usLen)
     
     return ( uint16_t )(ucCRCHi << 8 | ucCRCLo);
 }
+#endif
 

@@ -7,20 +7,7 @@ extern "C" {
 #endif
 
 #include "mbcpu.h"
-
-/*! \ingroup modbus
- * \brief Parity used for characters in serial mode.
- *
- * The parity which should be applied to the characters sent over the serial
- * link. Please note that this values are actually passed to the porting
- * layer and therefore not all parity modes might be available.
- */
-typedef enum
-{
-    MB_PAR_NONE,                /*!< No parity. */
-    MB_PAR_ODD,                 /*!< Odd parity. */
-    MB_PAR_EVEN                 /*!< Even parity. */
-} mb_Parity_t;
+#include "modbus.h"
 
 /* ------------ Serial port functions ----------------------------*/
 bool xMBPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity);

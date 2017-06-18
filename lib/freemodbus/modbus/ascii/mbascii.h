@@ -17,7 +17,6 @@ extern "C" {
 
 #include "port.h"
 
-#if MB_ASCII_ENABLED > 0
 mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity );
 void vMBASCIIStart(void *dev);
 void vMBASCIIStop(void *dev);
@@ -28,7 +27,6 @@ mb_ErrorCode_t eMBASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pP
 bool xMBASCIIReceiveFSM(mb_Device_t *dev);
 bool xMBASCIITransmitFSM(mb_Device_t *dev);
 bool xMBASCIITimerT1SExpired(mb_Device_t *dev);
-#endif
 
 #ifdef __cplusplus
 }

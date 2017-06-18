@@ -1,6 +1,6 @@
 
-#ifndef _MB_TCP_H
-#define _MB_TCP_H
+#ifndef __MB_TCP_H
+#define __MB_TCP_H
 
 #ifdef __cplusplus
 extern "C" {

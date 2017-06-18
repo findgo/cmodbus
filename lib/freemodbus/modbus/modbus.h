@@ -7,8 +7,6 @@
 #include "mbproto.h"
 #include "mbcpu.h"
 
-#include "port.h"
-
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0
 #define mb_malloc malloc
@@ -28,6 +26,19 @@ typedef enum
     MB_ASCII,   /*!< ASCII transmission mode. */
     MB_TCP      /*!< TCP mode. */
 } mb_Mode_t;
+/*! \ingroup modbus
+ * \brief Parity used for characters in serial mode.
+ *
+ * The parity which should be applied to the characters sent over the serial
+ * link. Please note that this values are actually passed to the porting
+ * layer and therefore not all parity modes might be available.
+ */
+typedef enum
+{
+    MB_PAR_NONE,                /*!< No parity. */
+    MB_PAR_ODD,                 /*!< Odd parity. */
+    MB_PAR_EVEN                 /*!< Even parity. */
+}mb_Parity_t;
     
 typedef enum
 {
@@ -54,18 +65,18 @@ typedef enum
 
 typedef struct
 {
-    uint16_t reg_coils_addr_start;
-    uint16_t reg_discrete_addr_start;
     uint16_t reg_holding_addr_start;
     uint16_t reg_input_addr_start;
-    uint16_t reg_coils_num;
-    uint16_t reg_discrete_num;
+    uint16_t reg_coils_addr_start;
+    uint16_t reg_discrete_addr_start;
     uint16_t reg_holding_num;
     uint16_t reg_input_num;
-    uint8_t *pRegCoil;
-    uint8_t *pRegDisc;
+    uint16_t reg_coils_num;
+    uint16_t reg_discrete_num;
     uint16_t *pReghold;
     uint16_t *pReginput;
+    uint8_t *pRegCoil;
+    uint8_t *pRegDisc;
 }mb_Reg_t;
 
 typedef eMBException_t (*pxMBFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);

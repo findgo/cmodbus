@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 /* ----------------------- Defines ------------------------------------------*/
+
 /*! \defgroup modbus_cfg Modbus Configuration
  *
  * Most modules in the protocol stack are completly optional and can be
@@ -21,7 +22,7 @@ extern "C" {
 #define MB_ASCII_ENABLED                        (  1 )
 
 /*! \brief If Modbus RTU support is enabled. */
-#define MB_RTU_ENABLED                          (  1 )
+#define MB_RTU_ENABLED                          (  0 )
 
 /*! \brief If Modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )

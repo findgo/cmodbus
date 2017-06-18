@@ -18,6 +18,7 @@ typedef struct
     uint8_t ucFunctionCode;
     pxMBFunctionHandler pxHandler;
 } xMBFunctionHandler;
+
 static mb_Device_t *__dev_search(uint8_t port);
 static mb_ErrorCode_t __dev_add(mb_Device_t *dev);
 static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev);
