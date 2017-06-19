@@ -87,7 +87,7 @@ typedef mb_ErrorCode_t (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const u
 typedef struct
 {
     uint16_t port; // ¶Ë¿ÚºÅ
-    uint8_t slaveid;
+    uint8_t slaveaddr;
     mb_Mode_t currentMode;
     
     mb_DevState_t devstate;
@@ -114,6 +114,41 @@ typedef struct
     volatile uint16_t rcvAduBufrPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }mb_Device_t;
+
+
+
+typedef struct
+{
+    uint16_t port; // ¶Ë¿ÚºÅ
+    uint8_t slaveaddr;
+    mb_Mode_t currentMode;
+    
+    mb_DevState_t devstate;
+    
+    bool xEventInFlag; // for event?
+    uint8_t reserved0;
+    
+    volatile uint8_t AsciiBytePos; // only for ascii
+    
+    mb_Reg_t regs;
+    
+    pActionHandle pvMBStartCur;
+    pActionHandle pvMBStopCur;
+    pActionHandle pvMBCloseCur;
+    pActionReceive peMBReceivedCur;
+    pActionSend peMBSendCur;
+    
+    void *next;
+    
+    volatile uint8_t sndState;
+    volatile uint8_t rcvState;
+    volatile uint16_t sndAduBufCount;
+    volatile uint16_t sndAduBufPos;
+    volatile uint16_t rcvAduBufrPos;
+    volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
+}mb_MasterDevice_t;
+
+
 
 /*! \ingroup modbus
  * \brief Configure the slave id of the device.

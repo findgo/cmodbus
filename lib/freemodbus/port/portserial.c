@@ -17,7 +17,7 @@ extern mb_Device_t device1;
   *         xTxEnable 发送使能
   * @retval None
   */
-void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable )
+void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
 {
 
     (void)port;
@@ -53,7 +53,7 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable )
   *         eParity     校验位 
   * @retval None
   */
-bool xMBPortSerialInit( uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity )
+bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
   USART_InitTypeDef USART_InitStructure;

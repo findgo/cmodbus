@@ -14,18 +14,18 @@ extern "C" {
 #include "modbus.h"
 #include "mbutils.h"
 
-// read holding input coil disc 
-#define MB_PDU_FUNC_READ_SIZE               ( 4 )
+// read holding input coil disc offset in pdu
 #define MB_PDU_FUNC_READ_ADDR_OFF           ( MB_PDU_DATA_OFF)
 #define MB_PDU_FUNC_READ_REGCNT_OFF         ( MB_PDU_DATA_OFF + 2 ) // only for holding reg
 #define MB_PDU_FUNC_READ_BITSCNT_OFF        ( MB_PDU_DATA_OFF + 2 ) // only for coils
+#define MB_PDU_FUNC_READ_SIZE               ( 4 )
 
-// write single holding coil 
+// write single holding coil offset in pdu
 #define MB_PDU_FUNC_WRITE_ADDR_OFF          ( MB_PDU_DATA_OFF )
 #define MB_PDU_FUNC_WRITE_VALUE_OFF         ( MB_PDU_DATA_OFF + 2 )
 #define MB_PDU_FUNC_WRITE_SIZE              ( 4 )
 
-// write multiple holding coils
+// write multiple holding coils offset in pdu
 #define MB_PDU_FUNC_WRITE_MUL_ADDR_OFF      ( MB_PDU_DATA_OFF )
 #define MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF    ( MB_PDU_DATA_OFF + 2 ) // for holding reg
 #define MB_PDU_FUNC_WRITE_MUL_COILCNT_OFF   ( MB_PDU_DATA_OFF + 2 ) // for coils
@@ -33,7 +33,7 @@ extern "C" {
 #define MB_PDU_FUNC_WRITE_MUL_VALUES_OFF    ( MB_PDU_DATA_OFF + 5 )
 #define MB_PDU_FUNC_WRITE_MUL_SIZE_MIN      ( 5 )
 
-// readwrite multiple holding
+// readwrite multiple holding offset in pdu
 #define MB_PDU_FUNC_READWRITE_READ_ADDR_OFF     ( MB_PDU_DATA_OFF + 0 )
 #define MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF   ( MB_PDU_DATA_OFF + 2 )
 #define MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF    ( MB_PDU_DATA_OFF + 4 )
@@ -64,40 +64,43 @@ eMBException_t eMBFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * us
 #endif
 
 #if MB_FUNC_READ_INPUT_ENABLED > 0
-eMBException_t eMBFuncReadInputRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncRdInputRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
-eMBException_t eMBFuncReadHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncRdHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncWriteHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+eMBException_t eMBFuncWrHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncWriteMultipleHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
-eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen );
+eMBException_t eMBFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen );
 #endif
 
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
-eMBException_t eMBFuncWriteCoil(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWrCoil(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncWrMulCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
 #if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncReadWriteMultipleHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+eMBException_t eMBFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
+
+
+
 
 #ifdef __cplusplus
 }

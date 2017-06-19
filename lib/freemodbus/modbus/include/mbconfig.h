@@ -6,6 +6,8 @@
 extern "C" {
 #endif
 /* ----------------------- Defines ------------------------------------------*/
+#define MB_MASTER_ENABLE        (0)
+#define MB_SLAVE_ENABLE         (1)
 
 /*! \defgroup modbus_cfg Modbus Configuration
  *

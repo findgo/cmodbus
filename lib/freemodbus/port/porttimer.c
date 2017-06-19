@@ -16,12 +16,13 @@ extern mb_Device_t device1;
   * @param  None
   * @retval None
   */
-bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us )
+bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
-    //
     uint16_t PrescalerValue = 0;
+
+    (void)port;    
 
     //使能定时器4时钟
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
@@ -61,10 +62,11 @@ bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us )
 }
 
 
-void vMBPortTimersEnable(uint8_t port  )
+void vMBPortTimersEnable(uint8_t port)
 {
+    (void)port;
+    
     /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
-
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
     TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
     //设定定时器4的初始值
@@ -73,8 +75,10 @@ void vMBPortTimersEnable(uint8_t port  )
     TIM_Cmd(TIM4, ENABLE);
 }
 
-void vMBPortTimersDisable(uint8_t port  )
+void vMBPortTimersDisable(uint8_t port)
 {
+    (void)port;
+    
     /* Disable any pending timers. */
     TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
     TIM_ITConfig(TIM4, TIM_IT_Update, DISABLE);

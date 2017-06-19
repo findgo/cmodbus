@@ -142,13 +142,13 @@ uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
   * @retval eStatus       寄存器状态
   */
   /* 根据定义，这里只处理线圈状态数据*/
-static mb_ErrorCode_t __eMBRegCoilsCB(mb_Reg_t *regs,uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
+static mb_ErrorCode_t __eMBRegCoilsCB(mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
     uint16_t usBitOffset;
 
     if( ((int16_t)usAddress >= regs->reg_coils_addr_start) && \
-        ( usAddress + usNCoils <= regs->reg_coils_addr_start + regs->reg_coils_num ) ){
+        ((usAddress + usNCoils) <= (regs->reg_coils_addr_start + regs->reg_coils_num))){
 
         usBitOffset = ( uint16_t )( usAddress - regs->reg_coils_addr_start );
         switch ( eMode ){
@@ -200,7 +200,7 @@ static mb_ErrorCode_t __eMBRegDiscreteCB(mb_Reg_t *regs, uint8_t * pucRegBuffer,
 }
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
-eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+eMBException_t eMBFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCount;
@@ -223,8 +223,8 @@ eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
         if( (usCoilCount >= MB_READBITS_CNT_MIN) && (usCoilCount < MB_READBITS_CNT_MAX)){
             
             /* Set the current PDU data pointer to the beginning. */
-            pucFrameCur = &pPdu[MB_PDU_FUNC_OFF];
-            *usLen = MB_PDU_FUNC_OFF;
+            pucFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
+            *usLen = MB_PDU_FUNCODE_OFF;
 
             /* First byte contains the function code. */
             *pucFrameCur++ = MB_FUNC_READ_COILS;
@@ -232,12 +232,8 @@ eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 
             /* Test if the quantity of coils is a multiple of 8. If not last
              * byte is only partially field with unused coils set to zero. */
-            if( ( usCoilCount & 0x0007 ) != 0 ){
-                ucNBytes = (uint8_t)( usCoilCount / 8 + 1 );
-            }
-            else{
-                ucNBytes = (uint8_t)( usCoilCount / 8 );
-            }
+            ucNBytes = (usCoilCount / 8) + (usCoilCount & 0x0007) > 0 ? 1 : 0;
+
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
 
@@ -270,7 +266,7 @@ eMBException_t eMBFuncReadCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 #endif
 
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
-eMBException_t eMBFuncWriteCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
+eMBException_t eMBFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
     uint8_t  ucBuf[2];
@@ -317,7 +313,7 @@ eMBException_t eMBFuncWriteCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 #endif
 
 #if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
+eMBException_t eMBFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCnt;
@@ -338,12 +334,7 @@ eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t
         ucByteCount = pPdu[MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF];
 
         /* Compute the number of expected bytes in the request. */
-        if( ( usCoilCnt & 0x0007 ) != 0 ){
-            ucByteCountVerify = (uint8_t)( usCoilCnt / 8 + 1 );
-        }
-        else{
-            ucByteCountVerify = (uint8_t)( usCoilCnt / 8 );
-        }
+        ucByteCountVerify = (usCoilCnt / 8) + (usCoilCnt & 0x0007) > 0 ? 1 : 0;
 
         if( (usCoilCnt >= MB_WRITEBITS_CNT_MIN ) \
             && (usCoilCnt <= MB_WRITEBITS_CNT_MAX ) \
@@ -378,7 +369,7 @@ eMBException_t eMBFuncWriteMultipleCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t
 #endif
 
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
+eMBException_t eMBFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usDiscreteCnt;
@@ -402,8 +393,8 @@ eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_
         if( (usDiscreteCnt >= MB_READBITS_CNT_MIN) && (usDiscreteCnt < MB_READBITS_CNT_MAX ) ){
             
             /* Set the current PDU data pointer to the beginning. */
-            pucFrameCur = &pPdu[MB_PDU_FUNC_OFF];
-            *usLen = MB_PDU_FUNC_OFF;
+            pucFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
+            *usLen = MB_PDU_FUNCODE_OFF;
 
             /* First byte contains the function code. */
             *pucFrameCur++ = MB_FUNC_READ_DISCRETE_INPUTS;
@@ -411,12 +402,8 @@ eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_
 
             /* Test if the quantity of coils is a multiple of 8. If not last
              * byte is only partially field with unused coils set to zero. */
-            if((usDiscreteCnt & 0x0007) != 0){
-                ucNBytes = ( uint8_t ) ( usDiscreteCnt / 8 + 1 );
-            }
-            else{
-                ucNBytes = ( uint8_t ) ( usDiscreteCnt / 8 );
-            }
+            ucNBytes = (usDiscreteCnt / 8) + (usDiscreteCnt & 0x0007) > 0 ? 1 : 0;
+
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
 
@@ -448,3 +435,226 @@ eMBException_t eMBFuncReadDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_
 }
 #endif
 
+/*************************************************************************************************/
+/* TODO implement modbus master */
+#if MB_MASTER_ENABLE > 0
+
+mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegStartAddr, uint16_t Coilcnt)
+{
+    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE];
+
+    /* check slave address valid */
+    if(slaveaddr > MB_ADDRESS_MAX) 
+        return MB_EINVAL;
+    /* check request count range( 1 - 2000 ) */
+    if(Coilcnt > MB_READBITS_CNT_MAX || Coilcnt < MB_READBITS_CNT_MIN)
+        return MB_EINVAL;
+    /* check register addres in range*/
+    if((RegStartAddr < Mdev->regs.reg_coils_addr_start)
+        || ((RegStartAddr + Coilcnt) > (Mdev->regs.reg_coils_addr_start + Mdev->regs.reg_coils_num)))
+        return MB_EINVAL;
+
+    adu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF] = MB_FUNC_READ_COILS;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF] = RegStartAddr >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF + 1] = RegStartAddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_BITSCNT_OFF] = Coilcnt >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_BITSCNT_OFF + 1] = Coilcnt;
+
+    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegAddr, uint16_t val)
+{
+    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE];
+
+    /* check slave address valid */
+    if(slaveaddr > MB_ADDRESS_MAX) 
+        return MB_EINVAL;
+    /* check register addres in range*/
+    if(((int16_t)RegAddr < Mdev->regs.reg_coils_addr_start)
+        || ((RegAddr + 1) > (Mdev->regs.reg_coils_addr_start + Mdev->regs.reg_coils_num)))
+        return MB_EINVAL;
+
+    val = (val > 0) ? 0xFF00 : 0x0000;
+    
+    adu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF] = MB_FUNC_WRITE_SINGLE_COIL;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_ADDR_OFF] = RegAddr >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_ADDR_OFF + 1] = RegAddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_VALUE_OFF] = val >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_VALUE_OFF + 1] = val;
+
+    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegStartAddr, uint16_t Coilcnt,
+                                        uint8_t *valbuf, uint16_t valcnt)
+{
+    uint8_t  ucByteCount;
+    uint8_t *pAdu;
+    uint16_t Adulengh;
+
+    /* check slave address valid */
+    if(slaveaddr > MB_ADDRESS_MAX) 
+        return MB_EINVAL;
+    /* check request count range( 1 - 2000 ) */    
+    if( (Coilcnt < MB_WRITEBITS_CNT_MIN ) || (Coilcnt > MB_WRITEBITS_CNT_MAX ))
+        return MB_EINVAL;
+    /* check register addres in range*/
+    if((RegStartAddr < Mdev->regs.reg_coils_addr_start)
+        || ((RegStartAddr + Coilcnt) > (Mdev->regs.reg_coils_addr_start + Mdev->regs.reg_coils_num)))
+        return MB_EINVAL;
+
+    /* Compute the number of expected bytes in the request. */
+    ucByteCount = (Coilcnt / 8) + (Coilcnt & 0x0007) > 0 ? 1 : 0;
+
+    if(ucByteCount != valcnt)
+        return MB_EINVAL;
+    
+    /* slaveaddr +((PDU)funccode + startaddr + coilcnt + bytenum + value_list)  */
+    Adulengh = MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + ucByteCount;
+    pAdu = mb_malloc(Adulengh);
+
+    if(pAdu == NULL)
+        return MB_EINVAL;
+
+    pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF] = MB_FUNC_WRITE_MULTIPLE_COILS;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF] = RegStartAddr >> 8;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF + 1] = RegStartAddr;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_COILCNT_OFF] = Coilcnt >> 8;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_COILCNT_OFF + 1] = Coilcnt;
+    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF] = ucByteCount;
+
+    ucByteCount = 0;
+    while(valcnt--)
+    {
+        pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_VALUES_OFF + ucByteCount] = *valbuf;
+        valbuf++;
+        ucByteCount++;
+    }
+    
+    mb_req_snd(Mdev,pAdu,Adulengh);
+
+    mb_free(pAdu);
+    
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegStartAddr, uint16_t Discnt)
+{
+    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE];
+
+    /* check slave address valid */
+    if(slaveaddr > MB_ADDRESS_MAX) 
+        return MB_EINVAL;
+    /* check request count range( 1 - 2000 ) */
+    if(Discnt > MB_READBITS_CNT_MAX || Discnt < MB_READBITS_CNT_MIN)
+        return MB_EINVAL;
+    /* check register addres in range*/
+    if((RegStartAddr < Mdev->regs.reg_input_addr_start)
+        || ((RegStartAddr + Discnt) > (Mdev->regs.reg_input_addr_start + Mdev->regs.reg_input_num)))
+        return MB_EINVAL;
+
+    adu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF] = MB_FUNC_READ_COILS;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF] = RegStartAddr >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF + 1] = RegStartAddr;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_BITSCNT_OFF] = Discnt >> 8;
+    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_BITSCNT_OFF + 1] = Discnt;
+
+    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    
+    return MB_ENOERR;
+}
+
+
+/* TODO implement modbus master request parse */
+
+/* write local bits register to coils or discrete */
+static void __vMBLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint8_t *pucRegBitsVal, uint16_t usNCoils)
+{
+    while( usNCoils > 0 )
+    {
+        vMBSetBits(pRegBits, usStartAddress, (uint8_t)(usNCoils > 8 ? 8 : usNCoils), *pucRegBitsVal++);
+        usNCoils -= 8;
+        usStartAddress += 8;
+    }
+}
+
+mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs, 
+                                    uint16_t RegStartAddr, uint16_t Coilcnt, 
+                                    uint8_t *premain,uint16_t remainLength)
+{
+    uint8_t ucByteCount;
+
+    ucByteCount = (Coilcnt / 8) + (Coilcnt & 0x0007) > 0 ? 1 : 0;
+    /* check frame is right length */    
+    /* check coilcnt with previous request byteNum */
+    if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
+        return MB_EINVAL;
+      
+    __vMBLocalWrRegBits(regs->pRegCoil, (uint8_t *)&premain[1], RegStartAddr - regs->reg_coils_addr_start, Coilcnt);
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs, uint16_t RegAddr, 
+                                    uint8_t *premain, uint16_t remainLength)
+{
+    uint8_t bitval = 0;
+    
+    if((remainLength != 4) || RegAddr != ((premain[0] << 8) | premain[1]))
+        return MB_EINVAL;
+
+    
+    if( ( premain[3] != 0x00 )
+        || !((premain[2] == 0xFF) && (premain[2] == 0x00)) )
+        return MB_EINVAL;
+    
+    if(premain[2] == 0xFF)
+        bitval |= 0x01; 
+
+    __vMBLocalWrRegBits(regs->pRegCoil, (uint8_t *)&bitval, RegAddr - regs->reg_coils_addr_start, 1);
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
+                                    uint16_t RegStartAddr, uint16_t Coilcnt,
+                                    uint8_t *premain, uint16_t remainLength)
+{
+    if(remainLength != 4)
+        return MB_EINVAL;
+
+    if((RegStartAddr != ((premain[0] << 8) | premain[1]))
+        || (Coilcnt != ((premain[2] << 8) | premain[3]))
+        return MB_EINVAL;
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
+                                    uint16_t RegStartAddr, uint16_t Discnt, 
+                                    uint8_t *premain, uint16_t remainLength)
+{
+    uint8_t ucByteCount;
+
+    ucByteCount = (Discnt / 8) + (Discnt & 0x0007) > 0 ? 1 : 0;
+    /* check frame is right length */
+    /* check coilcnt with previous request byteNum */
+    if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
+        return MB_EINVAL;
+      
+    __vMBLocalWrRegBits(regs->pRegCoil, RegStartAddr - regs->reg_discrete_num, (uint8_t *)&premain[1], Discnt);
+
+    return MB_ENOERR;
+}
+
+#endif

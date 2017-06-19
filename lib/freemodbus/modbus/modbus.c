@@ -33,31 +33,31 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
     {MB_FUNC_OTHER_REPORT_SLAVEID, eMBFuncReportSlaveID},
 #endif
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
-    {MB_FUNC_READ_HOLDING_REGISTER, eMBFuncReadHoldingRegister},
+    {MB_FUNC_READ_HOLDING_REGISTER, eMBFuncRdHoldingRegister},
 #endif
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_REGISTER, eMBFuncWriteHoldingRegister},
+    {MB_FUNC_WRITE_REGISTER, eMBFuncWrHoldingRegister},
 #endif
 #if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-        {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBFuncWriteMultipleHoldingRegister},
+        {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBFuncWrMulHoldingRegister},
 #endif
 #if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBFuncReadWriteMultipleHoldingRegister},
+    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBFuncRdWrMulHoldingRegister},
 #endif
 #if MB_FUNC_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMBFuncReadInputRegister},
+    {MB_FUNC_READ_INPUT_REGISTER, eMBFuncRdInputRegister},
 #endif
 #if MB_FUNC_READ_COILS_ENABLED > 0
-    {MB_FUNC_READ_COILS, eMBFuncReadCoils},
+    {MB_FUNC_READ_COILS, eMBFuncRdCoils},
 #endif
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
-    {MB_FUNC_WRITE_SINGLE_COIL, eMBFuncWriteCoil},
+    {MB_FUNC_WRITE_SINGLE_COIL, eMBFuncWrCoil},
 #endif
 #if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBFuncWriteMultipleCoils},
+    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBFuncWrMulCoils},
 #endif
 #if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-    {MB_FUNC_READ_DISCRETE_INPUTS, eMBFuncReadDiscreteInputs},
+    {MB_FUNC_READ_DISCRETE_INPUTS, eMBFuncRdDiscreteInputs},
 #endif
 };
 
@@ -115,7 +115,7 @@ mb_ErrorCode_t eMBOpen(mb_Device_t *dev, mb_Mode_t eMode, uint8_t ucSlaveAddress
     }
 
     /* set slave address */
-    dev->slaveid = ucSlaveAddress;
+    dev->slaveaddr = ucSlaveAddress;
     dev->port = ucPort;
     switch (eMode){
 #if MB_RTU_ENABLED > 0
@@ -182,7 +182,7 @@ mb_ErrorCode_t eMBTCPOpen(mb_Device_t *dev, uint16_t ucTCPPort)
         dev->peMBSendCur = eMBTCPReceive;
         dev->peMBReceivedCur = eMBTCPSend;
                 
-        dev->slaveid = MB_TCP_PSEUDO_ADDRESS;
+        dev->slaveaddr = MB_TCP_PSEUDO_ADDRESS;
         dev->port = ucTCPPort;
         dev->currentMode = MB_TCP;
         dev->devstate = DEV_STATE_DISABLED;
@@ -358,8 +358,8 @@ static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev)
             return eStatus;
         
         /* Check if the frame is for us. If not ignore the frame. */
-        if((ucRcvAddress == dev->slaveid) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
-            ucFunctionCode = pPduFrame[MB_PDU_FUNC_OFF];
+        if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
+            ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
             for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
                 /* No more function handlers registered. Abort. */
@@ -388,7 +388,7 @@ static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev)
                 vMBPortTimersDelay(dev->port, MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
             }        
             
-            (void)dev->peMBSendCur(dev,dev->slaveid, pPduFrame, usLength);
+            (void)dev->peMBSendCur(dev,dev->slaveaddr, pPduFrame, usLength);
         }
     }
     
