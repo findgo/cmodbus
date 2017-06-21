@@ -209,16 +209,6 @@ typedef struct
     mb_request_t *Reqpendhead;  /* request suspend list */
     
     uint8_t Pollstate;
-    
-    volatile uint8_t AsciiBytePos; // only for ascii
-    
-    pActionHandle pvMBStartCur;
-    pActionHandle pvMBStopCur;
-    pActionHandle pvMBCloseCur;
-    pActionMasterReceive peMBReceivedCur;
-    pActionMasterSend peMBSendCur;
-    
-    void *next;
 
     uint8_t retry;
     uint8_t retrycnt;
@@ -230,8 +220,16 @@ typedef struct
     uint16_t Broadcastturntime;         /* after broadcast turn round time */
     uint16_t Broadcastturntimecnt;      /* after broadcast turn round time count*/
     
-    volatile uint8_t sndState;
-    volatile uint8_t rcvState;
+    pActionHandle pvMBStartCur;
+    pActionHandle pvMBStopCur;
+    pActionHandle pvMBCloseCur;
+    pActionMasterReceive peMBReceivedCur;
+    pActionMasterSend peMBSendCur;
+    
+    void *next;
+
+    volatile uint8_t AsciiBytePos; // only for ascii
+    volatile uint8_t sndrcvState;
     volatile uint16_t sndAduBufCount;
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufrPos;

@@ -232,7 +232,7 @@ eMBException_t eMBFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 
             /* Test if the quantity of coils is a multiple of 8. If not last
              * byte is only partially field with unused coils set to zero. */
-            ucNBytes = ((((usCoilCount / 8) + (usCoilCount & 0x0007)) > 0) ? 1 : 0);
+            ucNBytes = usCoilCount / 8 + (((usCoilCount & 0x0007) > 0) ? 1 : 0);
 
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
@@ -334,8 +334,8 @@ eMBException_t eMBFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen
         ucByteCount = pPdu[MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF];
 
         /* Compute the number of expected bytes in the request. */
-        ucByteCountVerify = ((((usCoilCnt / 8) + (usCoilCnt & 0x0007)) > 0) ? 1 : 0);
-
+        ucByteCountVerify = usCoilCnt / 8 + (((usCoilCnt & 0x0007) > 0) ? 1 : 0);
+        
         if( (usCoilCnt >= MB_WRITEBITS_CNT_MIN ) \
             && (usCoilCnt <= MB_WRITEBITS_CNT_MAX ) \
              && (ucByteCountVerify == ucByteCount ) ){
@@ -402,7 +402,7 @@ eMBException_t eMBFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t 
 
             /* Test if the quantity of coils is a multiple of 8. If not last
              * byte is only partially field with unused coils set to zero. */
-            ucNBytes = ((((usDiscreteCnt / 8) + (usDiscreteCnt & 0x0007)) > 0) ? 1 : 0);
+            ucNBytes = usDiscreteCnt / 8 + (((usDiscreteCnt & 0x0007) > 0) ? 1 : 0);
             
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
@@ -577,7 +577,7 @@ mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
         return MB_EINVAL;
     
     /* Compute the number of expected bytes in the request. */
-    ucByteCount = (Coilcnt / 8) + (Coilcnt & 0x0007) > 0 ? 1 : 0;
+    ucByteCount = Coilcnt / 8 + (((Coilcnt & 0x0007) > 0) ? 1 : 0);
 
     if(ucByteCount != valcnt)
         return MB_EINVAL;
@@ -625,7 +625,7 @@ mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->funcode   = MB_FUNC_WRITE_MULTIPLE_COILS;
     req->regaddr   = RegStartAddr;
     req->regcnt    = Coilcnt;
-    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scanrate  = (scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX;
     req->scancnt   = 0;
 
     status = eMBMaster_Reqsnd(Mdev,req);
@@ -713,7 +713,7 @@ mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs,
 {
     uint8_t ucByteCount;
 
-    ucByteCount = (Coilcnt / 8) + (Coilcnt & 0x0007) > 0 ? 1 : 0;
+    ucByteCount = Coilcnt / 8 + (((Coilcnt & 0x0007) > 0) ? 1 : 0);
     /* check frame is right length */    
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
@@ -766,8 +766,8 @@ mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs,
                                     uint8_t *premain, uint16_t remainLength)
 {
     uint8_t ucByteCount;
-
-    ucByteCount = (Discnt / 8) + (Discnt & 0x0007) > 0 ? 1 : 0;
+    
+    ucByteCount = Discnt / 8 + (((Discnt & 0x0007) > 0) ? 1 : 0);
     /* check frame is right length */
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))

@@ -21,10 +21,10 @@ extern "C" {
  *  @{
  */
 /*! \brief If Modbus ASCII support is enabled. */
-#define MB_ASCII_ENABLED                        (  1 )
+#define MB_ASCII_ENABLED                        (  0 )
 
 /*! \brief If Modbus RTU support is enabled. */
-#define MB_RTU_ENABLED                          (  0 )
+#define MB_RTU_ENABLED                          (  1 )
 
 /*! \brief If Modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )
@@ -111,7 +111,7 @@ extern "C" {
 #define REG_HOLDING_NREGS     ( 3 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
-#define REG_DISCRETE_SIZE     (8 * 1)
+#define REG_DISCRETE_SIZE     (8 * 3)
 
 
 /*! @} */

@@ -373,121 +373,87 @@ mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLe
 
 bool xMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev)
 {
-    bool            xTaskNeedSwitch = false;
-    uint8_t           ucByte;
+    bool xTaskNeedSwitch = false;
+    uint8_t ucByte;
 
     /* Always read the character. */
-    ( void )xMBPortSerialGetByte(dev->port, (char *)&ucByte );
+    ( void )xMBPortSerialGetByte(dev->port, (char *)&ucByte);
 
-    switch (dev->rcvState) {
-        /* If we have received a character in the init state we have to
-         * wait until the frame is finished.
-         */
-    case STATE_RX_INIT:
-        vMBPortTimersEnable(dev->port);
-        break;
-
-        /* In the error state we wait until all characters in the
-         * damaged frame are transmitted.
-         */
-    case STATE_RX_ERROR:
-        vMBPortTimersEnable(dev->port);
-        break;
-
-        /* In the idle state we wait for a new character. If a character
-         * is received the t1.5 and t3.5 timers are started and the
-         * receiver is in the state STATE_RX_RECEIVCE.
-         */
-    case STATE_RX_IDLE:
+    /* In the idle state we wait for a new character. If a character
+     * is received the t1.5 and t3.5 timers are started and the
+     * receiver is in the state STATE_RX_RECEIVCE.
+     */
+    if(dev->sndrcvState == STATE_RX_IDLE){
         dev->rcvAduBufrPos = 0;
         dev->AduBuf[dev->rcvAduBufrPos++] = ucByte;
-        dev->rcvState = STATE_RX_RCV;
+        dev->sndrcvState = STATE_RX_RCV;
 
-        /* Enable t3.5 timers. */
-        vMBPortTimersEnable(dev->port);
-        break;
-
+    }
+    else if(dev->sndrcvState == STATE_RX_RCV){
         /* We are currently receiving a frame. Reset the timer after
          * every character received. If more than the maximum possible
          * number of bytes in a modbus frame is received the frame is
          * ignored.
          */
-    case STATE_RX_RCV:
         if(dev->rcvAduBufrPos < MB_ADU_SIZE_MAX){
             dev->AduBuf[dev->rcvAduBufrPos++] = ucByte;
         }
         else{
-            dev->rcvState = STATE_RX_ERROR;
+            /* In the error state we wait until all characters in the
+             * damaged frame are transmitted.
+             */
         }
-        vMBPortTimersEnable(dev->port);
-        break;
     }
+    
+    /* Enable t3.5 timers. */
+    vMBPortTimersEnable(dev->port);
     
     return xTaskNeedSwitch;
 }
 
+
+
 bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev)
 {
-    assert( dev->rcvState == STATE_RX_IDLE );
-
-    switch (dev->sndState){
-        /* We should not get a transmitter event if the transmitter is in
-         * idle state.  */
-    case STATE_TX_IDLE:
-        /* enable receiver/disable transmitter. */
-        vMBPortSerialEnable(dev->port, true, false );
-        break;
-
-    case STATE_TX_XMIT:
+    /* We should get a transmitter event in transmitter state.  */
+    if(dev->sndrcvState == STATE_TX_XMIT){
         /* check if we are finished. */
         if( dev->sndAduBufCount != 0 ){
-            xMBPortSerialPutByte(dev->port, ( char )dev->AduBuf[dev->sndAduBufPos] );
+            xMBPortSerialPutByte(dev->port, (char)dev->AduBuf[dev->sndAduBufPos]);
             dev->sndAduBufPos++;  /* next byte in sendbuffer. */
             dev->sndAduBufCount--;
         }
         else{
             /* Disable transmitter. This prevents another transmit buffer
              * empty interrupt. */
-            vMBPortSerialEnable(dev->port, true, false );
-            vMBMasterSetPollmode(MASTER_WAITRSP);
-            dev->sndState = STATE_TX_IDLE;
+            vMBPortSerialEnable(dev->port, true, false);
+            dev->sndrcvState = STATE_RX_IDLE;
         }
-        break;
+    }
+    else {
+        /* enable receiver/disable transmitter. */
+        vMBPortSerialEnable(dev->port, true, false);
     }
 
     return true;
 }
 
+
 bool xMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev)
 {
     bool xNeedPoll = false;
 
-    switch (dev->rcvState){
-        /* Timer t35 expired. Startup phase is finished. */
-    case STATE_RX_INIT:
-        break;
-
-        /* A frame was received and t35 expired. Notify the listener that
-         * a new frame was received. */
-    case STATE_RX_RCV:
-        vMBMasterSetPollmode(MASTER_RSPEXCUTE);
-        break;
-
-        /* An error occured while receiving the frame. */
-    case STATE_RX_ERROR:
-        break;
-
-        /* Function called in an illegal state. */
-    default:
-        assert( ( dev->rcvState == STATE_RX_INIT ) ||
-                ( dev->rcvState == STATE_RX_RCV ) || ( dev->rcvState == STATE_RX_ERROR ) );
-    }
+    /* A frame was received and t35 expired. Notify the listener that
+     * a new frame was received. */
+    if(dev->sndrcvState == STATE_RX_RCV)
+        xNeedPoll = xMBSemGive(dev);
 
     vMBPortTimersDisable(dev->port);
-    dev->rcvState = STATE_RX_IDLE;
+    dev->sndrcvState = STATE_RX_IDLE;
 
     return xNeedPoll;
 }
+
 
 #endif
 
