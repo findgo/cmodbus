@@ -86,6 +86,8 @@ mb_Device_t *xMBBaseDeviceNew(void)
     if(dev == NULL)
         return NULL;
 
+    memset(dev,0,sizeof(mb_Device_t));
+    
     return dev;
 }
 uint8_t *xMBRegBufNew(uint32_t size)
@@ -95,12 +97,14 @@ uint8_t *xMBRegBufNew(uint32_t size)
     pregbuf = mb_malloc(size);
     if(pregbuf == NULL)
         return NULL;
-
+    
+    memset(pregbuf,0,sizeof(mb_Device_t));
+    
     return pregbuf;    
 }
 #endif
 
-#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED
+#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 mb_ErrorCode_t eMBOpen(mb_Device_t *dev, mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
 {
@@ -435,4 +439,585 @@ static mb_Device_t *__dev_search(uint8_t port)
 
     return NULL;
 }
+
+/* TODO implement modbus master */
+#if MB_MASTER_ENABLE > 0
+
+typedef struct
+{
+    uint8_t ucFunctionCode;
+    pxMBParseRspHandler pxHandler;
+} xMBParseRspHandler;
+
+static mb_MasterDevice_t *mb_masterdev_head = NULL;
+
+static xMBParseRspHandler xParseRspHandlers[MB_FUNC_HANDLERS_MAX] = {
+#if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
+    {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
+#endif
+#if MB_FUNC_READ_HOLDING_ENABLED > 0
+    {MB_FUNC_READ_HOLDING_REGISTER, eMBParseRspRdHoldingRegister},
+#endif
+#if MB_FUNC_WRITE_HOLDING_ENABLED > 0
+    {MB_FUNC_WRITE_REGISTER, eMBParseRspWrHoldingRegister},
+#endif
+#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
+        {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBParseRspWrMulHoldingRegister},
+#endif
+#if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
+    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBParseRspRdWrMulHoldingRegister},
+#endif
+#if MB_FUNC_READ_INPUT_ENABLED > 0
+    {MB_FUNC_READ_INPUT_REGISTER, eMBParseRdInputRegister},
+#endif
+#if MB_FUNC_READ_COILS_ENABLED > 0
+    {MB_FUNC_READ_COILS, eMBParseRspRdCoils},
+#endif
+#if MB_FUNC_WRITE_COIL_ENABLED > 0
+    {MB_FUNC_WRITE_SINGLE_COIL, eMBParseRspWrCoil},
+#endif
+#if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
+    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBParseRspWrMulCoils},
+#endif
+#if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
+    {MB_FUNC_READ_DISCRETE_INPUTS, eMBParseRspRdDiscreteInputs},
+#endif
+};
+
+mb_MasterDevice_t *xMBBaseMasterDeviceNew(void)
+{
+    mb_MasterDevice_t *dev;
+    
+    dev = mb_malloc(sizeof(mb_MasterDevice_t));
+    if(dev == NULL)
+        return NULL;
+
+    memset(dev,0,sizeof(mb_MasterDevice_t));
+    
+    return dev;
+}
+
+#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
+mb_ErrorCode_t eMBMasterOpen(mb_MasterDevice_t *dev, mb_Mode_t eMode, 
+                                uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
+{
+    mb_ErrorCode_t eStatus = MB_ENOERR;
+
+    switch (eMode){
+#if MB_RTU_ENABLED > 0
+    case MB_RTU:
+        dev->pvMBStartCur = vMBMasterRTUStart;
+        dev->pvMBStopCur = vMBMasterRTUStop;
+        dev->pvMBCloseCur = vMBMasterRTUClose;
+        dev->peMBSendCur = eMBMasterRTUSend;
+        dev->peMBReceivedCur = eMBMasterRTUReceive;
+
+        eStatus = eMBMasterRTUInit(dev, ucPort, ulBaudRate, eParity);
+        break;
+#endif
+#if MB_ASCII_ENABLED > 0
+    case MB_ASCII:
+        dev->pvMBStartCur = vMBMasterASCIIStart;
+        dev->pvMBStopCur = vMBMasterASCIIStop;
+        dev->pvMBCloseCur = vMBMasterASCIIClose;
+        dev->peMBSendCur = eMBMasterASCIISend;
+        dev->peMBReceivedCur = eMBMasterASCIIReceive;
+        
+        eStatus = eMBMasterASCIIInit(dev, ucPort, ulBaudRate, eParity);
+        break;
+#endif
+    default:
+        eStatus = MB_EINVAL;
+    }
+
+    if(eStatus != MB_ENOERR){
+        return eStatus;
+    }
+    
+    if(!xMBSemBinaryInit(dev)){
+        /* port dependent event module initalization failed. */
+        eStatus = MB_EPORTERR;
+    }
+    else{        
+        dev->port           = ucPort;
+        dev->currentMode    = eMode;
+        dev->devstate       = DEV_STATE_DISABLED;
+        dev->retry          = MBM_DEFAULT_RETRYCNT;
+        dev->retrycnt       = 0;
+        dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
+        dev->Replytimeoutcnt    = 0;
+        dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
+        dev->Delaypolltimecnt   = 0;
+        dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
+        dev->Broadcastturntimecnt = 0;
+
+        eStatus = __masterdev_add(dev);
+    }
+    
+    return eStatus;
+}
+#endif
+
+#if MB_TCP_ENABLED > 0
+mb_ErrorCode_t eMBMasterTCPOpen(mb_MasterDevice_t *dev, uint16_t ucTCPPort)
+{
+    mb_ErrorCode_t eStatus = MB_ENOERR;
+
+    if(( eStatus = eMBMasterTCPInit( ucTCPPort ) ) != MB_ENOERR){
+         dev->devstate = DEV_STATE_DISABLED;
+    }
+    else if(!xMBSemBinaryInit(dev)){
+        /* Port dependent event module initalization failed. */
+        eStatus = MB_EPORTERR;
+    }
+    else{ 
+        dev->pvMBStartCur = vMBMasterTCPStart;
+        dev->pvMBStopCur = vMBMasterTCPStop;
+        dev->pvMBCloseCur = vMBMasterTCPClose;
+        dev->peMBSendCur = eMBMasterTCPReceive;
+        dev->peMBReceivedCur = eMBMasterTCPSend;
+                
+        dev->port           = ucTCPPort;
+        dev->currentMode    = MB_TCP;
+        dev->devstate       = DEV_STATE_DISABLED;
+        dev->retry          = MBM_DEFAULT_RETRYCNT;
+        dev->retrycnt       = 0;
+        dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
+        dev->Replytimeoutcnt    = 0;
+        dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
+        dev->Delaypolltimecnt   = 0;
+        dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
+        dev->Broadcastturntimecnt = 0;
+        
+        eStatus = __masterdev_add(dev);
+    }
+    
+    return eStatus;
+}
+#endif
+
+
+
+mb_ErrorCode_t vMBMasterSetPara(mb_MasterDevice_t *dev, 
+                                    uin8_t retry,uin32_t replytimeout,
+                                    uin32_t delaypolltime, uin32_t broadcastturntime)
+{
+    if(dev){
+        dev->retry = (retry > MBM_RETRYCNT_MAX) ? MBM_RETRYCNT_MAX : retry;
+        if(replytimeout < MBM_REPLYTIMEOUT_MIN)
+            dev->Replytimeout = MBM_REPLYTIMEOUT_MIN;
+        else if(replytimeout > MBM_REPLYTIMEOUT_MAX)
+            dev->Replytimeout = MBM_REPLYTIMEOUT_MAX;
+        else
+            dev->Replytimeout = replytimeout;
+
+        if(delaypolltime < MBM_DELAYPOLLTIME_MIN)
+            dev->Delaypolltime = delaypolltime;
+        else if(delaypolltime > MBM_DELAYPOLLTIME_MAX)
+            dev->Delaypolltime = delaypolltime;
+        else
+            dev->Delaypolltime = delaypolltime;
+
+        if(broadcastturntime < MBM_DELAYPOLLTIME_MIN)
+            dev->Broadcastturntime = MBM_BROADTURNTIME_MIN;
+        else if(broadcastturntime > MBM_BROADTURNTIME_MAX)
+            dev->Broadcastturntime = MBM_BROADTURNTIME_MAX;
+        else
+            dev->Broadcastturntime = broadcastturntime;
+
+        return MB_ENOERR;
+    }
+
+    return MB_EINVAL
+}
+
+
+/* 创建一个从机节点         和 寄存器列表*/
+mb_slavenode_t * eMBMasterNodeNew(uint8_t slaveaddr,
+                                    uint16_t reg_holding_addr_start,
+                                    uint16_t reg_holding_num,
+                                    uint16_t reg_input_addr_start,
+                                    uint16_t reg_input_num,
+                                    uint16_t reg_coils_addr_start,
+                                    uint16_t reg_coils_num,
+                                    uint16_t reg_discrete_addr_start,
+                                    uint16_t reg_discrete_num)
+{
+    uint32_t lens;
+    uint8_t *regbuf;
+    mb_Reg_t *reg;
+    mb_slavenode_t *node;
+
+    /* check slave address valid */
+    if(slaveaddr < MB_ADDRESS_MIN || slaveaddr > MB_ADDRESS_MAX)
+        return NULL;
+    
+    node = mb_malloc(sizeof(mb_slavenode_t));
+    if(node){
+
+        lens = reg_holding_num * sizeof(uint16_t) + reg_input_num * sizeof(uint16_t);
+        lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+        lens += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+
+        regbuf = mb_malloc(lens);
+        if(regbuf == NULL){
+            mb_free(node);
+            return NULL;
+        }
+        reg = (mb_Reg_t *)&node->regs;
+        
+        reg->reg_holding_addr_start = reg_holding_addr_start;
+        reg->reg_holding_num = reg_holding_num;
+        reg->reg_input_addr_start = reg_input_addr_start;    
+        reg->reg_input_num = reg_input_num;
+            
+        reg->reg_coils_addr_start = reg_coils_addr_start;
+        reg->reg_coils_num = reg_coils_num;
+        reg->reg_discrete_addr_start = reg_discrete_addr_start;
+        reg->reg_discrete_num = reg_discrete_num;
+
+        reg->pReghold = (uint16_t *)&regbuf[0];
+        
+        lens = reg_holding_num * sizeof(uint16_t);
+        reg->pReginput = (uint16_t *)&regbuf[lens];
+        
+        lens +=  reg_input_num * sizeof(uint16_t);
+        reg->pRegCoil = (uint8_t *)&regbuf[lens];
+        
+        lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+        reg->pRegDisc = (uint8_t *)&regbuf[lens];
+        
+        node->slaveaddr = slaveaddr;
+        node->next = NULL;
+    }
+
+    return node;
+}
+                                 
+void vMBMasterNodeDelete(mb_slavenode_t *node)
+{
+    if(node){
+        if(node->regs.pReghold)
+            mb_free(node->regs.pReghold);
+        mb_free(node);
+    }
+}
+
+/* 向主机增加一个从机节点 */
+mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node)
+{
+    mb_slavenode_t *srhnode;
+    
+    if(dev == NULL || node == NULL)
+        return MB_EINVAL;
+
+    srhnode = xMBMasterNodeSearch(dev,node->slaveaddr);
+    if(srhnode)
+        return MBM_ENODEEXIST;
+    
+    if(dev->nodehead == NULL){
+        dev->nodehead = node;
+    }
+    else{
+        node->next = dev->nodehead;
+        dev->nodehead = node;
+    }
+
+    return MB_ENOERR;
+}
+/* 向主机移除一个从机节点 */
+mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, uint8_t slaveaddr)
+{
+    
+}
+
+mb_slavenode_t *xMBMasterNodeSearch(mb_MasterDevice_t *dev,uint8_t slaveaddr)
+{
+    mb_slavenode_t *srh;
+
+    if(dev == NULL)
+        return NULL;
+
+    srh = dev->nodehead;
+
+    while(srh)
+    {
+        if(srh->slaveaddr == slaveaddr)
+            return srh;
+
+        srh = srh->next;
+    }
+
+    return NULL;
+    
+}
+
+
+mb_ErrorCode_t eMBMasterStart(mb_MasterDevice_t *dev)
+{
+    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+        return MB_EILLSTATE;
+
+    if( dev->devstate == DEV_STATE_DISABLED ){
+        /* Activate the protocol stack. */
+        dev->pvMBStartCur(dev);
+        dev->devstate = DEV_STATE_ENABLED;
+    }
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBMasterStop(mb_MasterDevice_t *dev)
+{
+    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+        return MB_EILLSTATE;
+
+    if( dev->devstate == DEV_STATE_ENABLED ){
+        dev->pvMBStopCur(dev);
+        dev->devstate = DEV_STATE_DISABLED;
+    }
+
+    return MB_ENOERR;
+}
+
+mb_ErrorCode_t eMBMasterClose(mb_MasterDevice_t *dev)
+{
+    // must be stop first then it can close
+    if( dev->devstate == DEV_STATE_DISABLED ){
+        if( dev->pvMBCloseCur != NULL ){
+            dev->pvMBCloseCur(dev);
+        }
+
+        return MB_ENOERR;
+    }
+    
+    return MB_EILLSTATE;
+}
+
+void vMBMasterPoll(void)
+{
+    static uint32_t HistimerCounter = 0;
+    mb_MasterDevice_t *curdev = mb_masterdev_head;    
+    uint32_t elapsedMSec = 0;
+
+    elapsedMSec = (uint32_t)(xMBsys_now() - HistimerCounter);
+    if(elapsedMSec)
+        HistimerCounter = xMBsys_now();
+    
+     while(curdev){
+        eMBMasterhandle(curdev,elapsedMSec);
+        curdev = curdev->next;
+    }
+}
+void vMBMasterSetPollmode(mb_MasterDevice_t *dev,mb_DevState_t state)
+{
+    dev->Pollstate = state;
+}
+static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
+{
+    uint8_t *pRemainFrame; // remain fram
+    uint8_t ucRcvAddress;
+    uint8_t ucFunctionCode;
+    uint16_t usLength;
+    eMBException_t eException;
+    mb_header_t header;
+    mb_request_t *req;
+
+    int i;
+    mb_ErrorCode_t eStatus = MB_ENOERR;
+
+    /* Check if the protocol stack is ready. */
+    if( dev->devstate != DEV_STATE_ENABLED ){
+        return MB_EILLSTATE;
+    }
+      
+    switch (dev->Pollstate){
+    case MASTER_IDLE:
+        dev->Delaypolltimecnt = 0;
+        dev->Pollstate = MASTER_DELYPOLL;
+        break;
+    case MASTER_XMIT: 
+        req = __masterReqreadylist_peek(dev);
+        if(req && (dev->peMBSendCur(dev,req->padu,req->adulength) == MB_ENOERR)){
+            dev->Pollstate = MASTER_XMITING;
+        }
+        break;
+
+    case MASTER_RSPEXCUTE:
+        /* parser a adu fram */
+        eStatus = dev->peMBReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
+        if( eStatus != MB_ENOERR )
+            return eStatus;
+
+        // 导常码
+        if(ucFunctionCode & 0x80){
+            // pRemainFrame[0]; //异常码
+        }
+        else{
+            req = __masterReqreadylist_peek(dev);
+            if((req->funcode == ucFunctionCode) 
+                && (req->slaveaddr == header.introute.slaveid)){
+                
+                eException = MB_EX_ILLEGAL_FUNCTION;
+                for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
+                    /* No more function handlers registered. Abort. */
+                    if( xParseRspHandlers[i].ucFunctionCode == 0 ){
+                        break;
+                    }
+                    else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
+                        eException = xParseRspHandlers[i].pxHandler(&req->node->regs, 
+                                                                req->regaddr, req->regcnt, 
+                                                                pRemainFrame,usLength);
+                        break;
+                    }                
+                }
+            }
+
+            if(eException != MB_ENOERR){
+                if(req->slaveaddr == MB_ADDRESS_BROADCAST)
+                    __masterReqreadylist_removehead(dev);
+                else{
+                    // reqready list move to pend list
+                }
+                //if(curreq->ReqSuccessCB)
+                //    curreq->ReqSuccessCB(curreq);
+            }
+        }
+                   
+        break;
+    case MASTER_RSPTIMEOUT;
+        
+    case MASTER_BROADCASTTURN:
+    case MASTER_DELYPOLL:
+    case MASTER_WAITRSP:
+        break;
+    case MASTER_XMITING:
+        break;
+    default:
+        dev->Pollstate = MASTER_IDLE;
+    }
+    
+    if(timediff){
+        switch (dev->Pollstate){
+        case MASTER_BROADCASTTURN:
+            break;
+        case MASTER_DELYPOLL:
+            if(dev->Delaypolltimecnt++ >= dev->Delaypolltime){
+                dev->Delaypolltimecnt = 0;
+                // post event to transmit
+            }
+            break
+        case MASTER_WAITRSP:
+            if(dev->Replytimeoutcnt++ >= dev->Replytimeout){
+                dev->Replytimeoutcnt = 0;
+                // post event to deal reply timeout
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    
+    return MB_ENOERR;
+}
+
+
+mb_ErrorCode_t eMBMaster_Reqsnd(mb_MasterDevice_t *dev, mb_request_t *req)
+{    
+    if(!req->scanrate) // if zero add ready list
+        __masterReqreadylist_addtail(dev,req);
+    else
+        __masterReqpendlist_add(dev,req);
+
+    return MB_ENOERR;
+}
+/* 向主机挂起列表增加一个请求 */
+static mb_ErrorCode_t __masterReqpendlist_add(mb_MasterDevice_t *dev, mb_request_t *req)
+{    
+    if(dev->Reqpendhead == NULL){
+        dev->Reqpendhead = req;
+    }
+    else{
+        req->next = dev->Reqpendhead;
+        dev->Reqpendhead = req;
+    }
+
+    return MB_ENOERR;
+}
+
+/* 向主机就绪列表尾部增加一个请求 这是个fifo的队列*/
+static mb_ErrorCode_t __masterReqreadylist_addtail(mb_MasterDevice_t *dev, mb_request_t *req)
+{    
+    if(dev->Reqreadyhead == NULL){
+        dev->Reqreadyhead = req;
+        dev->Reqreadytail = req;
+    }
+    else{
+        dev->Reqreadytail->next = req;
+        dev->Reqreadytail = req;
+    }
+
+    return MB_ENOERR;
+}
+
+static mb_request_t *__masterReqreadylist_peek(mb_MasterDevice_t *dev)
+{
+    return dev->Reqreadyhead;
+}
+
+static mb_ErrorCode_t __masterReqreadylist_removehead(mb_MasterDevice_t *dev)
+{
+    dev->Reqreadyhead = dev->Reqreadyhead->next;
+    if(dev->Reqreadyhead == NULL)
+        dev->Reqreadytail = NULL;
+}
+
+static mb_ErrorCode_t __masterReqreadyMovetoPendlist(mb_MasterDevice_t *dev)
+{
+    
+}
+/*  */
+
+static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev)
+{
+    
+    if(__masterdev_search(dev->port))
+        return MB_EDEVEXIST;
+
+    if(mb_masterdev_head == NULL){
+        dev->next = NULL;
+        mb_masterdev_head = dev;
+    }
+    else{
+        dev->next = mb_masterdev_head;
+        mb_masterdev_head = dev;
+    }
+    
+    return MB_ENOERR;
+}
+
+/* RTU 和 ASCII 的硬件口是唯一的，不可重复
+ * TCP service 端口也是唯一的
+ */
+static mb_MasterDevice_t *__masterdev_search(uint8_t port)
+{
+    mb_MasterDevice_t *srh = NULL;
+    
+    if(mb_masterdev_head == NULL)
+        return NULL;
+
+    srh = mb_masterdev_head;
+
+    while(srh)
+    {
+        if(srh->port == port)
+            return srh;
+
+        srh = srh->next;
+    }
+
+    return NULL;
+}
+
+#endif
 

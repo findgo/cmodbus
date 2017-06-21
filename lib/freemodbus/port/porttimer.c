@@ -104,3 +104,13 @@ void TIM4_IRQHandler(void)
         
     }
 }
+
+
+#if MB_MASTER_ENABLE > 0
+/*This optional function returns the current time in milliseconds (don't care
+  for wraparound, this is only used for time diffs).*/
+uint32_t xMBsys_now(void)
+{
+    return 0;
+}
+#endif

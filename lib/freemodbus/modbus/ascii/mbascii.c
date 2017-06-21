@@ -4,10 +4,6 @@
 
 #if MB_ASCII_ENABLED > 0
 
-/* ----------------------- Defines ------------------------------------------*/
-#define MB_ASCII_DEFAULT_CR     '\r'    /*!< Default CR character for Modbus ASCII. */
-#define MB_ASCII_DEFAULT_LF     '\n'    /*!< Default LF character for Modbus ASCII. */
-
 /* ----------------------- Type definitions ---------------------------------*/
 typedef enum
 {
@@ -30,10 +26,6 @@ typedef enum
     BYTE_LOW_NIBBLE             /*!< Character for low nibble of byte. */
 } eMBBytePos;
 
-/* private funciton */
-static uint8_t __prvxMBCHAR2BIN(uint8_t ucCharacter);
-static uint8_t __prvxMBBIN2CHAR(uint8_t ucByte);
-static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen);
 
 /* ----------------------- Start implementation -----------------------------*/
 mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
@@ -82,7 +74,7 @@ mb_ErrorCode_t eMBASCIIReceive(void *pdev,uint8_t * pucRcvAddress, uint8_t **pPd
 
     /* Length and LRC check */
     if( (dev->rcvAduBufrPos >= MB_ADU_ASCII_SIZE_MIN)
-        && ( __prvxMBLRC((uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0 ) ){
+        && ( prvxMBLRC((uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0 ) ){
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
@@ -128,7 +120,7 @@ mb_ErrorCode_t eMBASCIISend(void *pdev, uint8_t ucSlaveAddress, const uint8_t *p
         dev->sndAduBufCount += usLength;
 
         /* Calculate LRC checksum for Modbus-Serial-Line-PDU. */
-        usLRC = __prvxMBLRC( (uint8_t *)pAdu, dev->sndAduBufCount );
+        usLRC = prvxMBLRC( (uint8_t *)pAdu, dev->sndAduBufCount );
         dev->AduBuf[dev->sndAduBufCount++] = usLRC;
 
         /* Activate the transmitter. */
@@ -178,7 +170,7 @@ bool xMBASCIIReceiveFSM(  mb_Device_t *dev)
             dev->rcvState = STATE_RX_WAIT_EOF;
         }
         else{
-            ucResult = __prvxMBCHAR2BIN( ucByte );
+            ucResult = prvxMBCHAR2BIN( ucByte );
             switch (dev->AsciiBytePos){
                 /* High nibble of the byte comes first. We check for
                  * a buffer overflow here. */
@@ -274,13 +266,13 @@ bool xMBASCIITransmitFSM(  mb_Device_t *dev)
         if( dev->sndAduBufCount > 0 ){
             switch(dev->AsciiBytePos){
             case BYTE_HIGH_NIBBLE:
-                ucByte = __prvxMBBIN2CHAR( ( uint8_t )(dev->AduBuf[dev->sndAduBufPos] >> 4) );
+                ucByte = prvxMBBIN2CHAR( ( uint8_t )(dev->AduBuf[dev->sndAduBufPos] >> 4) );
                 xMBPortSerialPutByte(dev->port, (char)ucByte);
                 dev->AsciiBytePos = BYTE_LOW_NIBBLE;
                 break;
 
             case BYTE_LOW_NIBBLE:
-                ucByte = __prvxMBBIN2CHAR((uint8_t)(dev->AduBuf[dev->sndAduBufPos] & 0x0F) );
+                ucByte = prvxMBBIN2CHAR((uint8_t)(dev->AduBuf[dev->sndAduBufPos] & 0x0F) );
                 xMBPortSerialPutByte(dev->port, (char)ucByte);
                 dev->sndAduBufPos++;
                 dev->sndAduBufCount--;                
@@ -346,49 +338,37 @@ bool xMBASCIITimerT1SExpired(  mb_Device_t *dev)
 }
 
 
-static uint8_t __prvxMBCHAR2BIN( uint8_t ucCharacter )
+#if MB_MASTER_ENABLE > 0
+mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity )
 {
-    if( ( ucCharacter >= '0' ) && ( ucCharacter <= '9' ) ){
-        return ( uint8_t )( ucCharacter - '0' );
-    }
-    else if( ( ucCharacter >= 'A' ) && ( ucCharacter <= 'F' ) ){
-        return ( uint8_t )( ucCharacter - 'A' + 0x0A );
-    }
-    else{
-        return 0xFF;
-    }
+}
+void vMBMasterASCIIStart(void *dev)
+{
+}
+void vMBMasterASCIIStop(void *dev)
+{
+}
+void vMBMasterASCIIClose(void *dev)
+{
+}
+mb_ErrorCode_t eMBMasterASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength )
+{
+}
+mb_ErrorCode_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usLength)
+{
 }
 
-static uint8_t __prvxMBBIN2CHAR( uint8_t ucByte )
+bool xMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev)
 {
-    if( ucByte <= 0x09 ){
-        return ( uint8_t )( '0' + ucByte );
-    }
-    else if( ( ucByte >= 0x0A ) && ( ucByte <= 0x0F ) ){
-        return ( uint8_t )( ucByte - 0x0A + 'A' );
-    }
-    else{
-        /* Programming error. */
-        assert( 0 );
-    }
-    
-    return '0';
+}
+bool xMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev)
+{
+}
+bool xMBMasterASCIITimerT1SExpired(mb_MasterDevice_t *dev)
+{
 }
 
 
-static uint8_t __prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
-{
-    uint8_t ucLRC = 0;  /* LRC char initialized */
-
-    while( usLen-- )
-    {
-        ucLRC += *pucFrame++;   /* Add buffer byte without carry */
-    }
-
-    /* Return twos complement */
-    ucLRC = (uint8_t) ( -((char)ucLRC) );
-    
-    return ucLRC;
-}
+#endif
 
 #endif

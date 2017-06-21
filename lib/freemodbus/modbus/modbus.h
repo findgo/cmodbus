@@ -13,6 +13,23 @@
 #define mb_free free
 #endif
 
+
+#define MBM_DEFAULT_RETRYCNT        0          /* default request failed to retry count */
+#define MBM_RETRYCNT_MAX            10
+/* for master defined (units of millisecond)*/
+#define MBM_DEFAULT_REPLYTIMEOUT    1000     /* response timeout */
+#define MBM_DEFAULT_DELAYPOLLTIME   50         /* delay time between polls */
+#define MBM_DEFAULT_BROADTURNTIME   100        /* after broadcast turn round time */
+#define MBM_DEFAULT_SCANRATE        1000        /* every request scan rate */
+
+#define MBM_REPLYTIMEOUT_MIN    50         /* response timeout min*/
+#define MBM_REPLYTIMEOUT_MAX    60000     /* response timeout max*/
+#define MBM_DELAYPOLLTIME_MIN   50         /* delay time between polls */
+#define MBM_DELAYPOLLTIME_MAX   200        /* delay time between polls */
+#define MBM_BROADTURNTIME_MIN   50         /* after broadcast turn round time */
+#define MBM_BROADTURNTIME_MAX   200        /* after broadcast turn round time */
+#define MBM_SCANRATE_MAX        60000       /* every request scan rate */
+
 /*! \ingroup modbus
  * \brief Modbus serial transmission modes (RTU/ASCII).
  *
@@ -60,7 +77,12 @@ typedef enum
     MB_EIO,                     /*!< I/O error. */
     MB_EILLSTATE,               /*!< protocol stack in illegal state. */
     MB_ETIMEDOUT,               /*!< timeout error occurred. */
-    MB_EDEVEXIST                /*!< device exist */
+    MB_EDEVEXIST,
+    // for master
+    MBM_ENODEEXIST,             /*!< node exist */
+    MBM_EINNODEADDR,            /* illegal slave address*/
+    MBM_ENODENOSETUP,           /* node not yet established */
+    MBM_ENOMEM,                 /* Out of memory */
 }mb_ErrorCode_t;
 
 typedef struct
@@ -79,8 +101,10 @@ typedef struct
     uint8_t *pRegDisc;
 }mb_Reg_t;
 
-typedef eMBException_t (*pxMBFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 typedef void (*pActionHandle)(void *dev);
+
+
+typedef eMBException_t (*pxMBFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 typedef mb_ErrorCode_t (*pActionReceive)(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
 typedef mb_ErrorCode_t (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
@@ -106,7 +130,7 @@ typedef struct
     pActionSend peMBSendCur;
     
     void *next;
-    
+    /*  */
     volatile uint8_t sndState;
     volatile uint8_t rcvState;
     volatile uint16_t sndAduBufCount;
@@ -115,30 +139,98 @@ typedef struct
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }mb_Device_t;
 
+/**************** define for master *******************/
+typedef enum {
+    MASTER_IDLE,
+    MASTER_DELYPOLL,
+    MASTER_BROADCASTTURN,
+    MASTER_XMIT,
+    MASTER_XMITING,
+    MASTER_WAITRSP,
+    MASTER_RSPEXCUTE,
+    MASTER_RSPTIMEOUT
+}Master_Pollstate_t;
+
+
+typedef struct 
+{
+    uint16_t tid;
+    uint16_t pid;
+    uint16_t length;
+    union {
+        uint8_t uid;
+        uint8_t slaveid;
+    }introute;
+}mb_header_t;
+
+typedef mb_ErrorCode_t (*pxMBParseRspHandler)(mb_Reg_t *regs, 
+                                    uint16_t RegStartAddr, uint16_t regcnt, 
+                                    uint8_t *premain,uint16_t remainLength);
+
+typedef mb_ErrorCode_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+typedef mb_ErrorCode_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+
 
 
 typedef struct
 {
-    uint16_t port; // ¶Ë¿ÚºÅ
     uint8_t slaveaddr;
+    uint8_t reserved0;
+    uint16_t reserved1;
+    mb_Reg_t regs;
+    void *next;
+}mb_slavenode_t;
+
+typedef struct
+{
+    mb_slavenode_t *node;   /* mark the node */
+    uint32_t errcnt;    /* request errcnt */
+    uint8_t slaveaddr;      /* mark slave address */
+    uint8_t funcode;        /* mark function code */
+    uint16_t regaddr;       /* mark reg address for rsp used */
+    uint16_t regcnt;        /* mark reg count for rsp used */
+    uint16_t adulength;     /* mark adu length*/
+    uint8_t *padu;          /* mark adu for repeat send */
+    uint16_t scancnt;       /* scan time cnt */
+    uint16_t scanrate;      /* scan rate  if 0 : once,other request on scan rate */
+    //void *ReqSuccessCB(void *req);
+    void *next;
+}mb_request_t;
+
+typedef struct
+{
+    uint16_t port; // ¶Ë¿ÚºÅ
     mb_Mode_t currentMode;
     
     mb_DevState_t devstate;
     
-    bool xEventInFlag; // for event?
-    uint8_t reserved0;
+    mb_slavenode_t *nodehead; /* slave node list on this host */
+
+    mb_request_t *Reqreadyhead; /* request ready list  head*/
+    mb_request_t *Reqreadytail; /* request ready list  tail*/
+    mb_request_t *Reqpendhead;  /* request suspend list */
+    
+    uint8_t Pollstate;
     
     volatile uint8_t AsciiBytePos; // only for ascii
-    
-    mb_Reg_t regs;
     
     pActionHandle pvMBStartCur;
     pActionHandle pvMBStopCur;
     pActionHandle pvMBCloseCur;
-    pActionReceive peMBReceivedCur;
-    pActionSend peMBSendCur;
+    pActionMasterReceive peMBReceivedCur;
+    pActionMasterSend peMBSendCur;
     
     void *next;
+
+    uint8_t retry;
+    uint8_t retrycnt;
+
+    uint16_t Replytimeout;              /* response timeout */
+    uint16_t Replytimeoutcnt;           /* response timeout count*/   
+    uint16_t Delaypolltime;             /* delay time between polls */
+    uint16_t Delaypolltimecnt;          /* delay time between polls count*/
+    uint16_t Broadcastturntime;         /* after broadcast turn round time */
+    uint16_t Broadcastturntimecnt;      /* after broadcast turn round time count*/
     
     volatile uint8_t sndState;
     volatile uint8_t rcvState;
@@ -201,7 +293,7 @@ mb_Device_t *xMBBaseDeviceNew(void);
 uint8_t *xMBRegBufNew(uint32_t size);
 #endif
 mb_ErrorCode_t eMBOpen(mb_Device_t *dev, mb_Mode_t eMode, uint8_t ucSlaveAddress, 
-                        uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity );
+                        uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
 mb_ErrorCode_t eMBTCPOpen(mb_Device_t *dev, uint16_t ucTCPPort);
 mb_ErrorCode_t eMBRegCreate(mb_Device_t *dev,
                             uint8_t *regbuf,
@@ -217,6 +309,11 @@ mb_ErrorCode_t eMBStart(mb_Device_t *dev);
 mb_ErrorCode_t eMBStop(mb_Device_t *dev);
 mb_ErrorCode_t eMBClose(mb_Device_t *dev);
 void vMBPoll(void);
+
+
+/* TODO implement modbus master */
+
+
 
 
 #endif

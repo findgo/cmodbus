@@ -105,6 +105,8 @@ extern "C" {
 /* dynamic memory allocation ENABLE*/
 #define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (0)
 
+
+
 /* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 3 )
 #define REG_INPUT_NREGS       ( 3 )

@@ -10,9 +10,9 @@ extern "C" {
 #include "mbproto.h"
 #include "mbframe.h"
 #include "mbcpu.h"
+#include "mbutils.h"
 
 #include "modbus.h"
-#include "mbutils.h"
 #include "mbevent.h"
 
 #include "port.h"
@@ -28,6 +28,18 @@ bool xMBRTUReceiveFSM(  mb_Device_t *dev);
 bool xMBRTUTransmitFSM(  mb_Device_t *dev);
 bool xMBRTUTimerT15Expired(  mb_Device_t *dev);
 bool xMBRTUTimerT35Expired(  mb_Device_t *dev);
+
+
+mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
+void vMBMasterRTUStart(void *dev);
+void vMBMasterRTUStop(void *dev);
+void vMBMasterRTUClose(void *dev);
+mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usLength);
+bool xMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev);
+bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev);
+bool xMBMasterRTUTimerT15Expired(  mb_MasterDevice_t *dev);
+bool xMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev);
 
 #ifdef __cplusplus
 }

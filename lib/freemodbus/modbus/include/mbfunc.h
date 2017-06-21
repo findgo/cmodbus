@@ -14,6 +14,8 @@ extern "C" {
 #include "modbus.h"
 #include "mbutils.h"
 
+#include "mbbuf.h"
+
 // read holding input coil disc offset in pdu
 #define MB_PDU_FUNC_READ_ADDR_OFF           ( MB_PDU_DATA_OFF)
 #define MB_PDU_FUNC_READ_REGCNT_OFF         ( MB_PDU_DATA_OFF + 2 ) // only for holding reg

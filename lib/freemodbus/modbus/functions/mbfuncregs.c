@@ -361,186 +361,333 @@ eMBException_t eMBFuncRdInputRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLE > 0
 
-mb_ErrorCode_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegStartAddr, uint16_t Regcnt)
+mb_ErrorCode_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate)
 {
-    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE];
-
+    uint8_t *pAdu;
+    uint16_t len;
+    mb_request_t *req;
+    mb_slavenode_t *node = NULL;
+    mb_ErrorCode_t status;
+    
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MB_EINVAL;
+        return MBM_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
     if(Regcnt > MB_READREG_CNT_MAX || Regcnt < MB_READREG_CNT_MIN)
         return MB_EINVAL;
-    /* check register addres in range*/
-    if((RegStartAddr < Mdev->regs.reg_holding_addr_start)
-        || ((RegStartAddr + Regcnt) > (Mdev->regs.reg_holding_addr_start + Mdev->regs.reg_holding_num)))
-        return MB_EINVAL;
-
-    adu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF + 1]   = RegStartAddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_REGCNT_OFF]     = Regcnt >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_REGCNT_OFF + 1] = Regcnt;
-
-    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    /* if slave address not a broadcast address, search in the host?*/
+    if(slaveaddr != MB_ADDRESS_BROADCAST){
+        /* check node in host list */
+        node = xMBMasterNodeSearch(Mdev,slaveaddr);
+        if(node == NULL)
+            return MBM_ENODENOSETUP;
+        /* check register addres in range*/
+        if((RegStartAddr < node->regs.reg_holding_addr_start)
+            || ((RegStartAddr + Regcnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+            return MB_ENOREG;
+    }
     
-    return MB_ENOERR;
+    req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    if(req == NULL)
+        return MBM_ENOMEM;
+
+    pAdu = req->padu;
+    // set header and get head size
+    len = xMBsetHead(Mdev->currentMode, pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    
+    pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
+    pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF + 1]   = RegStartAddr;
+    pAdu[len + MB_PDU_FUNC_READ_REGCNT_OFF]     = Regcnt >> 8;
+    pAdu[len + MB_PDU_FUNC_READ_REGCNT_OFF + 1] = Regcnt;
+    
+    req->adulength = len + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE;
+
+    req->node      = node;
+    req->errcnt    = 0;
+    req->slaveaddr = slaveaddr;
+    req->funcode   = MB_FUNC_READ_HOLDING_REGISTER;
+    req->regaddr   = RegStartAddr;
+    req->regcnt    = Regcnt;
+    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scancnt   = 0;
+
+    status = eMBMaster_Reqsnd(Mdev, req);
+    if(status != MB_ENOERR)
+        vMB_ReqBufDelete(req);
+
+    return status;
 }
 
-mb_ErrorCode_t eMBReqWrHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegAddr, uint16_t val)
+mb_ErrorCode_t eMBReqWrHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegAddr, uint16_t val, uint16_t scanrate)
 {
-    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE];
-
+    uint8_t *pAdu;
+    uint16_t len;
+    mb_request_t *req;
+    mb_slavenode_t *node = NULL;
+    mb_ErrorCode_t status;
+    
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MB_EINVAL;
-    /* check register addres in range*/
-    if((RegAddr < Mdev->regs.reg_holding_addr_start)
-        || ((RegAddr + 1) > (Mdev->regs.reg_holding_addr_start + Mdev->regs.reg_holding_num)))
-        return MB_EINVAL;   
+        return MBM_EINNODEADDR;
+    /* if slave address not a broadcast address, search in the host?*/
+    if(slaveaddr != MB_ADDRESS_BROADCAST){
+        /* check node in host list */
+        node = xMBMasterNodeSearch(Mdev,slaveaddr);
+        if(node == NULL)
+            return MBM_ENODENOSETUP;
+        /* check register addres in range*/
+        if((RegAddr < node->regs.reg_holding_addr_start)
+            || ((RegAddr + 1) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+            return MB_ENOREG;   
+    }
     
-    adu[MB_SER_ADU_ADDR_OFFSET]                                  = slaveaddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_REGISTER;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_ADDR_OFF]      = RegAddr >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_ADDR_OFF + 1]  = RegAddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_VALUE_OFF]     = val >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_VALUE_OFF + 1] = val;
+    req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    if(pAdu == NULL)
+        return MBM_ENOMEM;
 
-    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    pAdu = req->padu;
+    // set header and get head size
+    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
-    return MB_ENOERR;
+    pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_REGISTER;
+    pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF]      = RegAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF + 1]  = RegAddr;
+    pAdu[len + MB_PDU_FUNC_WRITE_VALUE_OFF]     = val >> 8;
+    pAdu[len + MB_PDU_FUNC_WRITE_VALUE_OFF + 1] = val;
+
+    req->adulength = len + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE;
+
+    req->node      = node;
+    req->errcnt    = 0;
+    req->slaveaddr = slaveaddr;
+    req->funcode   = MB_FUNC_WRITE_REGISTER;
+    req->regaddr   = RegAddr;
+    req->regcnt    = 1;
+    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scancnt   = 0;
+
+    status = eMBMaster_Reqsnd(Mdev, req);
+    if(status != MB_ENOERR)
+        vMB_ReqBufDelete(req);
+
+    return status;
 }
 mb_ErrorCode_t eMbReqWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt,
-                                        uint16_t *valbuf, uint16_t valcnt)
+                                        uint16_t *valbuf, uint16_t valcnt, uint16_t scanrate)
 {
     uint8_t *pAdu;
-    uint16_t Adulengh;
+    uint16_t pdulengh,len;
+    mb_request_t *req;
+    mb_slavenode_t *node = NULL;
+    mb_ErrorCode_t status;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MB_EINVAL;
+        return MBM_EINNODEADDR;
     if((valcnt < MB_WRITEREG_CNT_MIN ) 
-    || (valcnt > MB_WRITEREG_CNT_MAX )
-    || valcnt != valcnt)
+        || (valcnt > MB_WRITEREG_CNT_MAX )
+        || valcnt != valcnt)
         return MB_EINVAL;
-    /* check register addres in range*/
-    if((RegStartAddr < Mdev->regs.reg_holding_addr_start)
-        || ((RegStartAddr + valcnt) > (Mdev->regs.reg_holding_addr_start + Mdev->regs.reg_holding_num)))
-        return MB_EINVAL;   
-    
+    /* if slave address not a broadcast address, search in the host?*/
+    if(slaveaddr != MB_ADDRESS_BROADCAST){
+        /* check node in host list */
+        node = xMBMasterNodeSearch(Mdev,slaveaddr);
+        if(node == NULL)
+            return MBM_ENODENOSETUP;
+        /* check register addres in range*/
+        if((RegStartAddr < node->regs.reg_holding_addr_start)
+            || ((RegStartAddr + valcnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+            return MB_ENOREG;   
+    }    
     /* slaveaddr +((PDU)funcode + startaddr + regcnt + bytenum + regvalue_list)  */
-    Adulengh = MB_SER_ADU_SIZE_ADDR+ MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + valcnt * 2;
-    pAdu = mb_malloc(Adulengh);
+    pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + valcnt * 2;
+    req = xMB_ReqBufNew(Mdev->currentMode, pdulengh);
+    if(req == NULL)
+        return MBM_ENOMEM;
 
-    if(pAdu == NULL)
-        return MB_EINVAL;
+    pAdu = req->padu;
+    // set header and get head size
+    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, pdulengh);
 
-    pAdu[MB_SER_ADU_ADDR_OFFSET]                                        = slaveaddr;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF]                    = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]        = RegStartAddr >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF + 1]    = RegStartAddr;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF]      = Regcnt >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF + 1]  = Regcnt;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF]     = valcnt * 2;
+    pAdu[len + MB_PDU_FUNCODE_OFF]                    = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
+    pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]        = RegStartAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF + 1]    = RegStartAddr;
+    pAdu[len + MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF]      = Regcnt >> 8;
+    pAdu[len + MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF + 1]  = Regcnt;
+    pAdu[len + MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF]     = valcnt * 2;
 
     valcnt = 0;
     while(Regcnt--)
     {
-        pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_VALUES_OFF + valcnt] = *valbuf++;
+        pAdu[len + MB_PDU_FUNC_WRITE_MUL_VALUES_OFF + valcnt] = *valbuf++;
         ++valcnt;
-        pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_WRITE_MUL_VALUES_OFF + valcnt] = *valbuf++;
+        pAdu[len + MB_PDU_FUNC_WRITE_MUL_VALUES_OFF + valcnt] = *valbuf++;
         ++valcnt;
     }
     
-    mb_req_snd(Mdev,pAdu,Adulengh);
+    req->adulength = len + pdulengh;
 
-    mb_free(pAdu);
-    
-    return MB_ENOERR;
+    req->node      = node;
+    req->errcnt    = 0;
+    req->slaveaddr = slaveaddr;
+    req->funcode   = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
+    req->regaddr   = RegStartAddr;
+    req->regcnt    = Regcnt;
+    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scancnt   = 0;
+
+    status = eMBMaster_Reqsnd(Mdev, req);
+    if(status != MB_ENOERR)
+        vMB_ReqBufDelete(req);
 }
 
-mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, uint16_t RegStartAddr, uint16_t Regcnt)
+mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate)
 {
-    uint8_t adu[MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE];
+    uint8_t *pAdu;
+    uint16_t pdulengh,len;
+    mb_request_t *req;
+    mb_slavenode_t *node = NULL;
+    mb_ErrorCode_t status;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MB_EINVAL;
+        return MBM_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
     if(Regcnt > MB_READREG_CNT_MAX || Regcnt < MB_READREG_CNT_MIN)
         return MB_EINVAL;
-    /* check register addres in range*/
-    if((RegStartAddr < Mdev->regs.reg_input_addr_start)
-        || ((RegStartAddr + Regcnt) > (Mdev->regs.reg_input_addr_start + Mdev->regs.reg_input_num)))
-        return MB_EINVAL;
+    /* if slave address not a broadcast address, search in the host?*/
+    if(slaveaddr != MB_ADDRESS_BROADCAST){
+        /* check node in host list */
+        node = xMBMasterNodeSearch(Mdev,slaveaddr);
+        if(node == NULL)
+            return MBM_ENODENOSETUP;
+        /* check register addres in range*/
+        if((RegStartAddr < node->regs.reg_input_addr_start)
+            || ((RegStartAddr + Regcnt) > (node->regs.reg_input_addr_start + node->regs.reg_input_num)))
+            return MB_ENOREG;
+    }
 
-    adu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_INPUT_REGISTER;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_ADDR_OFF + 1]   = RegStartAddr;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_REGCNT_OFF]     = Regcnt >> 8;
-    adu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READ_REGCNT_OFF + 1] = Regcnt;
+    req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    if(req == NULL)
+        return MBM_ENOMEM;
 
-    mb_req_snd(Mdev,adu,MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
-    
-    return MB_ENOERR;
+    pAdu = req->padu;
+    // set header and get head size
+    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+
+    pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_INPUT_REGISTER;
+    pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF + 1]   = RegStartAddr;
+    pAdu[len + MB_PDU_FUNC_READ_REGCNT_OFF]     = Regcnt >> 8;
+    pAdu[len + MB_PDU_FUNC_READ_REGCNT_OFF + 1] = Regcnt;
+
+    req->adulength = len + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE;
+
+    req->node      = node;
+    req->errcnt    = 0;
+    req->slaveaddr = slaveaddr;
+    req->funcode   = MB_FUNC_READ_INPUT_REGISTER;
+    req->regaddr   = RegStartAddr;
+    req->regcnt    = Regcnt;
+    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scancnt   = 0;
+
+    status = eMBMaster_Reqsnd(Mdev, req);
+    if(status != MB_ENOERR)
+        vMB_ReqBufDelete(req);
+
+    return status;
 }
 
 eMBException_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                                                uint16_t RegReadStartAddr, uint16_t RegReadCnt,
-                                                                uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
-                                                                uint16_t *valbuf, uint16_t valNUM)
+                                                    uint16_t RegReadStartAddr, uint16_t RegReadCnt,
+                                                    uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
+                                                    uint16_t *valbuf, uint16_t valNUM,uint16_t scanrate)
 {
     uint8_t *pAdu;
-    uint16_t Adulengh;
+    uint16_t pdulengh,len;
+    mb_request_t *req;
+    mb_slavenode_t *node = NULL;
+    mb_ErrorCode_t status;
     uint16_t byteCount;
-
+    
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MB_EINVAL;
-
+        return MBM_EINNODEADDR;
     
     if(RegReadCnt > MB_READWRITE_READREG_CNT_MIN || RegReadCnt < MB_READWRITE_READREG_CNT_MAX
         || ( RegWriteCnt < MB_READWRITE_WRITEREG_CNT_MIN ) || ( RegWriteCnt > MB_READWRITE_WRITEREG_CNT_MAX )
         ||  RegWriteCnt != valNUM)
         return MB_EINVAL;
+    /* if slave address not a broadcast address, search in the host?*/
+    if(slaveaddr != MB_ADDRESS_BROADCAST){
+        /* check node in host list */
+        node = xMBMasterNodeSearch(Mdev,slaveaddr);
+        if(node == NULL)
+            return MBM_ENODENOSETUP;
 
+        /* check register addres in range*/
+        if((RegReadStartAddr < node->regs.reg_holding_addr_start)
+            || ((RegReadStartAddr + RegReadCnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+            return MB_ENOREG;
+
+        if((RegWriteStartAddr < node->regs.reg_holding_addr_start)
+             || ((RegWriteStartAddr + RegWriteCnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+            return MB_ENOREG;
+    }
+    
     /* slaveaddr +((PDU) funcode + Readstartaddr + Readregcnt 
      *    + Writestartaddr + Writeregcnt + bytenum + Writeregvalue_list)  */
-    Adulengh = MB_SER_ADU_SIZE_ADDR + MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READWRITE_SIZE_MIN + valNUM * 2;
-    pAdu = mb_malloc(Adulengh);
+    pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READWRITE_SIZE_MIN + valNUM * 2;
+    req = xMB_ReqBufNew(Mdev->currentMode, pdulengh);
+    if(req == NULL)
+        return MBM_ENOMEM;
 
-    if(pAdu == NULL)
-        return MB_EINVAL;
+    pAdu = req->padu;
+    // set header and get head size
+    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, pdulengh);
 
-    pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF]                         = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF]        = RegReadStartAddr >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF + 1]    = RegReadStartAddr;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF]      = RegReadCnt >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF + 1]  = RegReadCnt;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF]       = RegWriteStartAddr >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF + 1]   = RegWriteStartAddr;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_REGCNT_OFF]     = RegWriteCnt >> 8;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_REGCNT_OFF + 1] = RegWriteCnt;
-    pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_BYTECNT_OFF]          = RegWriteCnt * 2;
+    pAdu[len + MB_PDU_FUNCODE_OFF]                         = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
+    pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF]        = RegReadStartAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF + 1]    = RegReadStartAddr;
+    pAdu[len + MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF]      = RegReadCnt >> 8;
+    pAdu[len + MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF + 1]  = RegReadCnt;
+    pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF]       = RegWriteStartAddr >> 8;
+    pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF + 1]   = RegWriteStartAddr;
+    pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_REGCNT_OFF]     = RegWriteCnt >> 8;
+    pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_REGCNT_OFF + 1] = RegWriteCnt;
+    pAdu[len + MB_PDU_FUNC_READWRITE_BYTECNT_OFF]          = RegWriteCnt * 2;
 
     byteCount = 0;
     while(RegWriteCnt--)
     {
-        pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF + byteCount] = *valbuf++;
+        pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF + byteCount] = *valbuf++;
         ++byteCount;
-        pAdu[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF + byteCount] = *valbuf++;
+        pAdu[len + MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF + byteCount] = *valbuf++;
         ++byteCount;
     }
-    
-    mb_req_snd(Mdev,pAdu,Adulengh);
 
-    mb_free(pAdu);
-    
-    return MB_ENOERR;    
+    req->adulength = len + pdulengh;
+
+    req->node      = node;
+    req->errcnt    = 0;
+    req->slaveaddr = slaveaddr;
+    req->funcode   = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
+    req->regaddr   = RegReadStartAddr;
+    req->regcnt    = RegReadCnt;
+    req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
+    req->scancnt   = 0;
+
+    status = eMBMaster_Reqsnd(Mdev, req);
+    if(status != MB_ENOERR)
+        vMB_ReqBufDelete(req);
+
+    return status;
 }
 
 void __vMBLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *pucRegRegsVal, uint16_t usNRegs)
@@ -555,27 +702,26 @@ void __vMBLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *puc
 }
 
 mb_ErrorCode_t eMBParseRspRdHoldingRegister(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Regcnt,
-                                    uint16_t *premain, uint16_t remainLength)
+                                                uint16_t RegStartAddr, uint16_t Regcnt,
+                                                uint8_t *premain, uint16_t remainLength)
 {
 
     /* check frame is right length */
     /* check regcnt with previous request byteNum */
     if((remainLength  != (1 + Regcnt * 2)) || (premain[0] != Regcnt * 2))
         return MB_EINVAL; 
-    
-    if( (RegStartAddr < regs->reg_holding_addr_start) 
-        || ((RegStartAddr + Regcnt) <= (regs->reg_holding_addr_start + regs->reg_holding_num))
-        return MB_EINVAL;
-    
+        
     __vMBLocalWrRegRegs(regs->pReghold, RegStartAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[1], Regcnt);
 
     return MB_ENOERR;    
 }
                                     
-mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, uint16_t RegAddr, 
-                                                        uint8_t *premain, uint16_t remainLength)
+mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, 
+                                                    uint16_t RegAddr, uint16_t Regcnt,
+                                                    uint8_t *premain, uint16_t remainLength)
 {
+    (void)Regcnt;
+    
     if(remainLength != 4)
         return MB_EINVAL;
 
@@ -604,13 +750,15 @@ mb_ErrorCode_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs,
                                                         uint16_t RegStartAddr,uint16_t Regcnt, 
                                                         uint8_t *premain, uint16_t remainLength)
 {
+    
+    return eMBParseRspRdHoldingRegister(regs, RegStartAddr, Regcnt, premain, remainLength);
+    
 }
                                                         
 mb_ErrorCode_t eMBParseRdInputRegister(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Regcnt,
-                                    uint16_t *premain, uint16_t remainLength)
+                                            uint16_t RegStartAddr, uint16_t Regcnt,
+                                            uint16_t *premain, uint16_t remainLength)
 {
-
     /* check frame is right length */
     /* check regcnt with previous request byteNum */
     if((remainLength  != (1 + Regcnt * 2)) || (premain[0] != Regcnt * 2))

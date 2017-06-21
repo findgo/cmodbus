@@ -15,6 +15,9 @@ extern "C" {
  * that the processing part deals with this frame. 
  */
 #define MB_TCP_PSEUDO_ADDRESS   ( 255 )
+/* modbus tcp MBAP TID */
+#define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
+
 
 /* modbus function code */
 #define MB_FUNC_MIN                           ( 1 )

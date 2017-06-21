@@ -4,8 +4,6 @@
 
 #if MB_TCP_ENABLED > 0
 
-#define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
-
 /* ----------------------- Start implementation -----------------------------*/
 mb_ErrorCode_t eMBTCPInit(uint16_t ucTCPPort)
 {
@@ -75,5 +73,28 @@ mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint1
     
     return MB_ENOERR;
 }
+
+#if MB_MASTER_ENABLE > 0
+mb_ErrorCode_t eMBMasterTCPInit(uint16_t ucTCPPort)
+{
+}
+void vMBMasterTCPStart(void *dev)
+{
+}
+void vMBMasterTCPStop(void *dev)
+{
+}
+void vMBMasterTCPClose(void *dev)
+{
+}
+mb_ErrorCode_t eMBMasterTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength)
+{
+}
+mb_ErrorCode_t eMBMasterTCPSend(void *pdev,const uint8_t *pAdu, uint16_t usLength)
+{
+}
+
+
+#endif
 
 #endif
