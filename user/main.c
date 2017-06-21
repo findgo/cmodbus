@@ -17,7 +17,7 @@ int main(void)
 	prvClockInit();
 	prvnvicInit();
 	//Systick_Configuration();
-#if 0     
+#if MB_RTU_ENABLED > 0   
     status = eMBOpen(&device1,MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
     if(status == MB_ENOERR){
        status = eMBRegCreate(&device1,
@@ -33,7 +33,8 @@ int main(void)
        if(status == MB_ENOERR)
             (void)eMBStart(&device1);
     }
-#else
+#endif
+#if MB_ASCII_ENABLED > 0
     status = eMBOpen(&device1,MB_ASCII, 0x01, 0, 9600, MB_PAR_NONE);
     if(status == MB_ENOERR){
        status = eMBRegCreate(&device1,
@@ -49,7 +50,6 @@ int main(void)
        if(status == MB_ENOERR)
             (void)eMBStart(&device1);
     }
-
 #endif
 	while(1)
 	{

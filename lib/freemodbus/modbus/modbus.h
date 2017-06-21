@@ -115,11 +115,9 @@ typedef struct
     mb_Mode_t currentMode;
     
     mb_DevState_t devstate;
-    
-    bool xEventInFlag; // for event?
-    uint8_t reserved0;
-    
+        
     volatile uint8_t AsciiBytePos; // only for ascii
+    uint16_t reserved0;
     
     mb_Reg_t regs;
     
@@ -131,8 +129,8 @@ typedef struct
     
     void *next;
     /*  */
-    volatile uint8_t sndState;
-    volatile uint8_t rcvState;
+    bool xEventInFlag; // for event?
+    volatile uint8_t sndrcvState;
     volatile uint16_t sndAduBufCount;
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufrPos;

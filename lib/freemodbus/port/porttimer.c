@@ -97,11 +97,12 @@ void TIM4_IRQHandler(void)
     if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET){
         //清除定时器T4溢出中断标志位
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
-
-        //xMBRTUTimerT35Expired(&device1);
-    
+#if MB_RTU_ENABLED > 0
+        xMBRTUTimerT35Expired(&device1);
+#endif
+#if MB_ASCII_ENABLED > 0
         xMBASCIITimerT1SExpired(&device1);
-        
+#endif        
     }
 }
 

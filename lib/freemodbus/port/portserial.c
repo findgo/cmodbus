@@ -160,11 +160,12 @@ void USART1_IRQHandler(void)
 {
   //发生接收中断
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
-        //mb.c eMBInit函数中
-        //pxMBFrameCBByteReceived = xMBRTUReceiveFSM
-        //接收状态机
-        //xMBRTUReceiveFSM(&device1);
+#if MB_RTU_ENABLED > 0
+        xMBRTUReceiveFSM(&device1);
+#endif
+#if MB_ASCII_ENABLED > 0
         xMBASCIIReceiveFSM(&device1);
+#endif
         //清除中断标志位    
         USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
     }
@@ -174,8 +175,12 @@ void USART1_IRQHandler(void)
         //mb.c eMBInit函数中
 
         //发送状态机
-        //xMBRTUTransmitFSM(&device1);
+#if MB_RTU_ENABLED > 0
+        xMBRTUTransmitFSM(&device1);
+#endif
+#if MB_ASCII_ENABLED > 0
         xMBASCIITransmitFSM(&device1);
+#endif
         //清除中断标志
         USART_ClearITPendingBit(USART1, USART_IT_TC);
     }
