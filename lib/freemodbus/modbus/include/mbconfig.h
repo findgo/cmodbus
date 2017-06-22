@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 /* ----------------------- Defines ------------------------------------------*/
-#define MB_MASTER_ENABLE        (0)
-#define MB_SLAVE_ENABLE         (1)
+#define MB_MASTER_ENABLE        (1)
+#define MB_SLAVE_ENABLE         (0)
 
 /*! \defgroup modbus_cfg Modbus Configuration
  *
@@ -103,8 +103,12 @@ extern "C" {
 #define MB_TCP_PORT_USE_DEFAULT     (502)   
 
 /* dynamic memory allocation ENABLE*/
-#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (0)
+#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (1)
 
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0
+#define mb_malloc pvPortMalloc
+#define mb_free vfree
+#endif
 
 
 /* Private define for reg modify by user ------------------------------------------------------------*/

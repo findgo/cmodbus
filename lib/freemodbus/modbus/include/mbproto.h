@@ -18,7 +18,6 @@ extern "C" {
 /* modbus tcp MBAP TID */
 #define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
 
-
 /* modbus function code */
 #define MB_FUNC_MIN                           ( 1 )
 #define MB_FUNC_MAX                           ( 127 )

@@ -131,7 +131,7 @@ uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
     return ( uint8_t ) usWordBuf;
 }
 
-
+#if MB_SLAVE_ENABLE > 0
 /**
   * @brief  ÏßÈ¦¼Ä´æÆ÷´¦Àíº¯Êý£¬ÏßÈ¦¼Ä´æÆ÷¿É¶Á£¬¿É¶Á¿ÉÐ´
   * @param  regs          ²Ù×÷¼Ä´æÆ÷Ö¸Õë
@@ -435,6 +435,8 @@ eMBException_t eMBFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t 
 }
 #endif
 
+#endif
+
 /*************************************************************************************************/
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLE > 0
@@ -473,7 +475,7 @@ mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_COILS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -667,7 +669,7 @@ mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr
     
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_DISCRETE_INPUTS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -719,7 +721,7 @@ mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs,
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MB_EINVAL;
       
-    __vMBLocalWrRegBits(regs->pRegCoil, (uint8_t *)&premain[1], RegStartAddr - regs->reg_coils_addr_start, Coilcnt);
+    __vMBLocalWrRegBits(regs->pRegCoil, RegStartAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  Coilcnt);
 
     return MB_ENOERR;
 }
@@ -742,7 +744,7 @@ mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs,
     if(premain[2] == 0xFF)
         bitval |= 0x01; 
 
-    __vMBLocalWrRegBits(regs->pRegCoil, (uint8_t *)&bitval, RegAddr - regs->reg_coils_addr_start, 1);
+    __vMBLocalWrRegBits(regs->pRegCoil, RegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
 
     return MB_ENOERR;
 }
@@ -755,7 +757,7 @@ mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs,
         return MB_EINVAL;
 
     if((RegStartAddr != ((premain[0] << 8) | premain[1]))
-        || (Coilcnt != ((premain[2] << 8) | premain[3]))
+        || (Coilcnt != ((premain[2] << 8) | premain[3])))
         return MB_EINVAL;
 
     return MB_ENOERR;

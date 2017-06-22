@@ -33,6 +33,8 @@ bool xMBASCIIReceiveFSM(mb_Device_t *dev);
 bool xMBASCIITransmitFSM(mb_Device_t *dev);
 bool xMBASCIITimerT1SExpired(mb_Device_t *dev);
 
+
+
 mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
 void vMBMasterASCIIStart(void *dev);
 void vMBMasterASCIIStop(void *dev);

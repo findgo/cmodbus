@@ -1,6 +1,8 @@
 
 #include "mbfunc.h"
 
+#if MB_SLAVE_ENABLE > 0
+
 /**
   * @brief  保持寄存器处理函数，保持寄存器可读，可读可写
   * @param  regs          操作寄存器指针
@@ -81,6 +83,7 @@ static mb_ErrorCode_t __eMBRegInputCB(mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
 
     return MB_ENOREG;
 }
+
 
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
 eMBException_t eMBFuncRdHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
@@ -357,6 +360,8 @@ eMBException_t eMBFuncRdInputRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *
 
 #endif
 
+#endif
+
 /*************************************************************************************************/
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLE > 0
@@ -394,7 +399,7 @@ mb_ErrorCode_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveadd
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode, pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = xMBsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -450,7 +455,7 @@ mb_ErrorCode_t eMBReqWrHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveadd
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_REGISTER;
     pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF]      = RegAddr >> 8;
@@ -511,7 +516,7 @@ mb_ErrorCode_t eMbReqWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slave
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, pdulengh);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                    = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]        = RegStartAddr >> 8;
@@ -543,13 +548,15 @@ mb_ErrorCode_t eMbReqWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slave
     status = eMBMaster_Reqsnd(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
+    
+    return status;
 }
 
 mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate)
 {
     uint8_t *pAdu;
-    uint16_t pdulengh,len;
+    uint16_t len;
     mb_request_t *req;
     mb_slavenode_t *node = NULL;
     mb_ErrorCode_t status;
@@ -578,7 +585,7 @@ mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_INPUT_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -604,7 +611,7 @@ mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     return status;
 }
 
-eMBException_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+mb_ErrorCode_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                                     uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                                     uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                                     uint16_t *valbuf, uint16_t valNUM,uint16_t scanrate)
@@ -650,7 +657,7 @@ eMBException_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t sla
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, Mdev->currentMode, slaveaddr, pdulengh);
+    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                         = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF]        = RegReadStartAddr >> 8;
@@ -728,7 +735,7 @@ mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs,
     if(RegAddr != ((premain[0] << 8) | premain[1]))
         return MB_EINVAL;
 
-    __vMBLocalWrRegRegs(regs->pReghold, RegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
+__vMBLocalWrRegRegs(regs->pReghold, RegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
          
     return MB_ENOERR;   
 }
@@ -757,7 +764,7 @@ mb_ErrorCode_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs,
                                                         
 mb_ErrorCode_t eMBParseRdInputRegister(mb_Reg_t *regs, 
                                             uint16_t RegStartAddr, uint16_t Regcnt,
-                                            uint16_t *premain, uint16_t remainLength)
+                                            uint8_t *premain, uint16_t remainLength)
 {
     /* check frame is right length */
     /* check regcnt with previous request byteNum */

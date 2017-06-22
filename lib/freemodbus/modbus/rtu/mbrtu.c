@@ -1,5 +1,11 @@
+#include "mbconfig.h"
+#include "mbproto.h"
+#include "mbframe.h"
+#include "mbutils.h"
 
+#include "mbevent.h"
 
+#include "port.h"
 #include "mbrtu.h"
 
 #if MB_RTU_ENABLED > 0
@@ -13,6 +19,8 @@ typedef enum
 } eMBSndRcvState;    
 
 /* ----------------------- Start implementation -----------------------------*/
+#if MB_SLAVE_ENABLE > 0
+
 mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
@@ -231,10 +239,10 @@ bool xMBRTUTimerT35Expired(  mb_Device_t *dev)
 
     return xNeedPoll;
 }
-
+#endif
 /*************************************************************************************************/
 /* TODO implement modbus rtu master */
-#if MB_MASTER_ENABLE > 1
+#if MB_MASTER_ENABLE > 0
 
 mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
 {
@@ -277,22 +285,19 @@ mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, 
 void vMBMasterRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    /* Initially the receiver is in the state STATE_RX_INIT. we start
-     * the timer and if no character is received within t3.5 we change
-     * to STATE_RX_IDLE. This makes sure that we delay startup of the
-     * modbus protocol stack until the bus is free.
-     */
-    ((mb_MasterDevice_t *)dev)->rcvState = STATE_RX_INIT;
-    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, true, false );
-    vMBPortTimersEnable(((mb_MasterDevice_t *)dev)->port);
+    
+    ((mb_Device_t *)dev)->sndrcvState = STATE_RX_IDLE;
+    vMBPortSerialEnable(((mb_Device_t *)dev)->port, true, false);
+    vMBPortTimersDisable(((mb_Device_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
 
+
 void vMBMasterRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, false, false );
+    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, false, false);
     vMBPortTimersDisable(((mb_MasterDevice_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
@@ -306,13 +311,11 @@ void vMBMasterRTUClose(void *dev)
 mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
-    mb_Device_t *dev = (mb_MasterDevice_t *)pdev;
-
-    assert( dev->rcvAduBufrPos < MB_ADU_SIZE_MAX);
+    mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
-    if((dev->rcvAduBufrPos >= MB_ADU_RTU_SIZE_MIN)
+    if((dev->rcvAduBufrPos >= 3)
         && (prvxMBCRC16( (uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0)){
 
         phead->introute.slaveid = dev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
@@ -348,13 +351,13 @@ mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLe
      * slow with processing the received frame and the master sent another
      * frame on the network. We have to abort sending the frame.
      */
-    if( dev->rcvState == STATE_RX_IDLE ){
+    if( dev->sndrcvState == STATE_RX_IDLE ){
         // copy to sendbuff
         dev->sndAduBufCount = usAduLength;
-        pvMBmemcpy(dev->AduBuf,pAdu,usAduLength);
+        pvMBmemcpy((uint8_t *)dev->AduBuf,pAdu,usAduLength);
 
         /* Activate the transmitter. */
-		dev->sndState = STATE_TX_XMIT;
+		dev->sndrcvState = STATE_TX_XMIT;
         
 		/* start the first transmitter then into serial tc interrupt */
         xMBPortSerialPutByte(dev->port, pAdu[0]);
@@ -413,6 +416,7 @@ bool xMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev)
 
 
 
+
 bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev)
 {
     /* We should get a transmitter event in transmitter state.  */
@@ -425,9 +429,10 @@ bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev)
         }
         else{
             /* Disable transmitter. This prevents another transmit buffer
-             * empty interrupt. */
+             * empty interrupt. */             
             vMBPortSerialEnable(dev->port, true, false);
             dev->sndrcvState = STATE_RX_IDLE;
+            vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
         }
     }
     else {
@@ -439,21 +444,19 @@ bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev)
 }
 
 
+
 bool xMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev)
 {
-    bool xNeedPoll = false;
-
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
     if(dev->sndrcvState == STATE_RX_RCV)
-        xNeedPoll = xMBSemGive(dev);
+        vMBMasterSetPollmode(dev, MASTER_RSPEXCUTE);
 
     vMBPortTimersDisable(dev->port);
     dev->sndrcvState = STATE_RX_IDLE;
 
-    return xNeedPoll;
+    return true;
 }
-
 
 #endif
 

@@ -5,6 +5,8 @@
 #if MB_TCP_ENABLED > 0
 
 /* ----------------------- Start implementation -----------------------------*/
+#if MB_SLAVE_ENABLE > 0
+
 mb_ErrorCode_t eMBTCPInit(uint16_t ucTCPPort)
 {
     if( xMBTCPPortInit( ucTCPPort ) == false )
@@ -73,6 +75,8 @@ mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint1
     
     return MB_ENOERR;
 }
+
+#endif
 
 #if MB_MASTER_ENABLE > 0
 mb_ErrorCode_t eMBMasterTCPInit(uint16_t ucTCPPort)

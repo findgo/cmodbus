@@ -4,8 +4,6 @@
 
 
 #include "mbconfig.h"
-#include "mbframe.h"
-#include "mbproto.h"
 #include "mbcpu.h"
 
 #include "modbus.h"

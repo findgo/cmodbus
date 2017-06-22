@@ -1,14 +1,16 @@
 #include "port.h"
-#include "modbus.h"
 #include "mbrtu.h"
 #include "mbascii.h"
+#include "modbus.h"
 
 //STM32相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
+uint32_t sysclocktime = 0;
 
 extern mb_Device_t device1;
+extern mb_MasterDevice_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -97,21 +99,34 @@ void TIM4_IRQHandler(void)
     if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET){
         //清除定时器T4溢出中断标志位
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+#if MB_SLAVE_ENABLE > 0
 #if MB_RTU_ENABLED > 0
         xMBRTUTimerT35Expired(&device1);
 #endif
 #if MB_ASCII_ENABLED > 0
         xMBASCIITimerT1SExpired(&device1);
 #endif        
+#endif
+
+#if MB_MASTER_ENABLE > 0
+#if MB_RTU_ENABLED > 0
+        xMBMasterRTUTimerT35Expired(deviceM1);
+#endif
+#if MB_ASCII_ENABLED > 0
+        xMBMasterASCIITimerT1SExpired(deviceM1);
+#endif        
+
+#endif
     }
 }
 
 
 #if MB_MASTER_ENABLE > 0
+
 /*This optional function returns the current time in milliseconds (don't care
   for wraparound, this is only used for time diffs).*/
 uint32_t xMBsys_now(void)
 {
-    return 0;
+    return sysclocktime;
 }
 #endif

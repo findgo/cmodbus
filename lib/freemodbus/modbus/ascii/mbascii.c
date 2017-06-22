@@ -24,6 +24,8 @@ typedef enum
 
 
 /* ----------------------- Start implementation -----------------------------*/
+#if MB_SLAVE_ENABLE > 0
+
 mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
@@ -318,6 +320,7 @@ bool xMBASCIITimerT1SExpired(  mb_Device_t *dev)
     return false;
 }
 
+#endif
 
 #if MB_MASTER_ENABLE > 0
 mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity )

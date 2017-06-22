@@ -1,14 +1,15 @@
 
 #include "port.h"
-#include "modbus.h"
 #include "mbrtu.h"
 #include "mbascii.h"
+#include "modbus.h"
 
 //STM32操作相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
 extern mb_Device_t device1;
+extern mb_MasterDevice_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -160,11 +161,22 @@ void USART1_IRQHandler(void)
 {
   //发生接收中断
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+#if MB_SLAVE_ENABLE > 0
 #if MB_RTU_ENABLED > 0
         xMBRTUReceiveFSM(&device1);
 #endif
 #if MB_ASCII_ENABLED > 0
         xMBASCIIReceiveFSM(&device1);
+#endif
+#endif
+
+#if MB_MASTER_ENABLE > 0
+#if MB_RTU_ENABLED > 0
+        xMBMasterRTUReceiveFSM(deviceM1);
+#endif
+#if MB_ASCII_ENABLED > 0
+        xMBMasterASCIIReceiveFSM(deviceM1);
+#endif
 #endif
         //清除中断标志位    
         USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
@@ -174,14 +186,23 @@ void USART1_IRQHandler(void)
     if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
         //mb.c eMBInit函数中
 
-        //发送状态机
+#if MB_SLAVE_ENABLE > 0
 #if MB_RTU_ENABLED > 0
         xMBRTUTransmitFSM(&device1);
 #endif
 #if MB_ASCII_ENABLED > 0
         xMBASCIITransmitFSM(&device1);
 #endif
-        //清除中断标志
+#endif
+#if MB_MASTER_ENABLE > 0
+#if MB_RTU_ENABLED > 0
+        xMBMasterRTUTransmitFSM(deviceM1);
+#endif
+#if MB_ASCII_ENABLED > 0
+        xMBMasterASCIITransmitFSM(&eviceM1);
+#endif
+#endif
+
         USART_ClearITPendingBit(USART1, USART_IT_TC);
     }
   

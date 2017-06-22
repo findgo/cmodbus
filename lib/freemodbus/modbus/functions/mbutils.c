@@ -1,4 +1,5 @@
-
+#include "mbproto.h"
+#include "mbframe.h"
 #include "mbutils.h"
 
 #if MB_RTU_ENABLED > 0
@@ -118,7 +119,7 @@ uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
 }
 #endif
 
-void *pvMBmemcpy(uint8_t *dst,uint8_t *src,uint8_t length)
+void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length)
 {
     if((dst == NULL) || (src == NULL))
         return NULL;

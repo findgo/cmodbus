@@ -11,7 +11,7 @@ extern "C" {
 #include "mbframe.h"
 #include "mbcpu.h"
 
-#include "modbus.h"
+#include "mb.h"
 
 mb_ErrorCode_t eMBTCPInit(uint16_t ucTCPPort);
 void vMBTCPStart(void *dev);

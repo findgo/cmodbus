@@ -33,6 +33,7 @@ void vMBPortTimersDisable(uint8_t port);
 
 void vMBPortTimersDelay(uint8_t port,uint16_t usTimeOutMS );
 
+uint32_t xMBsys_now(void);
 
 /* ----------------------- TCP port functions -------------------------------*/
 bool xMBTCPPortInit( uint16_t usTCPPort );

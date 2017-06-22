@@ -136,8 +136,11 @@ void PendSV_Handler(void)
   * @param  None
   * @retval None
   */
+  
+extern uint32_t sysclocktime;
 void SysTick_Handler(void)
 {
+    sysclocktime++;
 }
 
 

@@ -1,6 +1,5 @@
 
 
-#include "modbus.h"
 #include "mbfunc.h"
 
 #if MB_RTU_ENABLED == 1
@@ -12,6 +11,13 @@
 #if MB_TCP_ENABLED == 1
 #include "mbtcp.h"
 #endif
+#include "port.h"
+#include "mbevent.h"
+#include "mbbuf.h"
+#include "mbutils.h"
+#include "modbus.h"
+
+#if MB_SLAVE_ENABLE > 0
 
 typedef struct
 {
@@ -440,6 +446,8 @@ static mb_Device_t *__dev_search(uint8_t port)
     return NULL;
 }
 
+#endif
+
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLE > 0
 
@@ -448,6 +456,16 @@ typedef struct
     uint8_t ucFunctionCode;
     pxMBParseRspHandler pxHandler;
 } xMBParseRspHandler;
+
+static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff);
+static mb_ErrorCode_t __masterReqreadylist_addtail(mb_MasterDevice_t *dev, mb_request_t *req);
+/* peek ready list */
+static mb_request_t *__masterReqreadylist_peek(mb_MasterDevice_t *dev);
+static void __masterReqreadylist_removehead(mb_MasterDevice_t *dev);
+static mb_ErrorCode_t __masterReqpendlist_add(mb_MasterDevice_t *dev, mb_request_t *req);
+static void __masterReqpendlistScan(mb_MasterDevice_t *dev, uint32_t diff);
+static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev);
+static mb_MasterDevice_t *__masterdev_search(uint8_t port);
 
 static mb_MasterDevice_t *mb_masterdev_head = NULL;
 
@@ -498,10 +516,14 @@ mb_MasterDevice_t *xMBBaseMasterDeviceNew(void)
 }
 
 #if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
-mb_ErrorCode_t eMBMasterOpen(mb_MasterDevice_t *dev, mb_Mode_t eMode, 
-                                uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
+mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
+    mb_MasterDevice_t *dev;
+
+    dev = mb_malloc(sizeof(mb_MasterDevice_t));
+    if(dev == NULL)
+        return NULL;
 
     switch (eMode){
 #if MB_RTU_ENABLED > 0
@@ -531,30 +553,43 @@ mb_ErrorCode_t eMBMasterOpen(mb_MasterDevice_t *dev, mb_Mode_t eMode,
     }
 
     if(eStatus != MB_ENOERR){
-        return eStatus;
+        mb_free(dev);
+        return NULL;
     }
     
-    if(!xMBSemBinaryInit(dev)){
-        /* port dependent event module initalization failed. */
-        eStatus = MB_EPORTERR;
-    }
-    else{        
-        dev->port           = ucPort;
-        dev->currentMode    = eMode;
-        dev->devstate       = DEV_STATE_DISABLED;
-        dev->retry          = MBM_DEFAULT_RETRYCNT;
-        dev->retrycnt       = 0;
-        dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
-        dev->Replytimeoutcnt    = 0;
-        dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
-        dev->Delaypolltimecnt   = 0;
-        dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
-        dev->Broadcastturntimecnt = 0;
+    dev->port         = ucPort;
+    dev->currentMode  = eMode;
+    
+    dev->devstate     = DEV_STATE_DISABLED;
 
-        eStatus = __masterdev_add(dev);
+    dev->nodehead     = NULL;
+
+    dev->Reqreadyhead = NULL;
+    dev->Reqreadytail = NULL;
+    dev->Reqpendhead  = NULL;
+
+    dev->Pollstate    = MASTER_IDLE;
+    
+    dev->retry        = MBM_DEFAULT_RETRYCNT;
+    dev->retrycnt     = 0;
+    
+    dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
+    dev->Replytimeoutcnt    = 0;
+    dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
+    dev->Delaypolltimecnt   = 0;
+    dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
+    dev->Broadcastturntimecnt = 0;
+
+    dev->next = NULL;
+    
+    eStatus = __masterdev_add(dev);
+    
+    if(eStatus != MB_ENOERR){
+        mb_free(dev);
+        return NULL;
     }
     
-    return eStatus;
+    return dev;
 }
 #endif
 
@@ -596,11 +631,16 @@ mb_ErrorCode_t eMBMasterTCPOpen(mb_MasterDevice_t *dev, uint16_t ucTCPPort)
 }
 #endif
 
+void vMBMasterDelete(mb_MasterDevice_t *dev)
+{
+    if(dev)
+        mb_free(dev);
+}
 
 
-mb_ErrorCode_t vMBMasterSetPara(mb_MasterDevice_t *dev, 
-                                    uin8_t retry,uin32_t replytimeout,
-                                    uin32_t delaypolltime, uin32_t broadcastturntime)
+mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev, 
+                                    uint8_t retry,uint32_t replytimeout,
+                                    uint32_t delaypolltime, uint32_t broadcastturntime)
 {
     if(dev){
         dev->retry = (retry > MBM_RETRYCNT_MAX) ? MBM_RETRYCNT_MAX : retry;
@@ -612,9 +652,9 @@ mb_ErrorCode_t vMBMasterSetPara(mb_MasterDevice_t *dev,
             dev->Replytimeout = replytimeout;
 
         if(delaypolltime < MBM_DELAYPOLLTIME_MIN)
-            dev->Delaypolltime = delaypolltime;
+            dev->Delaypolltime = MBM_DELAYPOLLTIME_MIN;
         else if(delaypolltime > MBM_DELAYPOLLTIME_MAX)
-            dev->Delaypolltime = delaypolltime;
+            dev->Delaypolltime = MBM_DELAYPOLLTIME_MAX;
         else
             dev->Delaypolltime = delaypolltime;
 
@@ -628,12 +668,12 @@ mb_ErrorCode_t vMBMasterSetPara(mb_MasterDevice_t *dev,
         return MB_ENOERR;
     }
 
-    return MB_EINVAL
+    return MB_EINVAL;
 }
 
 
 /* 创建一个从机节点         和 寄存器列表*/
-mb_slavenode_t * eMBMasterNodeNew(uint8_t slaveaddr,
+mb_slavenode_t *xMBMasterNodeNew(uint8_t slaveaddr,
                                     uint16_t reg_holding_addr_start,
                                     uint16_t reg_holding_num,
                                     uint16_t reg_input_addr_start,
@@ -729,6 +769,7 @@ mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node)
 mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, uint8_t slaveaddr)
 {
     
+    return MB_ENOERR;
 }
 
 mb_slavenode_t *xMBMasterNodeSearch(mb_MasterDevice_t *dev,uint8_t slaveaddr)
@@ -797,28 +838,26 @@ mb_ErrorCode_t eMBMasterClose(mb_MasterDevice_t *dev)
 void vMBMasterPoll(void)
 {
     static uint32_t HistimerCounter = 0;
-    mb_MasterDevice_t *curdev = mb_masterdev_head;    
+    mb_MasterDevice_t *curdev;    
     uint32_t elapsedMSec = 0;
 
     elapsedMSec = (uint32_t)(xMBsys_now() - HistimerCounter);
     if(elapsedMSec)
         HistimerCounter = xMBsys_now();
-    
+
+    curdev = mb_masterdev_head;
      while(curdev){
         eMBMasterhandle(curdev,elapsedMSec);
         curdev = curdev->next;
     }
 }
-void vMBMasterSetPollmode(mb_MasterDevice_t *dev,mb_DevState_t state)
-{
-    dev->Pollstate = state;
-}
+
 static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
 {
     uint8_t *pRemainFrame; // remain fram
-    uint8_t ucRcvAddress;
     uint8_t ucFunctionCode;
     uint16_t usLength;
+    mb_ErrorCode_t status;
     eMBException_t eException;
     mb_header_t header;
     mb_request_t *req;
@@ -841,58 +880,96 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
         if(req && (dev->peMBSendCur(dev,req->padu,req->adulength) == MB_ENOERR)){
             dev->Pollstate = MASTER_XMITING;
         }
+        else{ /* nothing want to send or send error, wait a moment to try*/
+            dev->Pollstate = MASTER_DELYPOLL;
+        }
         break;
 
-    case MASTER_RSPEXCUTE:
+    case MASTER_RSPEXCUTE:        
+        req = __masterReqreadylist_peek(dev);
+        if(req == NULL) { /* some err happen ,then no request in list*/
+            dev->Pollstate = MASTER_DELYPOLL;
+            break;
+        }
+    
         /* parser a adu fram */
         eStatus = dev->peMBReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
-        if( eStatus != MB_ENOERR )
-            return eStatus;
+        if( eStatus != MB_ENOERR ){
+            dev->Pollstate = MASTER_DELYPOLL;
+            break;
+        }
 
-        // 导常码
-        if(ucFunctionCode & 0x80){
-            // pRemainFrame[0]; //异常码
+        if((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveaddr != header.introute.slaveid)){
+            /* not for us ,continue to wait response */
+            dev->Pollstate = MASTER_WAITRSP;
+            break;
+        }
+        
+        /* funcoe and slaveid same, this frame for us and then excute it*/
+        if(ucFunctionCode & 0x80){ // 异常码
+            eException = (eMBException_t)pRemainFrame[0]; //异常码
         }
         else{
-            req = __masterReqreadylist_peek(dev);
-            if((req->funcode == ucFunctionCode) 
-                && (req->slaveaddr == header.introute.slaveid)){
-                
-                eException = MB_EX_ILLEGAL_FUNCTION;
-                for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
-                    /* No more function handlers registered. Abort. */
-                    if( xParseRspHandlers[i].ucFunctionCode == 0 ){
-                        break;
-                    }
-                    else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
-                        eException = xParseRspHandlers[i].pxHandler(&req->node->regs, 
-                                                                req->regaddr, req->regcnt, 
-                                                                pRemainFrame,usLength);
-                        break;
-                    }                
+            status = MBM_EINFUNCTION;
+            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
+                /* No more function handlers registered. Abort. */
+                if( xParseRspHandlers[i].ucFunctionCode == 0 ){
+                    break;
                 }
+                else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
+                    status = xParseRspHandlers[i].pxHandler(&req->node->regs, 
+                                                            req->regaddr, req->regcnt, 
+                                                            pRemainFrame,usLength);
+                    break;
+                }                
             }
 
-            if(eException != MB_ENOERR){
-                if(req->slaveaddr == MB_ADDRESS_BROADCAST)
-                    __masterReqreadylist_removehead(dev);
-                else{
-                    // reqready list move to pend list
-                }
-                //if(curreq->ReqSuccessCB)
-                //    curreq->ReqSuccessCB(curreq);
+            if(status != MB_ENOERR){
+                break;
+            }
+
+            __masterReqreadylist_removehead(dev);
+            if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                vMB_ReqBufDelete(req);
+            else{// move to pend list
+                __masterReqpendlist_add(dev, req);
             }
         }
-                   
+        dev->Pollstate = MASTER_DELYPOLL;             
         break;
-    case MASTER_RSPTIMEOUT;
-        
+    case MASTER_RSPTIMEOUT:
+        req = __masterReqreadylist_peek(dev);
+        if(req == NULL) { /* some err happen ,then no request in list*/
+            dev->Pollstate = MASTER_DELYPOLL;
+        }
+        else{
+            __masterReqreadylist_removehead(dev);
+            if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                vMB_ReqBufDelete(req);
+            else{// move to pend list
+                __masterReqpendlist_add(dev, req);
+            }
+            dev->Pollstate = MASTER_XMIT;
+        }
+        break;
     case MASTER_BROADCASTTURN:
     case MASTER_DELYPOLL:
-    case MASTER_WAITRSP:
-        break;
     case MASTER_XMITING:
         break;
+    case MASTER_WAITRSP:
+        req = __masterReqreadylist_peek(dev);
+        if(req == NULL) { /* some err happen ,then no request in list*/
+            dev->Pollstate = MASTER_DELYPOLL;
+        }
+        else if(req->slaveaddr == MB_ADDRESS_BROADCAST){           
+            __masterReqreadylist_removehead(dev);
+            vMB_ReqBufDelete(req);
+            dev->Pollstate = MASTER_BROADCASTTURN;
+        }
+        else{
+            /* keep wait for responese */
+        }
+        break;        
     default:
         dev->Pollstate = MASTER_IDLE;
     }
@@ -900,22 +977,33 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
     if(timediff){
         switch (dev->Pollstate){
         case MASTER_BROADCASTTURN:
+            /* 广播转换延迟时间 ,发出广播后给节点处理的时间*/
+            dev->Broadcastturntimecnt += timediff;
+            if(dev->Broadcastturntimecnt >= dev->Broadcastturntime){
+                dev->Broadcastturntimecnt = 0;                
+                dev->Pollstate = MASTER_XMIT;
+            }
             break;
         case MASTER_DELYPOLL:
-            if(dev->Delaypolltimecnt++ >= dev->Delaypolltime){
-                dev->Delaypolltimecnt = 0;
-                // post event to transmit
+            /* 两个请求之间的延迟时间 */
+            dev->Delaypolltimecnt += timediff;
+            if(dev->Delaypolltimecnt >= dev->Delaypolltime){
+                dev->Delaypolltimecnt = 0;                
+                dev->Pollstate = MASTER_XMIT;
             }
-            break
+            break;
         case MASTER_WAITRSP:
-            if(dev->Replytimeoutcnt++ >= dev->Replytimeout){
+            dev->Replytimeoutcnt += timediff;
+            if(dev->Replytimeoutcnt >= dev->Replytimeout){
                 dev->Replytimeoutcnt = 0;
-                // post event to deal reply timeout
+                dev->Pollstate = MASTER_RSPTIMEOUT;
             }
             break;
         default:
             break;
         }
+
+        __masterReqpendlistScan(dev,timediff);// scan pend list 
     }
     
     return MB_ENOERR;
@@ -923,60 +1011,116 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
 
 
 mb_ErrorCode_t eMBMaster_Reqsnd(mb_MasterDevice_t *dev, mb_request_t *req)
-{    
-    if(!req->scanrate) // if zero add ready list
+{   
+    uint16_t crc_lrc;
+    
+    if(dev->currentMode == MB_RTU){
+#if MB_RTU_ENABLED > 0
+        crc_lrc = prvxMBCRC16(req->padu,req->adulength);
+        req->padu[req->adulength++] = (crc_lrc >> 8) & 0xff;
+        req->padu[req->adulength++] = crc_lrc & 0xff;
+#endif
+    }else if(dev->currentMode == MB_ASCII){
+#if MB_ASCII_ENABLED > 0
+        crc_lrc = prvxMBLRC(req->padu,req->adulength);
+        req->padu[req->adulength++] = crc_lrc & 0xff;
+#endif
+    }else{
+        /* tcp no check sum */
+    }
+    
+    if(!req->scanrate) // if zero add ready list immediately but only once
         __masterReqreadylist_addtail(dev,req);
     else
         __masterReqpendlist_add(dev,req);
 
     return MB_ENOERR;
 }
-/* 向主机挂起列表增加一个请求 */
-static mb_ErrorCode_t __masterReqpendlist_add(mb_MasterDevice_t *dev, mb_request_t *req)
-{    
-    if(dev->Reqpendhead == NULL){
-        dev->Reqpendhead = req;
-    }
-    else{
-        req->next = dev->Reqpendhead;
-        dev->Reqpendhead = req;
-    }
 
-    return MB_ENOERR;
-}
 
-/* 向主机就绪列表尾部增加一个请求 这是个fifo的队列*/
+/*## 向主机就绪列表尾部增加一个请求 这是个fifo的队列*/
 static mb_ErrorCode_t __masterReqreadylist_addtail(mb_MasterDevice_t *dev, mb_request_t *req)
-{    
+{
+    req->next = NULL; /* make sure next is NULL , may be link previous list*/
     if(dev->Reqreadyhead == NULL){
         dev->Reqreadyhead = req;
-        dev->Reqreadytail = req;
     }
     else{
         dev->Reqreadytail->next = req;
-        dev->Reqreadytail = req;
     }
-
+    dev->Reqreadytail = req;
+    
     return MB_ENOERR;
 }
 
+/* peek ready list */
 static mb_request_t *__masterReqreadylist_peek(mb_MasterDevice_t *dev)
 {
     return dev->Reqreadyhead;
 }
 
-static mb_ErrorCode_t __masterReqreadylist_removehead(mb_MasterDevice_t *dev)
+static void __masterReqreadylist_removehead(mb_MasterDevice_t *dev)
 {
+    if(dev->Reqreadyhead == NULL) /* nothing to remove */ 
+        return;
+    
     dev->Reqreadyhead = dev->Reqreadyhead->next;
-    if(dev->Reqreadyhead == NULL)
+    if(dev->Reqreadyhead == NULL) /* it is reach tail and noting in the list */
         dev->Reqreadytail = NULL;
 }
 
-static mb_ErrorCode_t __masterReqreadyMovetoPendlist(mb_MasterDevice_t *dev)
+
+/*## 向主机挂起列表增加一个请求 */
+static mb_ErrorCode_t __masterReqpendlist_add(mb_MasterDevice_t *dev, mb_request_t *req)
 {
+    req->scancnt = 0; 
+    if(dev->Reqpendhead == NULL){
+        req->next = NULL; // make sure next is NULL
+    }
+    else{
+        req->next = dev->Reqpendhead;
+    }
     
+    dev->Reqpendhead = req;
+    
+    return MB_ENOERR;
 }
-/*  */
+
+/*##  */
+static void __masterReqpendlistScan(mb_MasterDevice_t *dev, uint32_t diff)
+{
+    mb_request_t *prevReq;
+    mb_request_t *srchReq;
+    mb_request_t *addReq;
+    
+    srchReq = dev->Reqpendhead;
+    prevReq = NULL;
+    while(srchReq)
+    {
+        srchReq->scancnt += diff;
+        if(srchReq->scancnt >= srchReq->scanrate){// scan timeout move to ready list
+            
+            //first remove from pend list
+            if(prevReq == NULL)
+                dev->Reqpendhead = srchReq->next;
+            else
+                prevReq->next = srchReq->next;
+
+            addReq = srchReq;  /* set up to add ready list later */
+            srchReq = srchReq->next; /* get next */
+            
+            // the add to read list
+            __masterReqreadylist_addtail(dev,addReq);
+        }
+        else{
+            /* get next */
+            prevReq = srchReq;
+            srchReq = srchReq->next;
+        }
+    }
+}
+
+
 
 static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev)
 {
@@ -1018,6 +1162,7 @@ static mb_MasterDevice_t *__masterdev_search(uint8_t port)
 
     return NULL;
 }
+
 
 #endif
 

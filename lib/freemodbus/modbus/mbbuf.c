@@ -1,13 +1,15 @@
-
+#include "mbframe.h"
+#include "mbproto.h"
 #include "mbbuf.h"
 
+#if MB_MASTER_ENABLE > 0
 
 mb_request_t *xMB_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize)
 {
     uint16_t size;
     mb_request_t *req;
     
-    req = (mb_request_t *)mb_malloc(sizeof(mb_request_t))
+    req = (mb_request_t *)mb_malloc(sizeof(mb_request_t));
     if(req){
         memset(req,0,sizeof(mb_request_t));
         
@@ -56,3 +58,4 @@ uint8_t xMBsetHead(mb_Mode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pd
         return MB_TCP_ADU_SIZE_MBAP;
     }
 }
+#endif
