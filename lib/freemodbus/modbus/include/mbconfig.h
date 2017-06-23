@@ -112,7 +112,7 @@ extern "C" {
 
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
-#define REG_HOLDING_NREGS     ( 3 )
+#define REG_HOLDING_NREGS     ( 10 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
 #define REG_DISCRETE_SIZE     (8 * 3)

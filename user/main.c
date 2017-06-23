@@ -9,14 +9,15 @@ static void prvnvicInit(void);
 
 #if MB_MASTER_ENABLE > 0
 mb_MasterDevice_t* deviceM1;
-
+uint8_t flag = 0;
+uint16_t RegAddr,val[3] = {0x1111,0x2222,0x3333};
 int main(void)
 {	
     mb_ErrorCode_t status;
     mb_slavenode_t *node;
-
-	prvClockInit();
-	prvnvicInit();
+  
+//	prvClockInit();
+	  prvnvicInit();
     Systick_Configuration();
     SystemCoreClockUpdate();
     
@@ -30,8 +31,12 @@ int main(void)
             eMBMasterNodeadd(deviceM1,node);
        }
 
-       (void)eMBReqRdHoldingRegister(deviceM1, 0x01, 0, 3, 1000);        
+       //(void)eMBReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
+       //(void)eMBReqRdInputRegister(deviceM1, 0x01, 0, 3, 1000);        
+       //(void)eMBReqRdCoils(deviceM1, 0x01, 0, 16, 1000);        
+       //(void)eMBReqRdDiscreteInputs(deviceM1, 0x01, 0, 16, 1000);        
        (void)eMBMasterStart(deviceM1);  
+       
     }
 #endif
 #if MB_ASCII_ENABLED > 0
@@ -39,6 +44,14 @@ int main(void)
 #endif
 	while(1)
 	{
+	    if(flag){
+            flag = 0;
+            eMBReqRdWrMulHoldingRegister(deviceM1, 0x01,0,REG_HOLDING_NREGS, RegAddr,3,val,3);
+            //eMbReqWrMulHoldingRegister(deviceM1, 0x01, RegAddr,3,val,3);
+            //eMBReqWrHoldingRegister(deviceM1, 0x01, RegAddr,val);
+            //eMbReqWrMulCoils(deviceM1, 0x01, RegAddr,8,(uint8_t *)&val,1);
+            //eMBReqWrCoil(deviceM1, 0x01, RegAddr, val,);
+        }
 	    vMBMasterPoll();
 	}
 	//Should never reach this point!

@@ -1017,8 +1017,8 @@ mb_ErrorCode_t eMBMaster_Reqsnd(mb_MasterDevice_t *dev, mb_request_t *req)
     if(dev->currentMode == MB_RTU){
 #if MB_RTU_ENABLED > 0
         crc_lrc = prvxMBCRC16(req->padu,req->adulength);
-        req->padu[req->adulength++] = (crc_lrc >> 8) & 0xff;
         req->padu[req->adulength++] = crc_lrc & 0xff;
+        req->padu[req->adulength++] = (crc_lrc >> 8) & 0xff;
 #endif
     }else if(dev->currentMode == MB_ASCII){
 #if MB_ASCII_ENABLED > 0
