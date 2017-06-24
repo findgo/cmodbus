@@ -494,7 +494,7 @@ mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
     
-    status = eMBMaster_Reqsnd(Mdev,req);
+    status = eMBMaster_Reqsend(Mdev,req);
     
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
@@ -552,7 +552,7 @@ mb_ErrorCode_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev,req);
+    status = eMBMaster_Reqsend(Mdev,req);
     
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
@@ -630,7 +630,7 @@ mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev,req);
+    status = eMBMaster_Reqsend(Mdev,req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
 
@@ -688,7 +688,7 @@ mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev,req);
+    status = eMBMaster_Reqsend(Mdev,req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(pAdu);
 
@@ -712,30 +712,30 @@ static void __vMBLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Coilcnt, 
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength)
 {
     uint8_t ucByteCount;
 
-    ucByteCount = Coilcnt / 8 + (((Coilcnt & 0x0007) > 0) ? 1 : 0);
+    ucByteCount = ReqRegcnt / 8 + (((ReqRegcnt & 0x0007) > 0) ? 1 : 0);
     /* check frame is right length */    
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MB_EINVAL;
       
-    __vMBLocalWrRegBits(regs->pRegCoil, RegStartAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  Coilcnt);
+    __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
 
     return MB_ENOERR;
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs, 
-                                    uint16_t RegAddr, uint16_t Coilcnt,
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
     uint8_t bitval = 0;
 
-    (void) Coilcnt;
-    if((remainLength != 4) || RegAddr != ((premain[0] << 8) | premain[1]))
+    (void) ReqRegcnt;
+    if((remainLength != 4) || ReqRegAddr != ((premain[0] << 8) | premain[1]))
         return MB_EINVAL;
 
     
@@ -746,38 +746,38 @@ mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs,
     if(premain[2] == 0xFF)
         bitval |= 0x01; 
 
-    __vMBLocalWrRegBits(regs->pRegCoil, RegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
+    __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
 
     return MB_ENOERR;
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Coilcnt,
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
     if(remainLength != 4)
         return MB_EINVAL;
 
-    if((RegStartAddr != ((premain[0] << 8) | premain[1]))
-        || (Coilcnt != ((premain[2] << 8) | premain[3])))
+    if((ReqRegAddr != ((premain[0] << 8) | premain[1]))
+        || (ReqRegcnt != ((premain[2] << 8) | premain[3])))
         return MB_EINVAL;
 
     return MB_ENOERR;
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Discnt, 
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength)
 {
     uint8_t ucByteCount;
     
-    ucByteCount = Discnt / 8 + (((Discnt & 0x0007) > 0) ? 1 : 0);
+    ucByteCount = ReqRegcnt / 8 + (((ReqRegcnt & 0x0007) > 0) ? 1 : 0);
     /* check frame is right length */
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MB_EINVAL;
       
-    __vMBLocalWrRegBits(regs->pRegDisc, RegStartAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], Discnt);
+    __vMBLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MB_ENOERR;
 }

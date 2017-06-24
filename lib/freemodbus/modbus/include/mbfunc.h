@@ -103,58 +103,61 @@ eMBException_t eMBFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint
 
 
 /* for bits */
+/* for request */
 mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate);
+                                        uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate);
 mb_ErrorCode_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegAddr, uint16_t val);
+                                        uint16_t RegAddr, uint16_t val);
 mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Coilcnt,
                                         uint8_t *valbuf, uint16_t valcnt);
 mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate);
-
+/* for parse response */
 mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Coilcnt, 
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs, 
-                                    uint16_t RegAddr, uint16_t Coilcnt,
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Coilcnt,
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t Discnt, 
+                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength);
-/* for register */
+/* for register */                                    
+/* for request */
 mb_ErrorCode_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
+                                                uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
 mb_ErrorCode_t eMBReqWrHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegAddr, uint16_t val);
+                                                uint16_t RegAddr, uint16_t val);
 mb_ErrorCode_t eMbReqWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegStartAddr, uint16_t Regcnt,
-                                        uint16_t *valbuf, uint16_t valcnt);
+                                                uint16_t RegStartAddr, uint16_t Regcnt,
+                                                uint16_t *valbuf, uint16_t valcnt);
 mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
+                                                uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
 
 mb_ErrorCode_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                                    uint16_t RegReadStartAddr, uint16_t RegReadCnt,
-                                                    uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
-                                                    uint16_t *valbuf, uint16_t valNUM);
+                                                uint16_t RegReadStartAddr, uint16_t RegReadCnt,
+                                                uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
+                                                uint16_t *valbuf, uint16_t valcnt);
+/* for parse response */
 mb_ErrorCode_t eMBParseRspRdHoldingRegister(mb_Reg_t *regs, 
-                                                uint16_t RegStartAddr, uint16_t Regcnt,
+                                                uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, 
-                                                    uint16_t RegAddr, uint16_t Regcnt,
-                                                    uint8_t *premain, uint16_t remainLength);
+                                                uint16_t ReqRegAddr, uint16_t Regcnt,
+                                                uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspWrMulHoldingRegister(mb_Reg_t *regs, 
-                                                        uint16_t RegStartAddr,uint16_t Regcnt, 
-                                                        uint8_t *premain, uint16_t remainLength);
+                                                uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
+                                                uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs, 
-                                                        uint16_t RegStartAddr,uint16_t Regcnt, 
-                                                        uint8_t *premain, uint16_t remainLength);
+                                                uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
+                                                uint8_t *premain, uint16_t remainLength);
 mb_ErrorCode_t eMBParseRdInputRegister(mb_Reg_t *regs, 
-                                            uint16_t RegStartAddr, uint16_t Regcnt,
-                                            uint8_t *premain, uint16_t remainLength);
+                                                uint16_t ReqRegAddr, uint16_t ReqRegcnt,
+                                                uint8_t *premain, uint16_t remainLength);
     
 #ifdef __cplusplus
 }

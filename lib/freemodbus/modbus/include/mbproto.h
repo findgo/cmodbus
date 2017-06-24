@@ -7,6 +7,11 @@ extern "C" {
 #endif
 
 /* ----------------------- Defines ------------------------------------------*/
+/*! \ingroup modbus
+ * \brief Use the default Modbus TCP port (502)
+ */
+#define MB_TCP_PORT_USE_DEFAULT     (502)   
+
 #define MB_ADDRESS_BROADCAST    ( 0 )   /*! Modbus broadcast address. */
 #define MB_ADDRESS_MIN          ( 1 )   /*! Smallest possible slave address. */
 #define MB_ADDRESS_MAX          ( 247 ) /*! Biggest possible slave address. */

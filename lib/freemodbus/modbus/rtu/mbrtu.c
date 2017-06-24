@@ -432,7 +432,8 @@ bool xMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev)
              * empty interrupt. */             
             vMBPortSerialEnable(dev->port, true, false);
             dev->sndrcvState = STATE_RX_IDLE;
-            vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
+            if(dev->Pollstate == MASTER_XMITING)
+                vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
         }
     }
     else {
@@ -449,7 +450,7 @@ bool xMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev)
 {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
-    if(dev->sndrcvState == STATE_RX_RCV)
+    if(dev->sndrcvState == STATE_RX_RCV && dev->Pollstate == MASTER_WAITRSP);
         vMBMasterSetPollmode(dev, MASTER_RSPEXCUTE);
 
     vMBPortTimersDisable(dev->port);

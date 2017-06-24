@@ -5,9 +5,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* ----------------------- Defines ------------------------------------------*/
+/********************* common defined  ************************/
 #define MB_MASTER_ENABLE        (1)
 #define MB_SLAVE_ENABLE         (0)
+
+/* dynamic memory allocation ENABLE*/
+#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (1)
+
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0 || MB_MASTER_ENABLE > 0
+#define mb_malloc pvPortMalloc
+#define mb_free vfree
+#endif
 
 /*! \defgroup modbus_cfg Modbus Configuration
  *
@@ -29,6 +37,11 @@ extern "C" {
 /*! \brief If Modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )
 
+
+/*-------------------------------------------------------------------------*/
+/*----------------------------- for slave defined -----------------------------*/
+/*-------------------------------------------------------------------------*/
+
 /*! \brief The character timeout value for Modbus ASCII.
  *
  * The character timeout value is not fixed for Modbus ASCII and is therefore
@@ -36,7 +49,6 @@ extern "C" {
  * time of the network.
  */
 #define MB_ASCII_TIMEOUT_SEC                    (  1 )
-
 /*! \brief Timeout to wait in ASCII prior to enabling transmitter.
  *
  * If defined the function calls vMBPortSerialDelay with the argument
@@ -49,10 +61,6 @@ extern "C" {
 #ifndef MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS
 #define MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    ( 0 )
 #endif
-/* use port close ?? */
-#ifndef MB_PORT_HAS_CLOSE
-#define MB_PORT_HAS_CLOSE 0
-#endif
 /*! \brief Maximum number of Modbus functions codes the protocol stack
  *    should support.
  *
@@ -61,7 +69,6 @@ extern "C" {
  * handlers. If set to small adding more functions will fail.
  */
 #define MB_FUNC_HANDLERS_MAX                    ( 16 )
-
 /*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
  *    </em>command.
  *
@@ -86,7 +93,6 @@ extern "C" {
 
 /*! \brief If the <em>Read Input Registers</em> function should be enabled. */
 #define MB_FUNC_READ_INPUT_ENABLED              (  1 )
-
 /*! \brief If the <em>Read Coils</em> function should be enabled. */
 #define MB_FUNC_READ_COILS_ENABLED              (  1 )
 /*! \brief If the <em>Write Coils</em> function should be enabled. */
@@ -97,25 +103,52 @@ extern "C" {
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
-/*! \ingroup modbus
- * \brief Use the default Modbus TCP port (502)
+/*--------------------------------------------------------------------------*/
+/*----------------------------- for master defined -----------------------------*/
+/*-------------------------------------------------------------------------*/
+
+/*! \brief Maximum number of Modbus functions codes the protocol stack
+ *    should support.
+ *
+ * The maximum number of supported Modbus functions must be greater than
+ * the sum of all enabled functions in this file and custom function
+ * handlers. If set to small adding more functions will fail.
  */
-#define MB_TCP_PORT_USE_DEFAULT     (502)   
+#define MB_PARSE_RSP_HANDLERS_MAX               ( 16 )
 
-/* dynamic memory allocation ENABLE*/
-#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (1)
+/*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
+ *    </em>command.
+ *
+ * This number limits the maximum size of the additional segment in the
+ * report slave id function. See eMBSetSlaveID(  ) for more information on
+ * how to set this value. It is only used if MB_FUNC_OTHER_REP_SLAVEID_ENABLED
+ * is set to <code>1</code>.
+ */
+#define MB_PARSE_RSP_OTHER_REP_SLAVEID_BUF           ( 32 )
 
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0
-#define mb_malloc pvPortMalloc
-#define mb_free vfree
-#endif
+/*! \brief If the <em>Report Slave ID</em> function should be enabled. */
+#define MB_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED       (  1 )
 
+/*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
+#define MB_PARSE_RSP_READ_HOLDING_ENABLED            (  1 )
+/*! \brief If the <em>Write Single Register</em> function should be enabled. */
+#define MB_PARSE_RSP_WRITE_HOLDING_ENABLED           (  1 )
+/*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
+#define MB_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
+/*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
+#define MB_PARSE_RSP_READWRITE_HOLDING_ENABLED       (  1 )
 
-/* Private define for reg modify by user ------------------------------------------------------------*/
-#define REG_HOLDING_NREGS     ( 10 )
-#define REG_INPUT_NREGS       ( 3 )
-#define REG_COILS_SIZE        (8 * 2)
-#define REG_DISCRETE_SIZE     (8 * 3)
+/*! \brief If the <em>Read Input Registers</em> function should be enabled. */
+#define MB_PARSE_RSP_READ_INPUT_ENABLED              (  1 )
+/*! \brief If the <em>Read Coils</em> function should be enabled. */
+#define MB_PARSE_RSP_READ_COILS_ENABLED              (  1 )
+/*! \brief If the <em>Write Coils</em> function should be enabled. */
+#define MB_PARSE_RSP_WRITE_COIL_ENABLED              (  1 )
+/*! \brief If the <em>Write Multiple Coils</em> function should be enabled. */
+#define MB_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
+
+/*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
+#define MB_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
 
 /*! @} */

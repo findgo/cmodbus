@@ -50,7 +50,7 @@ uint8_t xMBsetHead(mb_Mode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pd
     else{
         pAdu[MB_TCP_ADU_PID_OFFSET]     = MB_TCP_PROTOCOL_ID >> 8;
         pAdu[MB_TCP_ADU_PID_OFFSET + 1] = MB_TCP_PROTOCOL_ID;
-        pAdu[MB_TCP_ADU_LEN_OFFSET]     = (pdulength + 1) >> 8;   /*  */
+        pAdu[MB_TCP_ADU_LEN_OFFSET]     = (pdulength + 1) >> 8;
         pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = (pdulength + 1) & 0xff;
         pAdu[MB_TCP_ADU_UID_OFFSET]     = slaveaddr;
 

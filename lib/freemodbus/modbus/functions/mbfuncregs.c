@@ -418,7 +418,7 @@ mb_ErrorCode_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveadd
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev, req);
+    status = eMBMaster_Reqsend(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
 
@@ -474,7 +474,7 @@ mb_ErrorCode_t eMBReqWrHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveadd
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev, req);
+    status = eMBMaster_Reqsend(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
 
@@ -548,7 +548,7 @@ mb_ErrorCode_t eMbReqWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slave
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev, req);
+    status = eMBMaster_Reqsend(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
     
@@ -607,7 +607,7 @@ mb_ErrorCode_t eMBReqRdInputRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev, req);
+    status = eMBMaster_Reqsend(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
 
@@ -694,7 +694,7 @@ mb_ErrorCode_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t sla
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    status = eMBMaster_Reqsnd(Mdev, req);
+    status = eMBMaster_Reqsend(Mdev, req);
     if(status != MB_ENOERR)
         vMB_ReqBufDelete(req);
 
@@ -713,70 +713,70 @@ void __vMBLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *puc
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspRdHoldingRegister(mb_Reg_t *regs, 
-                                                uint16_t RegStartAddr, uint16_t Regcnt,
+                                                uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength)
 {
 
     /* check frame is right length */
-    /* check regcnt with previous request byteNum */
-    if((remainLength  != (1 + Regcnt * 2)) || (premain[0] != Regcnt * 2))
+    /* check ReqRegcnt with previous request byteNum */
+    if((remainLength  != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MB_EINVAL; 
         
-    __vMBLocalWrRegRegs(regs->pReghold, RegStartAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[1], Regcnt);
+    __vMBLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MB_ENOERR;    
 }
 /* ok */
 mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, 
-                                                    uint16_t RegAddr, uint16_t Regcnt,
+                                                    uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                     uint8_t *premain, uint16_t remainLength)
 {
-    (void)Regcnt;
+    (void)ReqRegcnt;
     
     if(remainLength != 4)
         return MB_EINVAL;
 
-    if(RegAddr != ((premain[0] << 8) | premain[1]))
+    if(ReqRegAddr != ((premain[0] << 8) | premain[1]))
         return MB_EINVAL;
 
-    __vMBLocalWrRegRegs(regs->pReghold, RegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
+    __vMBLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
          
     return MB_ENOERR;   
 }
 /* ok */                                                        
 mb_ErrorCode_t eMBParseRspWrMulHoldingRegister(mb_Reg_t *regs, 
-                                                        uint16_t RegStartAddr,uint16_t Regcnt, 
+                                                        uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                         uint8_t *premain, uint16_t remainLength)
 {
     if(remainLength != 4)
         return MB_EINVAL;
 
-    if((RegStartAddr != ((premain[0] << 8) | premain[1]))
-        || (Regcnt != ((premain[2] << 8) | premain[3])))
+    if((ReqRegAddr != ((premain[0] << 8) | premain[1]))
+        || (ReqRegcnt != ((premain[2] << 8) | premain[3])))
         return MB_EINVAL;
 
     return MB_ENOERR;    
 }                                                        
 /* ok */
 mb_ErrorCode_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs, 
-                                                        uint16_t RegStartAddr,uint16_t Regcnt, 
+                                                        uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                         uint8_t *premain, uint16_t remainLength)
 {
     
-    return eMBParseRspRdHoldingRegister(regs, RegStartAddr, Regcnt, premain, remainLength);
+    return eMBParseRspRdHoldingRegister(regs, ReqRegAddr, ReqRegcnt, premain, remainLength);
     
 }
 /* ok */
 mb_ErrorCode_t eMBParseRdInputRegister(mb_Reg_t *regs, 
-                                            uint16_t RegStartAddr, uint16_t Regcnt,
+                                            uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                             uint8_t *premain, uint16_t remainLength)
 {
     /* check frame is right length */
-    /* check regcnt with previous request byteNum */
-    if((remainLength  != (1 + Regcnt * 2)) || (premain[0] != Regcnt * 2))
+    /* check ReqRegcnt with previous request byteNum */
+    if((remainLength  != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MB_EINVAL; 
         
-    __vMBLocalWrRegRegs(regs->pReginput, RegStartAddr - regs->reg_input_addr_start, (uint8_t *)&premain[1], Regcnt);
+    __vMBLocalWrRegRegs(regs->pReginput, ReqRegAddr - regs->reg_input_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MB_ENOERR;    
 }

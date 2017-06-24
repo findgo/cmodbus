@@ -12,8 +12,6 @@ extern "C" {
 /* ------------ Serial port functions ----------------------------*/
 bool xMBPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity);
 
-void vMBPortClose(uint8_t port);
-
 void xMBPortSerialClose(uint8_t      port);
 
 void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable );

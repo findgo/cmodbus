@@ -17,6 +17,20 @@
 #include "mbutils.h"
 #include "modbus.h"
 
+uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
+                                  uint16_t reg_input_num,
+                                  uint16_t reg_coils_num,
+                                  uint16_t reg_discrete_num)
+{
+    uint32_t size;
+
+    size = reg_holding_num * sizeof(uint16_t) + reg_input_num * sizeof(uint16_t);    
+    size += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+    size += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+
+    return size;
+}
+
 #if MB_SLAVE_ENABLE > 0
 
 typedef struct
@@ -68,22 +82,6 @@ static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
 };
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0
-
-uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
-                            uint16_t reg_input_num,
-                            uint16_t reg_coils_num,
-                            uint16_t reg_discrete_num)
-{
-    uint32_t size;
-
-    size = reg_holding_num * sizeof(uint16_t);    
-    size +=  reg_input_num * sizeof(uint16_t);
-    size += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
-    size += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
-
-    return size;
-}
-
 mb_Device_t *xMBBaseDeviceNew(void)
 {
     mb_Device_t *dev;
@@ -470,34 +468,34 @@ static mb_MasterDevice_t *__masterdev_search(uint8_t port);
 static mb_MasterDevice_t *mb_masterdev_head = NULL;
 
 static xMBParseRspHandler xParseRspHandlers[MB_FUNC_HANDLERS_MAX] = {
-#if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
+#if MB_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
 #endif
-#if MB_FUNC_READ_HOLDING_ENABLED > 0
+#if MB_PARSE_RSP_READ_HOLDING_ENABLED > 0
     {MB_FUNC_READ_HOLDING_REGISTER, eMBParseRspRdHoldingRegister},
 #endif
-#if MB_FUNC_WRITE_HOLDING_ENABLED > 0
+#if MB_PARSE_RSP_WRITE_HOLDING_ENABLED > 0
     {MB_FUNC_WRITE_REGISTER, eMBParseRspWrHoldingRegister},
 #endif
-#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-        {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBParseRspWrMulHoldingRegister},
+#if MB_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED > 0
+    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBParseRspWrMulHoldingRegister},
 #endif
-#if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
+#if MB_PARSE_RSP_READWRITE_HOLDING_ENABLED > 0
     {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBParseRspRdWrMulHoldingRegister},
 #endif
-#if MB_FUNC_READ_INPUT_ENABLED > 0
+#if MB_PARSE_RSP_READ_INPUT_ENABLED > 0
     {MB_FUNC_READ_INPUT_REGISTER, eMBParseRdInputRegister},
 #endif
-#if MB_FUNC_READ_COILS_ENABLED > 0
+#if MB_PARSE_RSP_READ_COILS_ENABLED > 0
     {MB_FUNC_READ_COILS, eMBParseRspRdCoils},
 #endif
-#if MB_FUNC_WRITE_COIL_ENABLED > 0
+#if MB_PARSE_RSP_WRITE_COIL_ENABLED > 0
     {MB_FUNC_WRITE_SINGLE_COIL, eMBParseRspWrCoil},
 #endif
-#if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
+#if MB_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED > 0
     {MB_FUNC_WRITE_MULTIPLE_COILS, eMBParseRspWrMulCoils},
 #endif
-#if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
+#if MB_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED > 0
     {MB_FUNC_READ_DISCRETE_INPUTS, eMBParseRspRdDiscreteInputs},
 #endif
 };
@@ -631,12 +629,36 @@ mb_ErrorCode_t eMBMasterTCPOpen(mb_MasterDevice_t *dev, uint16_t ucTCPPort)
 }
 #endif
 
-void vMBMasterDelete(mb_MasterDevice_t *dev)
+mb_ErrorCode_t eMBMasterDelete(uint8_t ucPort)
 {
-    if(dev)
-        mb_free(dev);
-}
+     mb_MasterDevice_t *srh = NULL;
+     mb_MasterDevice_t *pre = NULL;
+     
+    if(mb_masterdev_head == NULL)
+        return MB_ENOERR;
 
+    srh = mb_masterdev_head;
+
+    while(srh)
+    {
+        if(srh->port == ucPort)
+            break;
+        
+        pre = srh;
+        srh = srh->next;
+    }
+
+    if(srh){
+        if(pre == NULL)
+            mb_masterdev_head = srh->next;
+        else
+            pre->next = srh->next;
+        
+        mb_free(srh);
+    }
+
+    return MB_ENOERR;
+}
 
 mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev, 
                                     uint8_t retry,uint32_t replytimeout,
@@ -644,6 +666,7 @@ mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev,
 {
     if(dev){
         dev->retry = (retry > MBM_RETRYCNT_MAX) ? MBM_RETRYCNT_MAX : retry;
+        
         if(replytimeout < MBM_REPLYTIMEOUT_MIN)
             dev->Replytimeout = MBM_REPLYTIMEOUT_MIN;
         else if(replytimeout > MBM_REPLYTIMEOUT_MAX)
@@ -672,16 +695,90 @@ mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev,
 }
 
 
-/* 创建一个从机节点         和 寄存器列表*/
-mb_slavenode_t *xMBMasterNodeNew(uint8_t slaveaddr,
-                                    uint16_t reg_holding_addr_start,
-                                    uint16_t reg_holding_num,
-                                    uint16_t reg_input_addr_start,
-                                    uint16_t reg_input_num,
-                                    uint16_t reg_coils_addr_start,
-                                    uint16_t reg_coils_num,
-                                    uint16_t reg_discrete_addr_start,
-                                    uint16_t reg_discrete_num)
+/*在主机上创建一个从机节点       和 寄存器列表,并加入到主机节点列表*/
+mb_slavenode_t *xMBMasterNodeNew(mb_MasterDevice_t *dev,
+                                        uint8_t slaveaddr,
+                                        uint16_t reg_holding_addr_start,
+                                        uint16_t reg_holding_num,
+                                        uint16_t reg_input_addr_start,
+                                        uint16_t reg_input_num,
+                                        uint16_t reg_coils_addr_start,
+                                        uint16_t reg_coils_num,
+                                        uint16_t reg_discrete_addr_start,
+                                        uint16_t reg_discrete_num)
+{
+    mb_slavenode_t *node;
+    
+    if(dev == NULL)
+        return NULL;
+
+    /* check slave address valid */
+    if(slaveaddr < MB_ADDRESS_MIN || slaveaddr > MB_ADDRESS_MAX)
+        return NULL;
+    
+    /* check node on the host ?*/
+    node = xMBMasterNodeSearch(dev,slaveaddr);
+    if(node)
+        return NULL;/* on the host */
+
+    node = xMBMasterNodeCreate(slaveaddr, reg_holding_addr_start, reg_holding_num,reg_input_addr_start,reg_input_num,
+                                   reg_coils_addr_start,reg_coils_num,reg_discrete_addr_start,reg_discrete_num);
+    if(node){
+        // add node to host node list
+        if(dev->nodehead == NULL){
+            dev->nodehead = node;
+        }
+        else{
+            node->next = dev->nodehead;
+            dev->nodehead = node;
+        }        
+    }
+
+    return node;
+}
+/* 从主机删除一个从机节点 必需由NEW创建的才可以delete */
+mb_ErrorCode_t eMBMasterNodedelete(mb_MasterDevice_t *dev, uint8_t slaveaddr)
+{
+    mb_slavenode_t *srchnode;
+    mb_slavenode_t *prenode;
+    
+    if(dev == NULL)
+        return MB_EINVAL;
+
+    srchnode = dev->nodehead;
+    prenode = NULL;
+    /* search node on the host nodelist*/
+    while(srchnode)
+    {
+        if(srchnode->slaveaddr == slaveaddr) // find it
+            break;
+        
+        prenode = srchnode;
+        srchnode = srchnode->next;
+    }
+
+    if(srchnode){
+        //first remove from node list
+        if(prenode == NULL)
+            dev->nodehead = srchnode->next;
+        else
+            prenode->next = srchnode->next;
+        
+        vMBMasterNodeDestroy(srchnode);
+    }
+    
+    return MB_ENOERR;
+}
+/* 创建一个独立节点和寄存器列表 */
+mb_slavenode_t *xMBMasterNodeCreate(uint8_t slaveaddr,
+                                            uint16_t reg_holding_addr_start,
+                                            uint16_t reg_holding_num,
+                                            uint16_t reg_input_addr_start,
+                                            uint16_t reg_input_num,
+                                            uint16_t reg_coils_addr_start,
+                                            uint16_t reg_coils_num,
+                                            uint16_t reg_discrete_addr_start,
+                                            uint16_t reg_discrete_num)
 {
     uint32_t lens;
     uint8_t *regbuf;
@@ -694,10 +791,7 @@ mb_slavenode_t *xMBMasterNodeNew(uint8_t slaveaddr,
     
     node = mb_malloc(sizeof(mb_slavenode_t));
     if(node){
-
-        lens = reg_holding_num * sizeof(uint16_t) + reg_input_num * sizeof(uint16_t);
-        lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
-        lens += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+        lens = xMBRegBufSizeCal(reg_holding_num,reg_input_num,reg_coils_num,reg_discrete_num);
 
         regbuf = mb_malloc(lens);
         if(regbuf == NULL){
@@ -733,8 +827,8 @@ mb_slavenode_t *xMBMasterNodeNew(uint8_t slaveaddr,
 
     return node;
 }
-                                 
-void vMBMasterNodeDelete(mb_slavenode_t *node)
+/* 释放节点，释放由Create创建的节点 */
+void vMBMasterNodeDestroy(mb_slavenode_t *node)
 {
     if(node){
         if(node->regs.pReghold)
@@ -743,7 +837,7 @@ void vMBMasterNodeDelete(mb_slavenode_t *node)
     }
 }
 
-/* 向主机增加一个从机节点 */
+/* 将节点加入到主机 */
 mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node)
 {
     mb_slavenode_t *srhnode;
@@ -765,13 +859,39 @@ mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node)
 
     return MB_ENOERR;
 }
-/* 向主机移除一个从机节点 */
-mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, uint8_t slaveaddr)
+
+mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, mb_slavenode_t *node)
 {
+    mb_slavenode_t *srchnode;
+    mb_slavenode_t *prenode;
+    
+    if(dev == NULL || node == NULL)
+        return MB_EINVAL;
+
+    srchnode = dev->nodehead;
+    prenode = NULL;
+    /* search node on the host nodelist*/
+    while(srchnode)
+    {
+        if(srchnode->slaveaddr == node->slaveaddr) // find it
+            break;
+        
+        prenode = srchnode;
+        srchnode = srchnode->next;
+    }
+
+    if(srchnode){
+        //first remove from node list
+        if(prenode == NULL)
+            dev->nodehead = srchnode->next;
+        else
+            prenode->next = srchnode->next;
+    }
     
     return MB_ENOERR;
 }
 
+/* search node on the host list ? */
 mb_slavenode_t *xMBMasterNodeSearch(mb_MasterDevice_t *dev,uint8_t slaveaddr)
 {
     mb_slavenode_t *srh;
@@ -790,7 +910,6 @@ mb_slavenode_t *xMBMasterNodeSearch(mb_MasterDevice_t *dev,uint8_t slaveaddr)
     }
 
     return NULL;
-    
 }
 
 
@@ -908,10 +1027,16 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
         /* funcoe and slaveid same, this frame for us and then excute it*/
         if(ucFunctionCode & 0x80){ // 异常码
             eException = (eMBException_t)pRemainFrame[0]; //异常码
+            __masterReqreadylist_removehead(dev); // remove from ready list
+            if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                vMB_ReqBufDelete(req); 
+            else{
+                __masterReqpendlist_add(dev, req);// move to pend list
+            }                
         }
         else{
             status = MBM_EINFUNCTION;
-            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
+            for( i = 0; i < MB_PARSE_RSP_HANDLERS_MAX; i++ ){
                 /* No more function handlers registered. Abort. */
                 if( xParseRspHandlers[i].ucFunctionCode == 0 ){
                     break;
@@ -924,16 +1049,19 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
                 }                
             }
 
-            if(status != MB_ENOERR){
-                break;
+            if(status == MBM_EINFUNCTION){ // 无此功能码，// remove from ready list
+                __masterReqreadylist_removehead(dev); // remove from ready list
+                vMB_ReqBufDelete(req); // delete request
             }
-
-            __masterReqreadylist_removehead(dev);
-            if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
-                vMB_ReqBufDelete(req);
-            else{// move to pend list
-                __masterReqpendlist_add(dev, req);
-            }
+            else {
+                //if(status == MB_ENOERR){
+                    __masterReqreadylist_removehead(dev); // remove from ready list
+                    if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                        vMB_ReqBufDelete(req); 
+                    else{
+                        __masterReqpendlist_add(dev, req);// move to pend list
+                    }                
+            }         
         }
         dev->Pollstate = MASTER_DELYPOLL;             
         break;
@@ -1010,7 +1138,7 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
 }
 
 
-mb_ErrorCode_t eMBMaster_Reqsnd(mb_MasterDevice_t *dev, mb_request_t *req)
+mb_ErrorCode_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req)
 {   
     uint16_t crc_lrc;
     
@@ -1061,7 +1189,7 @@ static mb_request_t *__masterReqreadylist_peek(mb_MasterDevice_t *dev)
 
 static void __masterReqreadylist_removehead(mb_MasterDevice_t *dev)
 {
-    if(dev->Reqreadyhead == NULL) /* nothing to remove */ 
+    if(dev == NULL || dev->Reqreadyhead == NULL) /* nothing to remove */ 
         return;
     
     dev->Reqreadyhead = dev->Reqreadyhead->next;
@@ -1073,7 +1201,7 @@ static void __masterReqreadylist_removehead(mb_MasterDevice_t *dev)
 /*## 向主机挂起列表增加一个请求 */
 static mb_ErrorCode_t __masterReqpendlist_add(mb_MasterDevice_t *dev, mb_request_t *req)
 {
-    req->scancnt = 0; 
+    req->scancnt = 0;  // clear sacn count
     if(dev->Reqpendhead == NULL){
         req->next = NULL; // make sure next is NULL
     }
@@ -1091,7 +1219,7 @@ static void __masterReqpendlistScan(mb_MasterDevice_t *dev, uint32_t diff)
 {
     mb_request_t *prevReq;
     mb_request_t *srchReq;
-    mb_request_t *addReq;
+    mb_request_t *tempReq;
     
     srchReq = dev->Reqpendhead;
     prevReq = NULL;
@@ -1106,11 +1234,11 @@ static void __masterReqpendlistScan(mb_MasterDevice_t *dev, uint32_t diff)
             else
                 prevReq->next = srchReq->next;
 
-            addReq = srchReq;  /* set up to add ready list later */
+            tempReq = srchReq;  /* set up to add ready list later */
             srchReq = srchReq->next; /* get next */
             
-            // the add to read list
-            __masterReqreadylist_addtail(dev,addReq);
+            // then add to read list
+            __masterReqreadylist_addtail(dev,tempReq);
         }
         else{
             /* get next */
@@ -1121,7 +1249,7 @@ static void __masterReqpendlistScan(mb_MasterDevice_t *dev, uint32_t diff)
 }
 
 
-
+/* ok */
 static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev)
 {
     
@@ -1140,7 +1268,8 @@ static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev)
     return MB_ENOERR;
 }
 
-/* RTU 和 ASCII 的硬件口是唯一的，不可重复
+/*ok 
+ * RTU 和 ASCII 的硬件口是唯一的，不可重复
  * TCP service 端口也是唯一的
  */
 static mb_MasterDevice_t *__masterdev_search(uint8_t port)

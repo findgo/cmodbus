@@ -156,8 +156,8 @@ typedef struct
 }mb_header_t;
 
 typedef mb_ErrorCode_t (*pxMBParseRspHandler)(mb_Reg_t *regs, 
-                                    uint16_t RegStartAddr, uint16_t regcnt, 
-                                    uint8_t *premain,uint16_t remainLength);
+                                            uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
+                                            uint8_t *premain,uint16_t remainLength);
 
 typedef mb_ErrorCode_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
 typedef mb_ErrorCode_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
@@ -196,7 +196,7 @@ typedef struct
     
     mb_DevState_t devstate;
     
-    mb_slavenode_t *nodehead; /* slave node list on this host */
+    mb_slavenode_t *nodehead;   /* slave node list on this host */
 
     mb_request_t *Reqreadyhead; /* request ready list  head*/
     mb_request_t *Reqreadytail; /* request ready list  tail*/
@@ -306,35 +306,39 @@ void vMBPoll(void);
 /* TODO implement modbus master */
 
 mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
-
 mb_ErrorCode_t eMBMasterTCPOpen(mb_MasterDevice_t *dev, uint16_t ucTCPPort);
-
 mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev, 
                                     uint8_t retry,uint32_t replytimeout,
                                     uint32_t delaypolltime, uint32_t broadcastturntime);
-/* 创建一个从机节点         和 寄存器列表*/
-mb_slavenode_t *xMBMasterNodeNew(uint8_t slaveaddr,
-                                    uint16_t reg_holding_addr_start,
-                                    uint16_t reg_holding_num,
-                                    uint16_t reg_input_addr_start,
-                                    uint16_t reg_input_num,
-                                    uint16_t reg_coils_addr_start,
-                                    uint16_t reg_coils_num,
-                                    uint16_t reg_discrete_addr_start,
-                                    uint16_t reg_discrete_num);                                 
-void vMBMasterNodeDelete(mb_slavenode_t *node);
-/* 向主机增加一个从机节点 */
+mb_slavenode_t *xMBMasterNodeNew(mb_MasterDevice_t *dev,
+                                        uint8_t slaveaddr,
+                                        uint16_t reg_holding_addr_start,
+                                        uint16_t reg_holding_num,
+                                        uint16_t reg_input_addr_start,
+                                        uint16_t reg_input_num,
+                                        uint16_t reg_coils_addr_start,
+                                        uint16_t reg_coils_num,
+                                        uint16_t reg_discrete_addr_start,
+                                        uint16_t reg_discrete_num);
+mb_ErrorCode_t eMBMasterNodedelete(mb_MasterDevice_t *dev, uint8_t slaveaddr);
+mb_slavenode_t *xMBMasterNodeCreate(uint8_t slaveaddr,
+                                            uint16_t reg_holding_addr_start,
+                                            uint16_t reg_holding_num,
+                                            uint16_t reg_input_addr_start,
+                                            uint16_t reg_input_num,
+                                            uint16_t reg_coils_addr_start,
+                                            uint16_t reg_coils_num,
+                                            uint16_t reg_discrete_addr_start,
+                                            uint16_t reg_discrete_num);
+void vMBMasterNodeDestroy(mb_slavenode_t *node);
 mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node);
-/* 向主机移除一个从机节点 */
-mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, uint8_t slaveaddr);
+mb_ErrorCode_t eMBMasterNoderemove(mb_MasterDevice_t *dev, mb_slavenode_t *node);
 mb_slavenode_t *xMBMasterNodeSearch(mb_MasterDevice_t *dev,uint8_t slaveaddr);
 mb_ErrorCode_t eMBMasterStart(mb_MasterDevice_t *dev);
 mb_ErrorCode_t eMBMasterStop(mb_MasterDevice_t *dev);
 mb_ErrorCode_t eMBMasterClose(mb_MasterDevice_t *dev);
 void vMBMasterPoll(void);
-mb_ErrorCode_t eMBMaster_Reqsnd(mb_MasterDevice_t *dev, mb_request_t *req);
-
-
+mb_ErrorCode_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req);
 
 
 #endif
