@@ -8,7 +8,7 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern mb_Device_t device1;
+extern mb_Device_t *device1;
 extern mb_MasterDevice_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
@@ -161,21 +161,21 @@ void USART1_IRQHandler(void)
 {
   //发生接收中断
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
-#if MB_SLAVE_ENABLE > 0
+#if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        xMBRTUReceiveFSM(&device1);
+        vMBRTUReceiveFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        xMBASCIIReceiveFSM(&device1);
+        vMBASCIIReceiveFSM(device1);
 #endif
 #endif
 
-#if MB_MASTER_ENABLE > 0
+#if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        xMBMasterRTUReceiveFSM(deviceM1);
+        vMBMasterRTUReceiveFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        xMBMasterASCIIReceiveFSM(deviceM1);
+        vMBMasterASCIIReceiveFSM(deviceM1);
 #endif
 #endif
         //清除中断标志位    
@@ -184,22 +184,20 @@ void USART1_IRQHandler(void)
   
   //发生完成中断
     if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
-        //mb.c eMBInit函数中
-
-#if MB_SLAVE_ENABLE > 0
+#if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        xMBRTUTransmitFSM(&device1);
+        vMBRTUTransmitFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        xMBASCIITransmitFSM(&device1);
+        vMBASCIITransmitFSM(device1);
 #endif
 #endif
-#if MB_MASTER_ENABLE > 0
+#if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        xMBMasterRTUTransmitFSM(deviceM1);
+        vMBMasterRTUTransmitFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        xMBMasterASCIITransmitFSM(&eviceM1);
+        vMBMasterASCIITransmitFSM(deviceM1);
 #endif
 #endif
 

@@ -2,6 +2,136 @@
 #include "mbframe.h"
 #include "mbutils.h"
 
+#define BITS_uint8_t (8U)
+
+/*! \defgroup modbus_utils Utilities
+ *
+ * This module contains some utility functions which can be used by
+ * the application. It includes some special functions for working with
+ * bitfields backed by a character array buffer.
+ *
+ */
+/*! \addtogroup modbus_utils
+ *  @{
+ */
+/*! \brief Function to set bits in a byte buffer.
+ *
+ * This function allows the efficient use of an array to implement bitfields.
+ * The array used for storing the bits must always be a multiple of two
+ * bytes. Up to eight bits can be set or cleared in one operation.
+ *
+ * \param ucByteBuf A buffer where the bit values are stored. Must be a
+ *   multiple of 2 bytes. No length checking is performed and if
+ *   usBitOffset / 8 is greater than the size of the buffer memory contents
+ *   is overwritten.
+ * \param usBitOffset The starting address of the bits to set. The first
+ *   bit has the offset 0.
+ * \param ucNBits Number of bits to modify. The value must always be smaller
+ *   than 8.
+ * \param ucValues Thew new values for the bits. The value for the first bit
+ *   starting at <code>usBitOffset</code> is the LSB of the value
+ *   <code>ucValues</code>
+ *
+ * \code
+ * ucBits[2] = {0, 0};
+ *
+ * // Set bit 4 to 1 (read: set 1 bit starting at bit offset 4 to value 1)
+ * vMBSetBits( ucBits, 4, 1, 1 );
+ *
+ * // Set bit 7 to 1 and bit 8 to 0.
+ * vMBSetBits( ucBits, 7, 2, 0x01 );
+ *
+ * // Set bits 8 - 11 to 0x05 and bits 12 - 15 to 0x0A;
+ * vMBSetBits( ucBits, 8, 8, 0x5A);
+ * \endcode
+ */
+void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue )
+{
+    uint16_t usWordBuf;
+    uint16_t usMask;
+    uint16_t usByteOffset;
+    uint16_t usNPreBits;
+    uint16_t usValue = ucValue;
+
+    assert( ucNBits <= 8 );
+    assert( ( size_t )BITS_uint8_t == sizeof( uint8_t ) * 8 );
+
+    /* Calculate byte offset for first byte containing the bit values starting
+     * at usBitOffset. */
+    usByteOffset = ( uint16_t )( ( usBitOffset ) / BITS_uint8_t );
+
+    /* How many bits precede our bits to set. */
+    usNPreBits = ( uint16_t )( usBitOffset - usByteOffset * BITS_uint8_t );
+
+    /* Move bit field into position over bits to set */
+    usValue <<= usNPreBits;
+
+    /* Prepare a mask for setting the new bits. */
+    usMask = ( uint16_t )( ( 1 << ( uint16_t ) ucNBits ) - 1 );
+    usMask <<= usBitOffset - usByteOffset * BITS_uint8_t;
+
+    /* copy bits into temporary storage. */
+    usWordBuf = ucByteBuf[usByteOffset];
+    usWordBuf |= ucByteBuf[usByteOffset + 1] << BITS_uint8_t;
+
+    /* Zero out bit field bits and then or value bits into them. */
+    usWordBuf = ( uint16_t )( ( usWordBuf & ( ~usMask ) ) | usValue );
+
+    /* move bits back into storage */
+    ucByteBuf[usByteOffset] = ( uint8_t )( usWordBuf & 0xFF );
+    ucByteBuf[usByteOffset + 1] = ( uint8_t )( usWordBuf >> BITS_uint8_t );
+}
+                
+/*! \brief Function to read bits in a byte buffer.
+ *
+ * This function is used to extract up bit values from an array. Up to eight
+ * bit values can be extracted in one step.
+ *
+ * \param ucByteBuf A buffer where the bit values are stored.
+ * \param usBitOffset The starting address of the bits to set. The first
+ *   bit has the offset 0.
+ * \param ucNBits Number of bits to modify. The value must always be smaller
+ *   than 8.
+ *
+ * \code
+ * uint8_t ucBits[2] = {0, 0};
+ * uint8_t ucResult;
+ *
+ * // Extract the bits 3 - 10.
+ * ucResult = xMBGetBits( ucBits, 3, 8 );
+ * \endcode
+ */
+uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
+{
+    uint16_t usWordBuf;
+    uint16_t usMask;
+    uint16_t usByteOffset;
+    uint16_t usNPreBits;
+
+    /* Calculate byte offset for first byte containing the bit values starting
+     * at usBitOffset. */
+    usByteOffset = ( uint16_t )( ( usBitOffset ) / BITS_uint8_t );
+
+    /* How many bits precede our bits to set. */
+    usNPreBits = ( uint16_t )( usBitOffset - usByteOffset * BITS_uint8_t );
+
+    /* Prepare a mask for setting the new bits. */
+    usMask = ( uint16_t )( ( 1 << ( uint16_t ) ucNBits ) - 1 );
+
+    /* copy bits into temporary storage. */
+    usWordBuf = ucByteBuf[usByteOffset];
+    usWordBuf |= ucByteBuf[usByteOffset + 1] << BITS_uint8_t;
+
+    /* throw away unneeded bits. */
+    usWordBuf >>= usNPreBits;
+
+    /* mask away bits above the requested bitfield. */
+    usWordBuf &= usMask;
+
+    return ( uint8_t ) usWordBuf;
+}
+
+
 #if MB_RTU_ENABLED > 0
 static const uint8_t aucCRCHi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,
@@ -119,19 +249,6 @@ uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
 }
 #endif
 
-void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length)
-{
-    if((dst == NULL) || (src == NULL))
-        return NULL;
-    
-    while(length--)
-    {
-        *dst++ = *src++;
-    }
-
-    return dst;
-}
-
 eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode)
 {
     switch ( eErrorCode ){
@@ -175,3 +292,31 @@ const char *xMBstr2Error(eMBException_t excode)
             return "Reserve exception code";
     }
 }
+
+void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length)
+{
+    if((dst == NULL) || (src == NULL))
+        return NULL;
+    
+    while(length--)
+    {
+        *dst++ = *src++;
+    }
+
+    return dst;
+}
+
+uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
+                                  uint16_t reg_input_num,
+                                  uint16_t reg_coils_num,
+                                  uint16_t reg_discrete_num)
+{
+    uint32_t size;
+
+    size = reg_holding_num * sizeof(uint16_t) + reg_input_num * sizeof(uint16_t);    
+    size += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+    size += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+
+    return size;
+}
+

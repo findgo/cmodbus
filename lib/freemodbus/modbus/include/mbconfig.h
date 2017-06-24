@@ -6,13 +6,13 @@
 extern "C" {
 #endif
 /********************* common defined  ************************/
-#define MB_MASTER_ENABLE        (1)
-#define MB_SLAVE_ENABLE         (0)
+#define MB_MASTER_ENABLED        (0)
+#define MB_SLAVE_ENABLED         (1)
 
 /* dynamic memory allocation ENABLE*/
-#define MB_DYNAMIC_MEMORY_ALLOC_ENABLE    (1)
+#define MB_DYNAMIC_MEMORY_ALLOC_ENABLED    (0)
 
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLE > 0 || MB_MASTER_ENABLE > 0
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0 || MB_MASTER_ENABLED > 0
 #define mb_malloc pvPortMalloc
 #define mb_free vfree
 #endif
@@ -41,7 +41,6 @@ extern "C" {
 /*-------------------------------------------------------------------------*/
 /*----------------------------- for slave defined -----------------------------*/
 /*-------------------------------------------------------------------------*/
-
 /*! \brief The character timeout value for Modbus ASCII.
  *
  * The character timeout value is not fixed for Modbus ASCII and is therefore
@@ -102,6 +101,11 @@ extern "C" {
 
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
+
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
+/*! \brief the number of support multiple slaves  range(1 - 8 )*/
+#define MB_SUPPORT_MULTIPLE_NUMBER              ( 1 )
+#endif
 
 /*--------------------------------------------------------------------------*/
 /*----------------------------- for master defined -----------------------------*/

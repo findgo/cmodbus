@@ -2,7 +2,7 @@
 #include "mbproto.h"
 #include "mbbuf.h"
 
-#if MB_MASTER_ENABLE > 0
+#if MB_MASTER_ENABLED > 0
 
 mb_request_t *xMB_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize)
 {

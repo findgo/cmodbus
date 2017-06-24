@@ -5,7 +5,7 @@
 #include "mbfunc.h"
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
-#define REG_HOLDING_NREGS     ( 10 )
+#define REG_HOLDING_NREGS     ( 3 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
 #define REG_DISCRETE_SIZE     (8 * 3)
@@ -13,7 +13,7 @@
 static void prvClockInit(void);
 static void prvnvicInit(void);
 
-#if MB_MASTER_ENABLE > 0
+#if MB_MASTER_ENABLED > 0
 mb_MasterDevice_t* deviceM1;
 int main(void)
 {	
@@ -53,12 +53,12 @@ int main(void)
 
 #endif
 
-#if MB_SLAVE_ENABLE > 0
+#if MB_SLAVE_ENABLED > 0
 
-mb_Device_t device1;
+mb_Device_t *device1;
 static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
-mb_Device_t device2;
+mb_Device_t *device2;
 int main(void)
 {	
     mb_ErrorCode_t status;
@@ -67,10 +67,11 @@ int main(void)
 	prvnvicInit();
 	//Systick_Configuration();
 #if MB_RTU_ENABLED > 0   
-    status = eMBOpen(&device1,MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
-    if(status == MB_ENOERR){
-       status = eMBRegCreate(&device1,
+    device1 = xMBNew(MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
+    if(device1){
+       status = eMBRegAssign(device1,
                         dev1regbuf,
+												sizeof(dev1regbuf),
                         0,
                         REG_HOLDING_NREGS ,
                         0,
@@ -80,7 +81,7 @@ int main(void)
                         0,
                         REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
-            (void)eMBStart(&device1);
+            (void)eMBStart(device1);
     }
 #endif
 #if MB_ASCII_ENABLED > 0
