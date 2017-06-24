@@ -132,6 +132,11 @@ typedef struct
 
 #define xMBSemGive(dev) do { ((mb_Device_t *)dev)->xEventInFlag = true;}while(0)
 
+#define xMBRegHoldPtr(pdev) ((uint16_t *)((mb_Device_t *)dev)->regs.pReghold)
+#define xMBRegInputPtr(pdev) ((uint16_t *)((mb_Device_t *)dev)->regs.pReginput)
+#define xMBRegCoilPtr(pdev) ((uint8_t *)((mb_Device_t *)dev)->regs.pRegCoil)
+#define xMBRegDiscPtr(pdev) ((uint8_t *)((mb_Device_t *)dev)->regs.pRegDisc)
+
 /**************** define for master *******************/
 typedef enum {
     MASTER_IDLE,

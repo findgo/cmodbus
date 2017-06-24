@@ -19,7 +19,7 @@ typedef struct
     pxMBFunctionHandler pxHandler;
 } xMBFunctionHandler;
 
-static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev);
+static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev);
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
@@ -365,7 +365,7 @@ void vMBPoll(void)
     srchdev = mb_dev_head;
     while(srchdev)
     {
-        eMBADUFramehandle(srchdev);
+        __eMBADUFramehandle(srchdev);
         srchdev = srchdev->next;
     }
 #else
@@ -376,13 +376,13 @@ void vMBPoll(void)
     idx = 0;
     mask = (uint8_t)1 << idx; 
     while(mb_devmask & mask)
-	  {
-        eMBADUFramehandle(&mb_devTal[idx]);
+	{
+        __eMBADUFramehandle(&mb_devTal[idx]);
         idx++;
         mask <<=1;
     }
 #else
-    eMBADUFramehandle(&mb_devTal);
+    __eMBADUFramehandle(&mb_devTal);
 #endif
 
 #endif
@@ -427,7 +427,7 @@ mb_ErrorCode_t eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHand
     return eStatus;
 }
 
-static mb_ErrorCode_t eMBADUFramehandle(mb_Device_t *dev)
+static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
 {
     uint8_t *pPduFrame; // pdu fram
     uint8_t ucRcvAddress;

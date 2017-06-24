@@ -21,7 +21,7 @@ int main(void)
     mb_slavenode_t *node;
   
 //	prvClockInit();
-	  prvnvicInit();
+    prvnvicInit();
     Systick_Configuration();
     SystemCoreClockUpdate();
     
@@ -71,7 +71,7 @@ int main(void)
     if(device1){
        status = eMBRegAssign(device1,
                         dev1regbuf,
-												sizeof(dev1regbuf),
+                        sizeof(dev1regbuf),
                         0,
                         REG_HOLDING_NREGS ,
                         0,
@@ -85,10 +85,11 @@ int main(void)
     }
 #endif
 #if MB_ASCII_ENABLED > 0
-    status = eMBOpen(&device1,MB_ASCII, 0x01, 0, 9600, MB_PAR_NONE);
-    if(status == MB_ENOERR){
-       status = eMBRegCreate(&device1,
+    device1 = xMBNew(MB_ASCII, 0x01, 0, 9600, MB_PAR_NONE);
+    if(device1){
+       status = eMBRegAssign(device1,
                         dev1regbuf,
+                        sizeof(dev1regbuf),
                         0,
                         REG_HOLDING_NREGS ,
                         0,
@@ -98,7 +99,7 @@ int main(void)
                         0,
                         REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
-            (void)eMBStart(&device1);
+            (void)eMBStart(device1);
     }
 #endif
 	while(1)
