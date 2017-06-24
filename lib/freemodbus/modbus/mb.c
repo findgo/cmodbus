@@ -237,8 +237,6 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
     if(srh){
         mb_free(srh);
     }
-    
-    return MB_ENOERR;
 #else
 #if MB_SUPPORT_MULTIPLE_NUMBER > 1
     uint8_t idx,mask;
@@ -262,7 +260,9 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
 #else
     mb_devTal.devstate = DEV_STATE_NOT_INITIALIZED;
 #endif    
-#endif    
+#endif  
+    
+    return MB_ENOERR;    
 }
 
 //__align(2)  
