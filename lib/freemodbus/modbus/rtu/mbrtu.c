@@ -1,6 +1,7 @@
 
 #include "port.h"
 #include "mbrtu.h"
+#include "mbutils.h"
 
 #if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
 mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)

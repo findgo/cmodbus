@@ -1,6 +1,5 @@
-
 #include "port.h"
-#include "mbutils.h"
+#include "mb.h"
 #if MB_RTU_ENABLED > 0
 #include "mbrtu.h"
 #endif
@@ -10,6 +9,8 @@
 #if MB_TCP_ENABLED > 0
 #include "mbtcp.h"
 #endif
+#include "mbfunc.h"
+#include "mbutils.h"
 
 #if MB_SLAVE_ENABLED > 0
 
@@ -191,7 +192,7 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
 #endif
 
 #if MB_TCP_ENABLED > 0
-mb_ErrorCode_t eMBTCPNew(mb_Device_t *dev, uint16_t ucTCPPort)
+mb_Device_t *xMBTCPNew(uint16_t ucTCPPort)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
 

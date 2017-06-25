@@ -378,6 +378,13 @@
       <Groups>
         <Group>
           <GroupName>driver</GroupName>
+          <Files>
+            <File>
+              <FileName>systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dirver\systick.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>user</GroupName>
@@ -523,21 +530,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>modbusport</GroupName>
-          <Files>
-            <File>
-              <FileName>portserial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\port\portserial.c</FilePath>
-            </File>
-            <File>
-              <FileName>porttimer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\port\porttimer.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>modbuscommon</GroupName>
           <Files>
             <File>
@@ -549,6 +541,21 @@
               <FileName>mbutils.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\lib\freemodbus\modbus\functions\mbutils.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>modbusport</GroupName>
+          <Files>
+            <File>
+              <FileName>portserial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\freemodbus\port\portserial.c</FilePath>
+            </File>
+            <File>
+              <FileName>porttimer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\freemodbus\port\porttimer.c</FilePath>
             </File>
           </Files>
         </Group>

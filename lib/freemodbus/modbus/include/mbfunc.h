@@ -13,8 +13,7 @@ extern "C" {
 
 #include "mbutils.h"
 #include "mbbuf.h"
-#include "mbfunc.h"
-#include "modbus.h"
+#include "mb.h"
     
 // read holding input coil disc offset in pdu
 #define MB_PDU_FUNC_READ_ADDR_OFF           ( MB_PDU_DATA_OFF)

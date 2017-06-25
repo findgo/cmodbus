@@ -1,9 +1,7 @@
 
 #include "port.h"
 #include "mbrtu.h"
-
-
-
+#include "mbutils.h"
 /*************************************************************************************************/
 /* TODO implement modbus rtu master */
 #if MB_RTU_ENABLED > 0 && MB_MASTER_ENABLED > 0

@@ -29,15 +29,15 @@ extern "C" {
  *  @{
  */
 /*! \brief If Modbus RTU support is enabled. */
-#define MB_RTU_ENABLED                          (  0 )
+#define MB_RTU_ENABLED                          (  1 )
 /*! \brief If Modbus ASCII support is enabled. */
-#define MB_ASCII_ENABLED                        (  1 )
+#define MB_ASCII_ENABLED                        (  0 )
 /*! \brief If Modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )
 
 
 /*-------------------------------------------------------------------------*/
-/*----------------------------- for slave defined -----------------------------*/
+/*------------------             for slave defined    ---------------------*/
 /*-------------------------------------------------------------------------*/
 /*! \brief The character timeout value for Modbus ASCII.
  *
@@ -106,7 +106,7 @@ extern "C" {
 #endif
 
 /*--------------------------------------------------------------------------*/
-/*----------------------------- for master defined -----------------------------*/
+/*------------------             for master defined    ---------------------*/
 /*-------------------------------------------------------------------------*/
 
 /*! \brief Maximum number of Modbus functions codes the protocol stack

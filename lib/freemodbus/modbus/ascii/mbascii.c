@@ -1,5 +1,6 @@
 
 #include "port.h"
+#include "mbutils.h"
 #include "mbascii.h"
 
 

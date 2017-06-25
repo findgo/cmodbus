@@ -1,6 +1,6 @@
 
 #include "mbfunc.h"
-
+#include "modbus.h"
 /*************************************************************************************************/
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLED > 0

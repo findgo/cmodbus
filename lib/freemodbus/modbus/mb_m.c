@@ -1,5 +1,6 @@
 #include "mbfunc.h"
-
+#include "port.h"
+#include "mb.h"
 #if MB_RTU_ENABLED == 1
 #include "mbrtu.h"
 #endif
@@ -9,10 +10,8 @@
 #if MB_TCP_ENABLED == 1
 #include "mbtcp.h"
 #endif
-#include "port.h"
 #include "mbbuf.h"
 #include "mbutils.h"
-#include "mb.h"
 
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLED > 0
@@ -160,7 +159,7 @@ mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaud
 #endif
 
 #if MB_TCP_ENABLED > 0
-mb_ErrorCode_t eMBMasterTCPOpen(mb_MasterDevice_t *dev, uint16_t ucTCPPort)
+mb_MasterDevice_t *xMBMasterTCPNew(uint16_t ucTCPPort)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
 

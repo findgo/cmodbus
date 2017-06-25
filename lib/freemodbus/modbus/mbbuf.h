@@ -6,7 +6,7 @@
 #include "mbconfig.h"
 #include "mbcpu.h"
 
-#include "modbus.h"
+#include "mb.h"
 
 mb_request_t *xMB_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize);
 void vMB_ReqBufDelete(void *ptr);

@@ -12,8 +12,6 @@ extern "C" {
 #include "mbcpu.h"
 #include "mb.h"
 
-
-
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_ASCII_DEFAULT_CR     '\r'    /*!< Default CR character for Modbus ASCII. */
 #define MB_ASCII_DEFAULT_LF     '\n'    /*!< Default LF character for Modbus ASCII. */

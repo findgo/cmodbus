@@ -10,7 +10,7 @@ extern "C" {
 #include "mbconfig.h"
 #include "mbcpu.h"
 
-#include "modbus.h"
+#include "mb.h"
 
 
 void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );
