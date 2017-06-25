@@ -5,6 +5,14 @@
 #include "mb.h"
 #include "mbfunc.h"
 
+enum 
+{
+    MBCOM0 = 0,
+    MBCOM1,
+    MBCOM2,
+    MBCOM3
+};
+
 
 /* for bits */
 /* for request */

@@ -20,30 +20,35 @@ extern mb_MasterDevice_t *deviceM1;
   */
 void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
 {
+    switch(port){
+    case MBCOM0:
+        if(xRxEnable){
+            //使能接收和接收中断
+            USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
+            //MAX485操作 低电平为接收模式
+            GPIO_ResetBits(GPIOD,GPIO_Pin_8);
+        }
+        else{
+            USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); 
+            //MAX485操作 高电平为发送模式
+            GPIO_SetBits(GPIOD,GPIO_Pin_8);
+        }
 
-    (void)port;
+        if(xTxEnable){
+            //使能发送完成中断
+            USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+        }
+        else{
+            //禁止发送完成中断
+            USART_ITConfig(USART1, USART_IT_TC, DISABLE);
+        }
+        break;
+     case MBCOM1:
 
-    if(xRxEnable){
-        //使能接收和接收中断
-        USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
-        //MAX485操作 低电平为接收模式
-        GPIO_ResetBits(GPIOD,GPIO_Pin_8);
+        break;
+     default:
+        break;
     }
-    else{
-        USART_ITConfig(USART1, USART_IT_RXNE, DISABLE); 
-        //MAX485操作 高电平为发送模式
-        GPIO_SetBits(GPIOD,GPIO_Pin_8);
-    }
-
-    if(xTxEnable){
-        //使能发送完成中断
-        USART_ITConfig(USART1, USART_IT_TC, ENABLE);
-    }
-    else{
-        //禁止发送完成中断
-        USART_ITConfig(USART1, USART_IT_TC, DISABLE);
-    }
-
 }
 
 /**
@@ -56,55 +61,62 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
   */
 bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity)
 {
-  GPIO_InitTypeDef GPIO_InitStructure;
-  USART_InitTypeDef USART_InitStructure;
-  NVIC_InitTypeDef NVIC_InitStructure;  
+    GPIO_InitTypeDef GPIO_InitStructure;
+    USART_InitTypeDef USART_InitStructure;
+    NVIC_InitTypeDef NVIC_InitStructure;  
+
+    (void)ucDataBits; //不修改数据位长度
+    (void)eParity;    //不修改校验格式
     
-  (void)ucPORT;     //不修改串口
-  (void)ucDataBits; //不修改数据位长度
-  (void)eParity;    //不修改校验格式
-  
-  //使能USART1，GPIOA
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | 
-            RCC_APB2Periph_USART1, ENABLE);
+    switch (ucPORT){
+    case MBCOM0:
+        //使能USART1，GPIOA
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1, ENABLE);
+        
+        //GPIOA9 USART1_Tx
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;             //推挽输出
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        //GPIOA.10 USART1_Rx
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;       //浮动输入
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        
+        USART_InitStructure.USART_BaudRate = ulBaudRate;            //只修改波特率
+        USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+        USART_InitStructure.USART_StopBits = USART_StopBits_1;
+        USART_InitStructure.USART_Parity = USART_Parity_No;
+        USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+        USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+        //串口初始化
+        USART_Init(USART1, &USART_InitStructure);
+        //使能USART1
+        USART_Cmd(USART1, ENABLE);
+        
+        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
+        //设定USART1 中断优先级
+        NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+        
+        //最后配置485发送和接收模式
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+        //GPIOD.8
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8; 
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+        GPIO_Init(GPIOD, &GPIO_InitStructure); 
+        break;
+     case MBCOM1:
 
-  //GPIOA9 USART1_Tx
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;             //推挽输出
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-  //GPIOA.10 USART1_Rx
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;       //浮动输入
-  GPIO_Init(GPIOA, &GPIO_InitStructure);
-
-  USART_InitStructure.USART_BaudRate = ulBaudRate;            //只修改波特率
-  USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-  USART_InitStructure.USART_StopBits = USART_StopBits_1;
-  USART_InitStructure.USART_Parity = USART_Parity_No;
-  USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-  USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-  //串口初始化
-  USART_Init(USART1, &USART_InitStructure);
-  //使能USART1
-  USART_Cmd(USART1, ENABLE);
-  
-  NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-  //设定USART1 中断优先级
-  NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-  
-  //最后配置485发送和接收模式
-  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
-  //GPIOD.8
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8; 
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
-  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-  GPIO_Init(GPIOD, &GPIO_InitStructure); 
+        break;
+     default:
+        return false;
+    }
 
   return true;
 }
@@ -116,10 +128,16 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
   */
 bool xMBPortSerialPutByte(uint8_t port, char ucByte )
 {
-  (void)port;
-  
-  //发送数据
-  USART_SendData(USART1, ucByte);
+    switch (port){
+    case MBCOM0:
+        //发送数据
+        USART_SendData(USART1, ucByte);
+        break;
+    case MBCOM1:
+        break;
+    default:
+        break;
+    }
   
   return true;
 }
@@ -131,27 +149,18 @@ bool xMBPortSerialPutByte(uint8_t port, char ucByte )
   */
 bool xMBPortSerialGetByte(uint8_t port, char *pucByte )
 {
-    (void)port;
-    
-    *pucByte = USART_ReceiveData(USART1);
-    
+    switch (port){
+    case MBCOM0:    
+        *pucByte = USART_ReceiveData(USART1);
+        break;
+    case MBCOM1:
+
+        break;
+    default:
+        break;
+    }
     return true;
 }
-
-/* Create an interrupt handler for the transmit buffer empty interrupt
- * (or an equivalent) for your target processor. This function should then
- * call pxMBFrameCBTransmitterEmpty( ) which tells the protocol stack that
- * a new character can be sent. The protocol stack will then call 
- * xMBPortSerialPutByte( ) to send the character.
- */
-
-
-/* Create an interrupt handler for the receive interrupt for your target
- * processor. This function should then call pxMBFrameCBByteReceived( ). The
- * protocol stack will then call xMBPortSerialGetByte( ) to retrieve the
- * character.
- */
- 
 /**
   * @brief  USART1中断服务函数
   * @param  None
