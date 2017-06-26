@@ -126,8 +126,9 @@ typedef struct
     pActionHandle pvMBCloseCur;
     pActionReceive peMBReceivedCur;
     pActionSend peMBSendCur;
-    
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0    
     void *next;
+#endif
     /*  */
     volatile uint8_t AsciiBytePos; // only for ascii
     volatile uint8_t sndrcvState;

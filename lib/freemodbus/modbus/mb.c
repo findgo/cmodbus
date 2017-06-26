@@ -195,6 +195,11 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
     }
 
     if(srh){
+        if(pre == NULL)
+            mb_dev_head = srh->next;
+        else
+            pre->next = srh->next;
+        
         mb_free(srh);
     }
 #else
