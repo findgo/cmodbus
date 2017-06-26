@@ -102,7 +102,7 @@ extern "C" {
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
 /*! \brief the number of support multiple slaves  range(1 - 8 )*/
-#define MB_SUPPORT_MULTIPLE_NUMBER              ( 1 )
+#define MB_SUPPORT_MULTIPLE_NUMBER              ( 2 )
 #endif
 
 /*--------------------------------------------------------------------------*/

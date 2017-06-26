@@ -8,7 +8,9 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
+extern mb_Device_t *device0;
 extern mb_Device_t *device1;
+extern mb_MasterDevice_t *deviceM0;
 extern mb_MasterDevice_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
@@ -44,7 +46,26 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
         }
         break;
      case MBCOM1:
+        if(xRxEnable){
+            //使能接收和接收中断
+            USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
+            //MAX485操作 低电平为接收模式
+            GPIO_ResetBits(GPIOD,GPIO_Pin_9);
+        }
+        else{
+            USART_ITConfig(USART2, USART_IT_RXNE, DISABLE); 
+            //MAX485操作 高电平为发送模式
+            GPIO_SetBits(GPIOD,GPIO_Pin_9);
+        }
 
+        if(xTxEnable){
+            //使能发送完成中断
+            USART_ITConfig(USART2, USART_IT_TC, ENABLE);
+        }
+        else{
+            //禁止发送完成中断
+            USART_ITConfig(USART2, USART_IT_TC, DISABLE);
+        }
         break;
      default:
         break;
@@ -95,7 +116,6 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
         //使能USART1
         USART_Cmd(USART1, ENABLE);
         
-        NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
         //设定USART1 中断优先级
         NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -112,6 +132,45 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
         GPIO_Init(GPIOD, &GPIO_InitStructure); 
         break;
      case MBCOM1:
+        //使能USART2，GPIOA
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+        RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+        //GPIOA2 USART2_Tx
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;             //推挽输出
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        //GPIOA3 USART2_Rx
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;       //浮动输入
+        GPIO_Init(GPIOA, &GPIO_InitStructure);
+        
+        USART_InitStructure.USART_BaudRate = ulBaudRate;            //只修改波特率
+        USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+        USART_InitStructure.USART_StopBits = USART_StopBits_1;
+        USART_InitStructure.USART_Parity = USART_Parity_No;
+        USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+        USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+        //串口初始化
+        USART_Init(USART2, &USART_InitStructure);
+        //使能USART1
+        USART_Cmd(USART2, ENABLE);
+        
+        //设定USART1 中断优先级
+        NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+        NVIC_Init(&NVIC_InitStructure);
+        
+        //最后配置485发送和接收模式
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE);
+        //GPIOD.8
+        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; 
+        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz; 
+        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+        GPIO_Init(GPIOD, &GPIO_InitStructure); 
 
         break;
      default:
@@ -130,10 +189,10 @@ bool xMBPortSerialPutByte(uint8_t port, char ucByte )
 {
     switch (port){
     case MBCOM0:
-        //发送数据
         USART_SendData(USART1, ucByte);
         break;
     case MBCOM1:
+        USART_SendData(USART2, ucByte);
         break;
     default:
         break;
@@ -154,7 +213,7 @@ bool xMBPortSerialGetByte(uint8_t port, char *pucByte )
         *pucByte = USART_ReceiveData(USART1);
         break;
     case MBCOM1:
-
+        *pucByte = USART_ReceiveData(USART2);
         break;
     default:
         break;
@@ -170,6 +229,69 @@ void USART1_IRQHandler(void)
 {
   //发生接收中断
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+#if MB_SLAVE_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+        vMBRTUReceiveFSM(device0);
+#endif
+#if MB_ASCII_ENABLED > 0
+        vMBASCIIReceiveFSM(device0);
+#endif
+#endif
+
+#if MB_MASTER_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+        vMBMasterRTUReceiveFSM(device0);
+#endif
+#if MB_ASCII_ENABLED > 0
+        vMBMasterASCIIReceiveFSM(device0);
+#endif
+#endif
+        //清除中断标志位    
+        USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
+    }
+  
+  //发生完成中断
+    if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
+#if MB_SLAVE_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+        vMBRTUTransmitFSM(device0);
+#endif
+#if MB_ASCII_ENABLED > 0
+        vMBASCIITransmitFSM(device0);
+#endif
+#endif
+
+#if MB_MASTER_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+        vMBMasterRTUTransmitFSM(deviceM0);
+#endif
+#if MB_ASCII_ENABLED > 0
+        vMBMasterASCIITransmitFSM(deviceM0);
+#endif
+#endif
+
+        USART_ClearITPendingBit(USART1, USART_IT_TC);
+    }
+  
+  //测试看是否可以去除 2012-07-23
+  //溢出-如果发生溢出需要先读SR,再读DR寄存器 则可清除不断入中断的问题
+  /*
+  if(USART_GetFlagStatus(USART1,USART_FLAG_ORE)==SET)
+  {
+    USART_ClearFlag(USART1,USART_FLAG_ORE); //读SR
+    USART_ReceiveData(USART1);              //读DR
+  }
+  */
+}
+/**
+  * @brief  USART2中断服务函数
+  * @param  None
+  * @retval None
+  */
+void USART2_IRQHandler(void)
+{
+  //发生接收中断
+    if(USART_GetITStatus(USART2, USART_IT_RXNE) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
         vMBRTUReceiveFSM(device1);
@@ -188,11 +310,11 @@ void USART1_IRQHandler(void)
 #endif
 #endif
         //清除中断标志位    
-        USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
+        USART_ClearITPendingBit(USART2, USART_IT_RXNE);   
     }
   
   //发生完成中断
-    if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
+    if(USART_GetITStatus(USART2, USART_IT_TC) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
         vMBRTUTransmitFSM(device1);
@@ -210,16 +332,16 @@ void USART1_IRQHandler(void)
 #endif
 #endif
 
-        USART_ClearITPendingBit(USART1, USART_IT_TC);
+        USART_ClearITPendingBit(USART2, USART_IT_TC);
     }
   
   //测试看是否可以去除 2012-07-23
   //溢出-如果发生溢出需要先读SR,再读DR寄存器 则可清除不断入中断的问题
   /*
-  if(USART_GetFlagStatus(USART1,USART_FLAG_ORE)==SET)
+  if(USART_GetFlagStatus(USART2,USART_FLAG_ORE)==SET)
   {
-    USART_ClearFlag(USART1,USART_FLAG_ORE); //读SR
-    USART_ReceiveData(USART1);              //读DR
+    USART_ClearFlag(USART2,USART_FLAG_ORE); //读SR
+    USART_ReceiveData(USART2);              //读DR
   }
   */
 }

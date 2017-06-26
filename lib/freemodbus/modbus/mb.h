@@ -63,13 +63,6 @@ typedef enum
     DEV_STATE_ENABLED
 }mb_DevState_t;
 
-typedef enum
-{
-    DEV_STATE_NOT_INITIALIZED,
-    DEV_STATE_DISABLED,
-    DEV_STATE_ENABLED
-}mb_DevState_t;
- 
 /*! \ingroup modbus
  * \brief Errorcodes used by all function in the protocol stack.
  */

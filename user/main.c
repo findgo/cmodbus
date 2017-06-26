@@ -14,6 +14,7 @@ static void prvClockInit(void);
 static void prvnvicInit(void);
 
 #if MB_MASTER_ENABLED > 0
+mb_MasterDevice_t* deviceM0;
 mb_MasterDevice_t* deviceM1;
 int main(void)
 {	
@@ -54,11 +55,12 @@ int main(void)
 #endif
 
 #if MB_SLAVE_ENABLED > 0
-
+mb_Device_t *device0;
 mb_Device_t *device1;
-static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
+static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
-mb_Device_t *device2;
+static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
+    {0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0xBB,0x77,0xFF,0xDD,0xEE};
 int main(void)
 {	
     mb_ErrorCode_t status;
@@ -67,7 +69,24 @@ int main(void)
 	prvnvicInit();
 	//Systick_Configuration();
 #if MB_RTU_ENABLED > 0   
-    device1 = xMBNew(MB_RTU, 0x01, 0, 9600, MB_PAR_NONE);
+    device0 = xMBNew(MB_RTU, 0x01, MBCOM0, 9600, MB_PAR_NONE);
+    if(device0){
+       status = eMBRegAssign(device0,
+                        dev0regbuf,
+                        sizeof(dev0regbuf),
+                        0,
+                        REG_HOLDING_NREGS ,
+                        0,
+                        REG_INPUT_NREGS,
+                        0,
+                        REG_COILS_SIZE,
+                        0,
+                        REG_DISCRETE_SIZE);
+       if(status == MB_ENOERR)
+            (void)eMBStart(device0);
+    }
+
+    device1 = xMBNew(MB_RTU, 0x01, MBCOM1, 9600, MB_PAR_NONE);
     if(device1){
        status = eMBRegAssign(device1,
                         dev1regbuf,
@@ -85,7 +104,24 @@ int main(void)
     }
 #endif
 #if MB_ASCII_ENABLED > 0
-    device1 = xMBNew(MB_ASCII, 0x01, 0, 9600, MB_PAR_NONE);
+    device0 = xMBNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);
+    if(device0){
+       status = eMBRegAssign(device0,
+                        dev0regbuf,
+                        sizeof(dev0regbuf),
+                        0,
+                        REG_HOLDING_NREGS ,
+                        0,
+                        REG_INPUT_NREGS,
+                        0,
+                        REG_COILS_SIZE,
+                        0,
+                        REG_DISCRETE_SIZE);
+       if(status == MB_ENOERR)
+            (void)eMBStart(device0);
+    }
+
+    device1 = xMBNew(MB_ASCII, 0x01, MBCOM1, 9600, MB_PAR_NONE);
     if(device1){
        status = eMBRegAssign(device1,
                         dev1regbuf,
