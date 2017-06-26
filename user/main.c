@@ -16,6 +16,7 @@ static void prvnvicInit(void);
 #if MB_MASTER_ENABLED > 0
 mb_MasterDevice_t* deviceM0;
 mb_MasterDevice_t* deviceM1;
+
 int main(void)
 {	
     mb_ErrorCode_t status;
@@ -50,9 +51,8 @@ int main(void)
 	}
 	//Should never reach this point!
 }
-
-
 #endif
+
 
 #if MB_SLAVE_ENABLED > 0
 mb_Device_t *device0;
@@ -61,6 +61,7 @@ static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
 static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0xBB,0x77,0xFF,0xDD,0xEE};
+
 int main(void)
 {	
     mb_ErrorCode_t status;

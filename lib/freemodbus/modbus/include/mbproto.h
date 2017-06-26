@@ -26,6 +26,7 @@ extern "C" {
 /* modbus function code */
 #define MB_FUNC_MIN                           ( 1 )
 #define MB_FUNC_MAX                           ( 127 )
+
 #define MB_FUNC_NONE                          (  0 )
 #define MB_FUNC_READ_COILS                    (  1 )
 #define MB_FUNC_READ_DISCRETE_INPUTS          (  2 )
