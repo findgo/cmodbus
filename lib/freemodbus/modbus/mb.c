@@ -14,49 +14,8 @@
 
 #if MB_SLAVE_ENABLED > 0
 
-typedef struct
-{
-    uint8_t ucFunctionCode;
-    pxMBFunctionHandler pxHandler;
-} xMBFunctionHandler;
-
 static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev);
 
-/* An array of Modbus functions handlers which associates Modbus function
- * codes with implementing functions.
- */
-static xMBFunctionHandler xFuncHandlers[MB_FUNC_HANDLERS_MAX] = {
-#if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
-    {MB_FUNC_OTHER_REPORT_SLAVEID, eMBFuncReportSlaveID},
-#endif
-#if MB_FUNC_READ_HOLDING_ENABLED > 0
-    {MB_FUNC_READ_HOLDING_REGISTER, eMBFuncRdHoldingRegister},
-#endif
-#if MB_FUNC_WRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_REGISTER, eMBFuncWrHoldingRegister},
-#endif
-#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBFuncWrMulHoldingRegister},
-#endif
-#if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBFuncRdWrMulHoldingRegister},
-#endif
-#if MB_FUNC_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMBFuncRdInputRegister},
-#endif
-#if MB_FUNC_READ_COILS_ENABLED > 0
-    {MB_FUNC_READ_COILS, eMBFuncRdCoils},
-#endif
-#if MB_FUNC_WRITE_COIL_ENABLED > 0
-    {MB_FUNC_WRITE_SINGLE_COIL, eMBFuncWrCoil},
-#endif
-#if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBFuncWrMulCoils},
-#endif
-#if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-    {MB_FUNC_READ_DISCRETE_INPUTS, eMBFuncRdDiscreteInputs},
-#endif
-};
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
 #if MB_SUPPORT_MULTIPLE_NUMBER > 1
 static uint8_t mb_devmask = 0;
@@ -388,45 +347,6 @@ void vMBPoll(void)
 
 #endif
 }
-mb_ErrorCode_t eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandler )
-{
-    int i;
-    mb_ErrorCode_t eStatus;
-
-    if((ucFunctionCode >= MB_FUNC_MIN) && (ucFunctionCode <= MB_FUNC_MAX)){
-        ENTER_CRITICAL_SECTION(  );
-        if( pxHandler != NULL ){
-            
-            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
-                if( ( xFuncHandlers[i].pxHandler == NULL ) 
-                    || ( xFuncHandlers[i].pxHandler == pxHandler ) ){
-                    xFuncHandlers[i].ucFunctionCode = ucFunctionCode;
-                    xFuncHandlers[i].pxHandler = pxHandler;
-                    break;
-                }
-            }
-            eStatus = ( i != MB_FUNC_HANDLERS_MAX ) ? MB_ENOERR : MB_ENORES;
-        }
-        else{
-            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
-                
-                if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode ){
-                    xFuncHandlers[i].ucFunctionCode = 0;
-                    xFuncHandlers[i].pxHandler = NULL;
-                    break;
-                }
-            }
-            /* Remove can't fail. */
-            eStatus = MB_ENOERR;
-        }
-        EXIT_CRITICAL_SECTION(  );
-    }
-    else{
-        eStatus = MB_EINVAL;
-    }
-    
-    return eStatus;
-}
 
 static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
 {
@@ -436,7 +356,7 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
     uint16_t usLength;
     eMBException_t eException;
 
-    int i;
+    pxMBFunctionHandler handle;
     mb_ErrorCode_t eStatus = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
@@ -455,18 +375,10 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
         
         /* Check if the frame is for us. If not ignore the frame. */
         if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
-            ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
-            for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
-                /* No more function handlers registered. Abort. */
-                if( xFuncHandlers[i].ucFunctionCode == 0 ){
-                    break;
-                }
-                else if(xFuncHandlers[i].ucFunctionCode == ucFunctionCode){
-                    eException = xFuncHandlers[i].pxHandler(&dev->regs,pPduFrame, &usLength);
-                    break;
-                }
-            }
+            handle = xMBSearchCB(pPduFrame[MB_PDU_FUNCODE_OFF]);
+            if(handle)
+                eException = handle(&dev->regs,pPduFrame, &usLength);
             
             /* If the request was not sent to the broadcast address we return a reply. */
             if(ucRcvAddress == MB_ADDRESS_BROADCAST)

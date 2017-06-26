@@ -16,12 +16,6 @@
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLED > 0
 
-typedef struct
-{
-    uint8_t ucFunctionCode;
-    pxMBParseRspHandler pxHandler;
-} xMBParseRspHandler;
-
 static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff);
 static mb_ErrorCode_t __masterReqreadylist_addtail(mb_MasterDevice_t *dev, mb_request_t *req);
 /* peek ready list */
@@ -33,39 +27,6 @@ static mb_ErrorCode_t __masterdev_add(mb_MasterDevice_t *dev);
 static mb_MasterDevice_t *__masterdev_search(uint8_t port);
 
 static mb_MasterDevice_t *mb_masterdev_head = NULL;
-
-static xMBParseRspHandler xParseRspHandlers[MB_FUNC_HANDLERS_MAX] = {
-#if MB_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED > 0
-    {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
-#endif
-#if MB_PARSE_RSP_READ_HOLDING_ENABLED > 0
-    {MB_FUNC_READ_HOLDING_REGISTER, eMBParseRspRdHoldingRegister},
-#endif
-#if MB_PARSE_RSP_WRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_REGISTER, eMBParseRspWrHoldingRegister},
-#endif
-#if MB_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBParseRspWrMulHoldingRegister},
-#endif
-#if MB_PARSE_RSP_READWRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBParseRspRdWrMulHoldingRegister},
-#endif
-#if MB_PARSE_RSP_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMBParseRdInputRegister},
-#endif
-#if MB_PARSE_RSP_READ_COILS_ENABLED > 0
-    {MB_FUNC_READ_COILS, eMBParseRspRdCoils},
-#endif
-#if MB_PARSE_RSP_WRITE_COIL_ENABLED > 0
-    {MB_FUNC_WRITE_SINGLE_COIL, eMBParseRspWrCoil},
-#endif
-#if MB_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBParseRspWrMulCoils},
-#endif
-#if MB_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED > 0
-    {MB_FUNC_READ_DISCRETE_INPUTS, eMBParseRspRdDiscreteInputs},
-#endif
-};
 
 mb_MasterDevice_t *xMBBaseMasterDeviceNew(void)
 {
@@ -544,7 +505,7 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
     mb_header_t header;
     mb_request_t *req;
 
-    int i;
+    pxMBParseRspHandler handle;
     mb_ErrorCode_t eStatus = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
@@ -599,18 +560,9 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
         }
         else{
             status = MBM_EINFUNCTION;
-            for( i = 0; i < MB_PARSE_RSP_HANDLERS_MAX; i++ ){
-                /* No more function handlers registered. Abort. */
-                if( xParseRspHandlers[i].ucFunctionCode == 0 ){
-                    break;
-                }
-                else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
-                    status = xParseRspHandlers[i].pxHandler(&req->node->regs, 
-                                                            req->regaddr, req->regcnt, 
-                                                            pRemainFrame,usLength);
-                    break;
-                }                
-            }
+            handle = xMBMasterSearchCB(ucFunctionCode);
+            if(handle)
+                status = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);
 
             if(status == MBM_EINFUNCTION){ // 无此功能码，// remove from ready list
                 __masterReqreadylist_removehead(dev); // remove from ready list
@@ -618,12 +570,12 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
             }
             else {
                 //if(status == MB_ENOERR){
-                    __masterReqreadylist_removehead(dev); // remove from ready list
-                    if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
-                        vMB_ReqBufDelete(req); 
-                    else{
-                        __masterReqpendlist_add(dev, req);// move to pend list
-                    }                
+                __masterReqreadylist_removehead(dev); // remove from ready list
+                if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                    vMB_ReqBufDelete(req); 
+                else{
+                    __masterReqpendlist_add(dev, req);// move to pend list
+                }                
             }         
         }
         dev->Pollstate = MASTER_DELYPOLL;             

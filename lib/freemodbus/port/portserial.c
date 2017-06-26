@@ -240,10 +240,10 @@ void USART1_IRQHandler(void)
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUReceiveFSM(device0);
+        vMBMasterRTUReceiveFSM(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIIReceiveFSM(device0);
+        vMBMasterASCIIReceiveFSM(deviceM0);
 #endif
 #endif
         //清除中断标志位    
