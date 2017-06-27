@@ -47,9 +47,9 @@ void vMBMasterRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    ((mb_Device_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    vMBPortSerialEnable(((mb_Device_t *)dev)->port, true, false);
-    vMBPortTimersDisable(((mb_Device_t *)dev)->port);
+    ((mb_MasterDevice_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
+    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, true, false);
+    vMBPortTimersDisable(((mb_MasterDevice_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -76,8 +76,8 @@ mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCo
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
-    if((dev->rcvAduBufrPos >= 3)
-        && (prvxMBCRC16( (uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0)){
+    if((dev->rcvAduBufrPos >= 5) /* addr+funcode+(other >= 1)+crc(2)  */
+        && (prvxMBCRC16((uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0)){
 
         phead->introute.slaveid = dev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
@@ -92,7 +92,6 @@ mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCo
 
         /* Return the start of the Modbus PDU to the caller. */
         *premain = (uint8_t *) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
-
     }
     else{
         eStatus = MB_EIO;

@@ -229,7 +229,7 @@ mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr
             return MB_ENOREG;
     }
     req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
-    if(pAdu == NULL)
+    if(req == NULL)
         return MBM_ENOMEM;
     
     pAdu = req->padu;

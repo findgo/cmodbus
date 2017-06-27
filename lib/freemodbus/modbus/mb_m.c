@@ -1,13 +1,13 @@
 #include "mbfunc.h"
 #include "port.h"
 #include "mb.h"
-#if MB_RTU_ENABLED == 1
+#if MB_RTU_ENABLED > 0
 #include "mbrtu.h"
 #endif
-#if MB_ASCII_ENABLED == 1
+#if MB_ASCII_ENABLED > 0
 #include "mbascii.h"
 #endif
-#if MB_TCP_ENABLED == 1
+#if MB_TCP_ENABLED > 0
 #include "mbtcp.h"
 #endif
 #include "mbbuf.h"

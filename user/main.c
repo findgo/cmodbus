@@ -29,22 +29,37 @@ int main(void)
     
 	//Systick_Configuration();
 #if MB_RTU_ENABLED > 0   
-    deviceM1 = xMBMasterNew(MB_RTU, 0, 9600, MB_PAR_NONE);
+    deviceM0= xMBMasterNew(MB_RTU, MBCOM0, 9600, MB_PAR_NONE);
+#elif MB_ASCII_ENABLED > 0
+    deviceM0= xMBMasterNew(MB_ASCII, MBCOM0, 9600, MB_PAR_NONE);
+#endif
+    if(deviceM0){
+       node = xMBMasterNodeNew(deviceM0,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+        if(node){
+           (void)eMBReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
+           (void)eMBReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);        
+           (void)eMBReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
+           (void)eMBReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+        }
+        (void)eMBMasterStart(deviceM0);  
+    }
+#if MB_RTU_ENABLED > 0   
+    deviceM1= xMBMasterNew(MB_RTU, MBCOM1, 9600, MB_PAR_NONE);
+#elif MB_ASCII_ENABLED > 0
+    deviceM1= xMBMasterNew(MB_ASCII, MBCOM1, 9600, MB_PAR_NONE);
+#endif
     if(deviceM1){
        node = xMBMasterNodeNew(deviceM1,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-                                    0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
         if(node){
            (void)eMBReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
-           (void)eMBReqRdInputRegister(deviceM1, 0x01, 0, 3, 1000);        
-           (void)eMBReqRdCoils(deviceM1, 0x01, 0, 16, 1000);        
-           (void)eMBReqRdDiscreteInputs(deviceM1, 0x01, 0, 16, 1000);        
+           (void)eMBReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
+           (void)eMBReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
+           (void)eMBReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
         }
         (void)eMBMasterStart(deviceM1);  
-    }
-#endif
-#if MB_ASCII_ENABLED > 0
-
-#endif
+    }    
 	while(1)
 	{
 	    vMBMasterPoll();
@@ -71,74 +86,32 @@ int main(void)
 	//Systick_Configuration();
 #if MB_RTU_ENABLED > 0   
     device0 = xMBNew(MB_RTU, 0x01, MBCOM0, 9600, MB_PAR_NONE);
+#elif MB_ASCII_ENABLED > 0
+    device0 = xMBNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);    
+#endif
     if(device0){
        status = eMBRegAssign(device0,
                         dev0regbuf,
                         sizeof(dev0regbuf),
-                        0,
-                        REG_HOLDING_NREGS ,
-                        0,
-                        REG_INPUT_NREGS,
-                        0,
-                        REG_COILS_SIZE,
-                        0,
-                        REG_DISCRETE_SIZE);
+                        0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
             (void)eMBStart(device0);
     }
-
+#if MB_RTU_ENABLED > 0   
     device1 = xMBNew(MB_RTU, 0x01, MBCOM1, 9600, MB_PAR_NONE);
-    if(device1){
-       status = eMBRegAssign(device1,
-                        dev1regbuf,
-                        sizeof(dev1regbuf),
-                        0,
-                        REG_HOLDING_NREGS ,
-                        0,
-                        REG_INPUT_NREGS,
-                        0,
-                        REG_COILS_SIZE,
-                        0,
-                        REG_DISCRETE_SIZE);
-       if(status == MB_ENOERR)
-            (void)eMBStart(device1);
-    }
-#endif
-#if MB_ASCII_ENABLED > 0
-    device0 = xMBNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);
-    if(device0){
-       status = eMBRegAssign(device0,
-                        dev0regbuf,
-                        sizeof(dev0regbuf),
-                        0,
-                        REG_HOLDING_NREGS ,
-                        0,
-                        REG_INPUT_NREGS,
-                        0,
-                        REG_COILS_SIZE,
-                        0,
-                        REG_DISCRETE_SIZE);
-       if(status == MB_ENOERR)
-            (void)eMBStart(device0);
-    }
-
+#elif MB_ASCII_ENABLED > 0
     device1 = xMBNew(MB_ASCII, 0x01, MBCOM1, 9600, MB_PAR_NONE);
+#endif
     if(device1){
        status = eMBRegAssign(device1,
                         dev1regbuf,
                         sizeof(dev1regbuf),
-                        0,
-                        REG_HOLDING_NREGS ,
-                        0,
-                        REG_INPUT_NREGS,
-                        0,
-                        REG_COILS_SIZE,
-                        0,
-                        REG_DISCRETE_SIZE);
+                        0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
             (void)eMBStart(device1);
     }
-#endif
 	while(1)
 	{
         vMBPoll();

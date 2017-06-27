@@ -85,11 +85,10 @@ mb_ErrorCode_t eMBRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, 
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */
-        *pusLength = ( uint16_t )(dev->rcvAduBufrPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_CRC);
+        *pusLength = (uint16_t)(dev->rcvAduBufrPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_CRC);
 
         /* Return the start of the Modbus PDU to the caller. */
-        *pPdu = ( uint8_t * ) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET];
-
+        *pPdu = (uint8_t *) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET];
     }
     else{
         eStatus = MB_EIO;
