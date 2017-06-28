@@ -332,7 +332,7 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--gnu</MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,DEBUG_MSG</Define>
               <Undefine></Undefine>
               <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\freemodbus\modbus;..\lib\freemodbus\modbus\include;..\lib\freemodbus\modbus\rtu;..\lib\freemodbus\modbus\ascii;..\lib\freemodbus\port;..\lib\freemodbus\modbus\memmange</IncludePath>

@@ -8,6 +8,7 @@ mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Par
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
     uint32_t usTimerT35_50us;
+    
     (void)dev;
     
     ENTER_CRITICAL_SECTION();

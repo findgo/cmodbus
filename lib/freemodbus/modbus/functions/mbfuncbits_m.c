@@ -6,41 +6,41 @@
 /* TODO implement modbus master */
 #if MB_MASTER_ENABLED > 0
 /* ok */
-mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate)
+mb_reqresult_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
     uint16_t len;
     mb_request_t *req;
     mb_slavenode_t *node = NULL;
-    mb_ErrorCode_t status;
+    mb_reqresult_t result;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MBM_EINNODEADDR;
+        return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */
     if(Coilcnt < MB_READBITS_CNT_MIN || Coilcnt > MB_READBITS_CNT_MAX )
-        return MB_EINVAL;
+        return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
         node = xMBMasterNodeSearch(Mdev,slaveaddr);
         if(node == NULL)
-            return MBM_ENODENOSETUP;
+            return MBR_ENODENOSETUP;
         
         /* check register addres in range*/
         if((RegStartAddr < node->regs.reg_coils_addr_start)
             || ((RegStartAddr + Coilcnt) > (node->regs.reg_coils_addr_start + node->regs.reg_coils_num)))
-            return MB_ENOREG;
+            return MBR_ENOREG;
     }
     
     req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
-        return MBM_ENOMEM;
+        return MBR_ENOMEM;
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = xMBsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_COILS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -58,42 +58,43 @@ mb_ErrorCode_t eMBReqRdCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = Coilcnt;
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
+    req->cb = cb;
     
-    status = eMBMaster_Reqsend(Mdev,req);
+    result = eMBMaster_Reqsend(Mdev,req);
     
-    if(status != MB_ENOERR)
+    if(result != MBR_ENOERR)
         vMB_ReqBufDelete(req);
     
-    return status;
+    return result;
 }
 /* ok */
-mb_ErrorCode_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegAddr, uint16_t val)
+mb_reqresult_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                uint16_t RegAddr, uint16_t val, pReqResultCB cb)
 {
     uint8_t *pAdu;
     uint16_t len;
     mb_request_t *req;
     mb_slavenode_t *node = NULL;
-    mb_ErrorCode_t status;
+    mb_reqresult_t result;
 
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MBM_EINNODEADDR;
+        return MBR_EINNODEADDR;
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
         node = xMBMasterNodeSearch(Mdev,slaveaddr);
         if(node == NULL)
-            return MBM_ENODENOSETUP;
+            return MBR_ENODENOSETUP;
         /* check register addres in range*/
         if((RegAddr < node->regs.reg_coils_addr_start)
             || ((RegAddr + 1) > (node->regs.reg_coils_addr_start + node->regs.reg_coils_num)))
-            return MB_ENOREG;
+            return MBR_ENOREG;
     }
     
     req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
     if(req == NULL)
-        return MBM_ENOMEM;
+        return MBR_ENOMEM;
     
     pAdu = req->padu;
     // set header and get head size
@@ -116,55 +117,56 @@ mb_ErrorCode_t eMBReqWrCoil(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = 1;
     req->scanrate  = 0;
     req->scancnt   = 0;
-
-    status = eMBMaster_Reqsend(Mdev,req);
+    req->cb = cb;
     
-    if(status != MB_ENOERR)
+    result = eMBMaster_Reqsend(Mdev,req);
+    
+    if(result != MBR_ENOERR)
         vMB_ReqBufDelete(req);
 
-    return status;
+    return result;
 }
 /* ok */
-mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Coilcnt,
-                                        uint8_t *valbuf, uint16_t valcnt)
+                                        uint8_t *valbuf, uint16_t valcnt, pReqResultCB cb)
 {
     uint8_t *pAdu;
     uint16_t pdulengh,len;
     mb_request_t *req;
     mb_slavenode_t *node = NULL;
-    mb_ErrorCode_t status;
+    mb_reqresult_t result;
     uint8_t ucByteCount;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MBM_EINNODEADDR;
+        return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */    
     if( (Coilcnt < MB_WRITEBITS_CNT_MIN ) || (Coilcnt > MB_WRITEBITS_CNT_MAX ))
-        return MB_EINVAL;
+        return MBR_EINVAL;
     
     /* Compute the number of expected bytes in the request. */
     ucByteCount = Coilcnt / 8 + (((Coilcnt & 0x0007) > 0) ? 1 : 0);
 
     if(ucByteCount != valcnt)
-        return MB_EINVAL;
+        return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
         node = xMBMasterNodeSearch(Mdev,slaveaddr);
         if(node == NULL)
-            return MBM_ENODENOSETUP;
+            return MBR_ENODENOSETUP;
         /* check register addres in range*/
         if((RegStartAddr < node->regs.reg_coils_addr_start)
             || ((RegStartAddr + Coilcnt) > (node->regs.reg_coils_addr_start + node->regs.reg_coils_num)))
-            return MB_ENOREG;
+            return MBR_ENOREG;
     }
     
     /* slaveaddr +((PDU)funccode + startaddr + coilcnt + bytenum + value_list)  */
     pdulengh =  MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + ucByteCount;
     req = xMB_ReqBufNew(Mdev->currentMode, pdulengh);
     if(req == NULL)
-        return MBM_ENOMEM;
+        return MBR_ENOMEM;
     
     pAdu = req->padu;
     // get head size
@@ -194,43 +196,44 @@ mb_ErrorCode_t eMbReqWrMulCoils(mb_MasterDevice_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = Coilcnt;
     req->scanrate  = 0;
     req->scancnt   = 0;
-
-    status = eMBMaster_Reqsend(Mdev,req);
-    if(status != MB_ENOERR)
+    req->cb = cb;
+    
+    result = eMBMaster_Reqsend(Mdev,req);
+    if(result != MBR_ENOERR)
         vMB_ReqBufDelete(req);
 
-    return status;
+    return result;
 }
 
-mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate)
+mb_reqresult_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
     uint16_t len;
     mb_request_t *req;
     mb_slavenode_t *node = NULL;
-    mb_ErrorCode_t status;
+    mb_reqresult_t result;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
-        return MBM_EINNODEADDR;
+        return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */
     if(Discnt < MB_READBITS_CNT_MIN || Discnt > MB_READBITS_CNT_MAX)
-        return MB_EINVAL;
+        return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
         node = xMBMasterNodeSearch(Mdev,slaveaddr);
         if(node == NULL)
-            return MBM_ENODENOSETUP;
+            return MBR_ENODENOSETUP;
         /* check register addres in range*/
         if((RegStartAddr < node->regs.reg_discrete_addr_start)
             || ((RegStartAddr + Discnt) > (node->regs.reg_discrete_addr_start + node->regs.reg_discrete_num)))
-            return MB_ENOREG;
+            return MBR_ENOREG;
     }
     req = xMB_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
-        return MBM_ENOMEM;
+        return MBR_ENOMEM;
     
     pAdu = req->padu;
     // set header and get head size
@@ -252,12 +255,13 @@ mb_ErrorCode_t eMBReqRdDiscreteInputs(mb_MasterDevice_t *Mdev, uint8_t slaveaddr
     req->regcnt    = Discnt;
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
+    req->cb = cb;
 
-    status = eMBMaster_Reqsend(Mdev,req);
-    if(status != MB_ENOERR)
+    result = eMBMaster_Reqsend(Mdev,req);
+    if(result != MBR_ENOERR)
         vMB_ReqBufDelete(pAdu);
 
-    return status;
+    return result;
 }
 
 
@@ -276,7 +280,7 @@ static void __vMBLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint
     }
 }
 /* ok */
-mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdCoils(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength)
 {
@@ -286,14 +290,14 @@ mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs,
     /* check frame is right length */    
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
-        return MB_EINVAL;
+        return MBR_EINVAL;
       
     __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
 
-    return MB_ENOERR;
+    return MBR_ENOERR;
 }
 /* ok */
-mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrCoil(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -301,36 +305,36 @@ mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs,
 
     (void) ReqRegcnt;
     if((remainLength != 4) || ReqRegAddr != ((premain[0] << 8) | premain[1]))
-        return MB_EINVAL;
+        return MBR_EINVAL;
 
     
     if( ( premain[3] != 0x00 )
         || !((premain[2] == 0xFF) || (premain[2] == 0x00)) )
-        return MB_EINVAL;
+        return MBR_EINVAL;
     
     if(premain[2] == 0xFF)
         bitval |= 0x01; 
 
     __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
 
-    return MB_ENOERR;
+    return MBR_ENOERR;
 }
 /* ok */
-mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
     if(remainLength != 4)
-        return MB_EINVAL;
+        return MBR_EINVAL;
 
     if((ReqRegAddr != ((premain[0] << 8) | premain[1]))
         || (ReqRegcnt != ((premain[2] << 8) | premain[3])))
-        return MB_EINVAL;
+        return MBR_EINVAL;
 
-    return MB_ENOERR;
+    return MBR_ENOERR;
 }
 /* ok */
-mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -340,11 +344,11 @@ mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs,
     /* check frame is right length */
     /* check coilcnt with previous request byteNum */
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
-        return MB_EINVAL;
+        return MBR_EINVAL;
       
     __vMBLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
-    return MB_ENOERR;
+    return MBR_ENOERR;
 }
 
 #endif

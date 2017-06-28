@@ -105,33 +105,33 @@ pxMBParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode);
 
 /* for bits */                                    
 /* for parse response */
-mb_ErrorCode_t eMBParseRspRdCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdCoils(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspWrCoil(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrCoil(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrMulCoils(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdDiscreteInputs(mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength);
 /* for register */                                    
 /* for parse response */
-mb_ErrorCode_t eMBParseRspRdHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdHoldingRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrHoldingRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t Regcnt,
                                                 uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspWrMulHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspWrMulHoldingRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                 uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                 uint8_t *premain, uint16_t remainLength);
-mb_ErrorCode_t eMBParseRdInputRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBParseRdInputRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength);
     

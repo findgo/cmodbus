@@ -41,10 +41,10 @@ void vMB_ReqBufDelete(void *ptr)
 /* set head and return head length */
 uint8_t xMBsetHead(mb_Mode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pdulength)
 {
-    // rtu ascii haeder
     if(mode == MB_RTU || mode == MB_ASCII){
         pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
-    
+
+        /* rtu ascii header size */
         return MB_SER_ADU_SIZE_ADDR;
     }
     else{

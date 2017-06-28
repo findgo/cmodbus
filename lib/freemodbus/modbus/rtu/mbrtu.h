@@ -38,8 +38,8 @@ mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, 
 void vMBMasterRTUStart(void *dev);
 void vMBMasterRTUStop(void *dev);
 void vMBMasterRTUClose(void *dev);
-mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usLength);
+mb_reqresult_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+mb_reqresult_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usLength);
 
 void vMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev);
 void vMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev);

@@ -82,7 +82,7 @@ mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaud
         mb_free(dev);
         return NULL;
     }
-    
+
     dev->port         = ucPort;
     dev->currentMode  = eMode;
     
@@ -98,7 +98,7 @@ mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaud
     
     dev->retry        = MBM_DEFAULT_RETRYCNT;
     dev->retrycnt     = 0;
-    
+
     dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
     dev->Replytimeoutcnt    = 0;
     dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
@@ -371,7 +371,7 @@ mb_ErrorCode_t eMBMasterNodeadd(mb_MasterDevice_t *dev, mb_slavenode_t *node)
 
     srhnode = xMBMasterNodeSearch(dev,node->slaveaddr);
     if(srhnode)
-        return MBM_ENODEEXIST;
+        return MB_ENODEEXIST;
     
     if(dev->nodehead == NULL){
         dev->nodehead = node;
@@ -500,13 +500,12 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
     uint8_t *pRemainFrame; // remain fram
     uint8_t ucFunctionCode;
     uint16_t usLength;
-    mb_ErrorCode_t status;
     eMBException_t eException;
+    mb_reqresult_t result;
     mb_header_t header;
     mb_request_t *req;
 
     pxMBParseRspHandler handle;
-    mb_ErrorCode_t eStatus = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
     if( dev->devstate != DEV_STATE_ENABLED ){
@@ -536,49 +535,48 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
         }
     
         /* parser a adu fram */
-        eStatus = dev->peMBReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
-        if( eStatus != MB_ENOERR ){
-            dev->Pollstate = MASTER_DELYPOLL;
-            break;
-        }
-
-        if((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveaddr != header.introute.slaveid)){
+        result = dev->peMBReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
+        if(result == MBR_ENOERR){
+            
             /* not for us ,continue to wait response */
-            dev->Pollstate = MASTER_WAITRSP;
-            break;
+            if((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveaddr != header.introute.slaveid)){
+                dev->Pollstate = MASTER_WAITRSP;
+                break;
+            }
+            
+            /* funcoe and slaveid same, this frame for us and then excute it*/
+            if(ucFunctionCode & 0x80){ // 异常码
+                eException = (eMBException_t)pRemainFrame[0]; //异常码
+            }
+            else{
+                result = MBR_EINFUNCTION;
+                handle = xMBMasterSearchCB(ucFunctionCode);
+                if(handle)
+                    result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength); 
+
+                
+            }
+        }
+        if(result != MBR_ENOERR){
+            req->errcnt++;
         }
         
-        /* funcoe and slaveid same, this frame for us and then excute it*/
-        if(ucFunctionCode & 0x80){ // 异常码
-            eException = (eMBException_t)pRemainFrame[0]; //异常码
+        if(req->cb)
+            req->cb(result, eException, req); //执行回调
+        
+        if(result == MBR_EINFUNCTION){ // 无此功能码，// remove from ready list
+            __masterReqreadylist_removehead(dev); // remove from ready list
+            vMB_ReqBufDelete(req); // delete request
+        }
+        else {
             __masterReqreadylist_removehead(dev); // remove from ready list
             if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
                 vMB_ReqBufDelete(req); 
             else{
                 __masterReqpendlist_add(dev, req);// move to pend list
             }                
-        }
-        else{
-            status = MBM_EINFUNCTION;
-            handle = xMBMasterSearchCB(ucFunctionCode);
-            if(handle)
-                status = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);
-
-            if(status == MBM_EINFUNCTION){ // 无此功能码，// remove from ready list
-                __masterReqreadylist_removehead(dev); // remove from ready list
-                vMB_ReqBufDelete(req); // delete request
-            }
-            else {
-                //if(status == MB_ENOERR){
-                __masterReqreadylist_removehead(dev); // remove from ready list
-                if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
-                    vMB_ReqBufDelete(req); 
-                else{
-                    __masterReqpendlist_add(dev, req);// move to pend list
-                }                
-            }         
-        }
-        dev->Pollstate = MASTER_DELYPOLL;             
+        } 
+        dev->Pollstate = MASTER_DELYPOLL;   
         break;
     case MASTER_RSPTIMEOUT:
         req = __masterReqreadylist_peek(dev);
@@ -586,6 +584,9 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
             dev->Pollstate = MASTER_DELYPOLL;
         }
         else{
+            req->errcnt++;
+            if(req->cb)
+                req->cb(result, eException, req); //执行回调
             __masterReqreadylist_removehead(dev);
             if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
                 vMB_ReqBufDelete(req);
@@ -653,7 +654,8 @@ static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff)
 }
 
 
-mb_ErrorCode_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req)
+
+ mb_reqresult_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req)
 {   
     uint16_t crc_lrc;
     
@@ -677,7 +679,7 @@ mb_ErrorCode_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req)
     else
         __masterReqpendlist_add(dev,req);
 
-    return MB_ENOERR;
+    return MBR_ENOERR;
 }
 
 

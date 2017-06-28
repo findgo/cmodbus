@@ -49,8 +49,8 @@ mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate,
 void vMBMasterASCIIStart(void *dev);
 void vMBMasterASCIIStop(void *dev);
 void vMBMasterASCIIClose(void *dev);
-mb_ErrorCode_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-mb_ErrorCode_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+mb_reqresult_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
 
 void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev);
 void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev);

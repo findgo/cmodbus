@@ -380,8 +380,9 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
         
         /* Check if the frame is for us. If not ignore the frame. */
         if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
+            ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = xMBSearchCB(pPduFrame[MB_PDU_FUNCODE_OFF]);
+            handle = xMBSearchCB(ucFunctionCode);
             if(handle)
                 eException = handle(&dev->regs,pPduFrame, &usLength);
             

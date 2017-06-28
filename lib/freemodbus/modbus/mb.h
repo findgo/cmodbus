@@ -77,16 +77,10 @@ typedef enum
     MB_EILLSTATE,               /*!< protocol stack in illegal state. */
     MB_ETIMEDOUT,               /*!< timeout error occurred. */
     MB_EDEVEXIST,
-    // for master
-    MBM_ENODEEXIST,             /*!< node exist */
-    MBM_EINNODEADDR,            /* illegal slave address*/
-    MBM_ENODENOSETUP,           /* node not yet established */
-    MBM_ENOMEM,                 /* Out of memory */
-    MBM_EINFUNCTION,            /* no valid function */
-    MBM_ERSPEXCEPTOIN,          /* error of response exception code*/
+    MB_ENODEEXIST,             /*!< node exist */
 }mb_ErrorCode_t;
 
- 
+
 typedef struct
 {
     uint16_t reg_holding_addr_start;
@@ -152,6 +146,22 @@ typedef enum {
     MASTER_RSPEXCUTE,
     MASTER_RSPTIMEOUT
 }Master_Pollstate_t;
+typedef enum
+{
+    MBR_ENOERR,
+    MBR_EINNODEADDR,      /* illegal slave address*/
+    MBR_ENODENOSETUP,     /* node not yet established */
+    MBR_ENOREG,           /*!< illegal register address. */
+    MBR_EINVAL,           /*!< illegal argument. */
+    MBR_ENOMEM,           /* Out of memory */
+    MBR_BUSY,             /* IO busy */
+    MBR_EINFUNCTION,      /* no valid function */
+    MBR_ETIMEOUT,         /* response timeout */
+    MBR_MISSBYTE,         /* response receive miss byte */
+    MBR_ECHECK,           /* response receive crc/lrc error */
+    MBR_EREGDIFF,         /* response register address different from request */
+    MBR_ERSPEXCEPTOIN,    /* response exception */
+}mb_reqresult_t;
 
 typedef struct 
 {
@@ -164,12 +174,12 @@ typedef struct
     }introute;
 }mb_header_t;
 
-typedef mb_ErrorCode_t (*pxMBParseRspHandler)(mb_Reg_t *regs, 
+typedef mb_reqresult_t (*pxMBParseRspHandler)(mb_Reg_t *regs, 
                                             uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                             uint8_t *premain,uint16_t remainLength);
 
-typedef mb_ErrorCode_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-typedef mb_ErrorCode_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+typedef mb_reqresult_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+typedef mb_reqresult_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
 
 typedef struct
 {
@@ -179,7 +189,7 @@ typedef struct
     mb_Reg_t regs;
     void *next;
 }mb_slavenode_t;
-
+typedef void (*pReqResultCB)(mb_reqresult_t result,eMBException_t eException, void *req);
 typedef struct
 {
     mb_slavenode_t *node;   /* mark the node */
@@ -192,25 +202,25 @@ typedef struct
     uint8_t *padu;          /* mark adu for repeat send */
     uint16_t scancnt;       /* scan time cnt */
     uint16_t scanrate;      /* scan rate  if 0 : once,other request on scan rate */
-    //void *ReqSuccessCB(void *req);
+    pReqResultCB cb;
     void *next;
 }mb_request_t;
 
 typedef struct
 {
-    uint16_t port; // ¶Ë¿ÚºÅ
-    mb_Mode_t currentMode;
-    
+    uint8_t port; // ¶Ë¿ÚºÅ
     mb_DevState_t devstate;
+    uint16_t reserved0;
     
     mb_slavenode_t *nodehead;   /* slave node list on this host */
 
     mb_request_t *Reqreadyhead; /* request ready list  head*/
     mb_request_t *Reqreadytail; /* request ready list  tail*/
     mb_request_t *Reqpendhead;  /* request suspend list */
-    
+
+    mb_Mode_t currentMode;    
+
     uint8_t Pollstate;
-    uint8_t reserved0;
 
     uint8_t retry;
     uint8_t retrycnt;
@@ -240,7 +250,7 @@ typedef struct
 
 #define vMBMasterSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
 
-mb_ErrorCode_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req);
+mb_reqresult_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req);
 
 
 #endif

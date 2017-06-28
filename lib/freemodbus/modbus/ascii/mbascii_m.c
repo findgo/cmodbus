@@ -47,9 +47,9 @@ void vMBMasterASCIIClose(void *dev)
 {
 
 }
-mb_ErrorCode_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+mb_reqresult_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    mb_reqresult_t result = MBR_ENOERR;
     mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
@@ -71,18 +71,20 @@ mb_ErrorCode_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfun
         /* Return the start of the Modbus PDU to the caller. */
         *premain = (uint8_t *) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
     }
-    else{
-        eStatus = MB_EIO;
+    else if(dev->rcvAduBufrPos < 4){
+        result = MBR_MISSBYTE;
+    }else{
+        result = MBR_ECHECK;
     }
     
     EXIT_CRITICAL_SECTION();
     
-    return eStatus;
+    return result;
 }
 
-mb_ErrorCode_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
+mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    mb_reqresult_t result = MBR_ENOERR;
     uint8_t ucByte;
     mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
     
@@ -109,11 +111,11 @@ mb_ErrorCode_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAdu
         vMBPortSerialEnable(dev->port, false, true );
     }
     else{
-        eStatus = MB_EIO;
+        result = MBR_BUSY;
     }
     EXIT_CRITICAL_SECTION();
     
-    return eStatus;
+    return result;
 }
 
 void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev)

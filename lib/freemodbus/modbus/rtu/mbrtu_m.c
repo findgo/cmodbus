@@ -2,6 +2,7 @@
 #include "port.h"
 #include "mbrtu.h"
 #include "mbutils.h"
+
 /*************************************************************************************************/
 /* TODO implement modbus rtu master */
 #if MB_RTU_ENABLED > 0 && MB_MASTER_ENABLED > 0
@@ -69,9 +70,9 @@ void vMBMasterRTUClose(void *dev)
 
 }
 
-mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+mb_reqresult_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    mb_reqresult_t result = MBR_ENOERR;
     mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
@@ -93,17 +94,19 @@ mb_ErrorCode_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCo
         /* Return the start of the Modbus PDU to the caller. */
         *premain = (uint8_t *) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
     }
-    else{
-        eStatus = MB_EIO;
+    else if(dev->rcvAduBufrPos < 5){
+        result = MBR_MISSBYTE;
+    }else{
+        result = MBR_ECHECK;
     }
     EXIT_CRITICAL_SECTION();
     
-    return eStatus;
+    return result;
 }
 
-mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
+mb_reqresult_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    mb_reqresult_t result = MBR_ENOERR;
     mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
     
     ENTER_CRITICAL_SECTION();
@@ -127,11 +130,11 @@ mb_ErrorCode_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLe
         vMBPortSerialEnable(dev->port, false, true);
     }
     else{
-        eStatus = MB_EIO;
+        result = MBR_BUSY;
     }  
     EXIT_CRITICAL_SECTION();
 
-    return eStatus;
+    return result;
 }
 
 void vMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev)

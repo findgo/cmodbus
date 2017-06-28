@@ -3,6 +3,7 @@
 //for driver
 #include "modbus.h"
 #include "mbfunc.h"
+#include "list.h"
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 3 )
@@ -19,7 +20,6 @@ mb_MasterDevice_t* deviceM1;
 
 int main(void)
 {	
-    mb_ErrorCode_t status;
     mb_slavenode_t *node;
   
 //	prvClockInit();
@@ -37,10 +37,10 @@ int main(void)
        node = xMBMasterNodeNew(deviceM0,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
                                         0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
         if(node){
-           (void)eMBReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
-           (void)eMBReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);        
-           (void)eMBReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
-           (void)eMBReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+           (void)eMBReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000,NULL);
+           (void)eMBReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000,NULL);        
+           (void)eMBReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000,NULL);        
+           (void)eMBReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000,NULL);        
         }
         (void)eMBMasterStart(deviceM0);  
     }
@@ -53,10 +53,10 @@ int main(void)
        node = xMBMasterNodeNew(deviceM1,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
                                         0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
         if(node){
-           (void)eMBReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
-           (void)eMBReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
-           (void)eMBReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
-           (void)eMBReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+           (void)eMBReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000,NULL);
+           (void)eMBReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000,NULL);        
+           (void)eMBReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000,NULL);        
+           (void)eMBReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000,NULL);        
         }
         (void)eMBMasterStart(deviceM1);  
     }    
