@@ -298,7 +298,7 @@
 
   <Group>
     <GroupName>mastermodbus</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -309,8 +309,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\mb_m.c</PathWithFileName>
-      <FilenameWithoutPath>mb_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\mb.c</PathWithFileName>
+      <FilenameWithoutPath>mb.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -321,8 +321,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\rtu\mbrtu_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbrtu_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\rtu\mbrtu.c</PathWithFileName>
+      <FilenameWithoutPath>mbrtu.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -333,8 +333,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncregs_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncregs_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\ascii\mbascii.c</PathWithFileName>
+      <FilenameWithoutPath>mbascii.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -345,8 +345,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncother_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncother_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfunc.c</PathWithFileName>
+      <FilenameWithoutPath>mbfunc.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -357,8 +357,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncbits_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncbits_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncbits.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncbits.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -369,8 +369,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\ascii\mbascii_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbascii_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncother.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncother.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -381,20 +381,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\mbbuf.c</PathWithFileName>
-      <FilenameWithoutPath>mbbuf.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>4</GroupNumber>
-      <FileNumber>11</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfunc_m.c</PathWithFileName>
-      <FilenameWithoutPath>mbfunc_m.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncregs.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncregs.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -402,10 +390,22 @@
 
   <Group>
     <GroupName>slavermodbus</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>11</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\lib\modbus\src\mb_m.c</PathWithFileName>
+      <FilenameWithoutPath>mb_m.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
     <File>
       <GroupNumber>5</GroupNumber>
       <FileNumber>12</FileNumber>
@@ -413,8 +413,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\mb.c</PathWithFileName>
-      <FilenameWithoutPath>mb.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\mbbuf.c</PathWithFileName>
+      <FilenameWithoutPath>mbbuf.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -425,8 +425,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncregs.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncregs.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\rtu\mbrtu_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbrtu_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -437,8 +437,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncbits.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncbits.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfunc_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbfunc_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -449,8 +449,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\ascii\mbascii.c</PathWithFileName>
-      <FilenameWithoutPath>mbascii.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncbits_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncbits_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -461,8 +461,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfuncother.c</PathWithFileName>
-      <FilenameWithoutPath>mbfuncother.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncother_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncother_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -473,8 +473,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\rtu\mbrtu.c</PathWithFileName>
-      <FilenameWithoutPath>mbrtu.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbfuncregs_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbfuncregs_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -485,8 +485,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbfunc.c</PathWithFileName>
-      <FilenameWithoutPath>mbfunc.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\ascii\mbascii_m.c</PathWithFileName>
+      <FilenameWithoutPath>mbascii_m.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -494,7 +494,7 @@
 
   <Group>
     <GroupName>modbuscommon</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -505,8 +505,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\memmange\heap_2.c</PathWithFileName>
-      <FilenameWithoutPath>heap_2.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\src\func\mbutils.c</PathWithFileName>
+      <FilenameWithoutPath>mbutils.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -517,8 +517,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\modbus\functions\mbutils.c</PathWithFileName>
-      <FilenameWithoutPath>mbutils.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\memmange\heap_4.c</PathWithFileName>
+      <FilenameWithoutPath>heap_4.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -526,7 +526,7 @@
 
   <Group>
     <GroupName>modbusport</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -537,8 +537,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\port\portserial.c</PathWithFileName>
-      <FilenameWithoutPath>portserial.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\port\porttimer.c</PathWithFileName>
+      <FilenameWithoutPath>porttimer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -549,8 +549,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\lib\freemodbus\port\porttimer.c</PathWithFileName>
-      <FilenameWithoutPath>porttimer.c</FilenameWithoutPath>
+      <PathWithFileName>..\lib\modbus\port\portserial.c</PathWithFileName>
+      <FilenameWithoutPath>portserial.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

@@ -12,11 +12,12 @@
 #include "mbfunc.h"
 #include "mbutils.h"
 
-#if MB_SLAVE_ENABLED > 0
+#if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
 static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev);
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
+
 #if MB_SUPPORT_MULTIPLE_NUMBER > 1
 static uint8_t mb_devmask = 0;
 static mb_Device_t mb_devTal[MB_SUPPORT_MULTIPLE_NUMBER];
@@ -43,7 +44,6 @@ uint8_t *xMBRegBufNew(uint32_t size)
 }
 #endif
 
-#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
 {
@@ -148,35 +148,7 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
 
     return dev;
 }
-#endif
 
-#if MB_TCP_ENABLED > 0
-mb_Device_t *xMBTCPNew(uint16_t ucTCPPort)
-{
-    mb_ErrorCode_t eStatus = MB_ENOERR;
-
-    if(( eStatus = eMBTCPInit( ucTCPPort ) ) != MB_ENOERR){
-         dev->devstate = DEV_STATE_DISABLED;
-    }
-    else{ 
-        dev->xEventInFlag = false;
-        dev->pvMBStartCur = vMBTCPStart;
-        dev->pvMBStopCur = vMBTCPStop;
-        dev->pvMBCloseCur = vMBTCPClose;
-        dev->peMBSendCur = eMBTCPReceive;
-        dev->peMBReceivedCur = eMBTCPSend;
-                
-        dev->slaveaddr = MB_TCP_PSEUDO_ADDRESS;
-        dev->port = ucTCPPort;
-        dev->currentMode = MB_TCP;
-        dev->devstate = DEV_STATE_DISABLED;
-
-        __dev_add(dev);
-    }
-    
-    return eStatus;
-}
-#endif
 mb_ErrorCode_t eMBDelete(uint8_t ucPort)
 {
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0

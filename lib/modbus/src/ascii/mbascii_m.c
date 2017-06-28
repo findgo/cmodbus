@@ -1,7 +1,7 @@
 
 #include "port.h"
-#include "mbascii.h"
 #include "mbutils.h"
+#include "mbascii.h"
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 

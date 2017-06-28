@@ -32,6 +32,7 @@ typedef enum
     BYTE_HIGH_NIBBLE,           /*!< Character for high nibble of byte. */
     BYTE_LOW_NIBBLE             /*!< Character for low nibble of byte. */
 } eMBBytePos;
+#if MB_ASCII_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
 
 mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
 void vMBASCIIStart(void *dev);
@@ -43,7 +44,9 @@ mb_ErrorCode_t eMBASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pP
 void vMBASCIIReceiveFSM(mb_Device_t *dev);
 void vMBASCIITransmitFSM(mb_Device_t *dev);
 void vMBASCIITimerT1SExpired(mb_Device_t *dev);
+#endif
 
+#if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
 mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
 void vMBMasterASCIIStart(void *dev);
@@ -55,7 +58,7 @@ mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAdu
 void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev);
 void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev);
 void vMBMasterASCIITimerT1SExpired(mb_MasterDevice_t *dev);
-
+#endif
 
 #ifdef __cplusplus
 }

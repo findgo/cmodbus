@@ -10,11 +10,12 @@
 #if MB_TCP_ENABLED > 0
 #include "mbtcp.h"
 #endif
-#include "mbbuf.h"
 #include "mbutils.h"
 
 /* TODO implement modbus master */
-#if MB_MASTER_ENABLED > 0
+#if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_MASTER_ENABLED > 0
+#include "mem_mange.h"
+#include "mbbuf.h"
 
 static mb_ErrorCode_t eMBMasterhandle(mb_MasterDevice_t *dev,uint32_t timediff);
 static mb_ErrorCode_t __masterReqreadylist_addtail(mb_MasterDevice_t *dev, mb_request_t *req);
@@ -32,7 +33,7 @@ mb_MasterDevice_t *xMBBaseMasterDeviceNew(void)
 {
     mb_MasterDevice_t *dev;
     
-    dev = mb_malloc(sizeof(mb_MasterDevice_t));
+    dev = (mb_MasterDevice_t *)mb_malloc(sizeof(mb_MasterDevice_t));
     if(dev == NULL)
         return NULL;
 
@@ -41,13 +42,12 @@ mb_MasterDevice_t *xMBBaseMasterDeviceNew(void)
     return dev;
 }
 
-#if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
     mb_MasterDevice_t *dev;
 
-    dev = mb_malloc(sizeof(mb_MasterDevice_t));
+    dev = (mb_MasterDevice_t *)mb_malloc(sizeof(mb_MasterDevice_t));
     if(dev == NULL)
         return NULL;
 
@@ -117,41 +117,6 @@ mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaud
     
     return dev;
 }
-#endif
-
-#if MB_TCP_ENABLED > 0
-mb_MasterDevice_t *xMBMasterTCPNew(uint16_t ucTCPPort)
-{
-    mb_ErrorCode_t eStatus = MB_ENOERR;
-
-    if(( eStatus = eMBMasterTCPInit( ucTCPPort ) ) != MB_ENOERR){
-         dev->devstate = DEV_STATE_DISABLED;
-    }
-    else{ 
-        dev->pvMBStartCur = vMBMasterTCPStart;
-        dev->pvMBStopCur = vMBMasterTCPStop;
-        dev->pvMBCloseCur = vMBMasterTCPClose;
-        dev->peMBSendCur = eMBMasterTCPReceive;
-        dev->peMBReceivedCur = eMBMasterTCPSend;
-                
-        dev->port           = ucTCPPort;
-        dev->currentMode    = MB_TCP;
-        dev->devstate       = DEV_STATE_DISABLED;
-        dev->retry          = MBM_DEFAULT_RETRYCNT;
-        dev->retrycnt       = 0;
-        dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
-        dev->Replytimeoutcnt    = 0;
-        dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
-        dev->Delaypolltimecnt   = 0;
-        dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
-        dev->Broadcastturntimecnt = 0;
-        
-        eStatus = __masterdev_add(dev);
-    }
-    
-    return eStatus;
-}
-#endif
 
 mb_ErrorCode_t eMBMasterDelete(uint8_t ucPort)
 {
@@ -313,11 +278,11 @@ mb_slavenode_t *xMBMasterNodeCreate(uint8_t slaveaddr,
     if(slaveaddr < MB_ADDRESS_MIN || slaveaddr > MB_ADDRESS_MAX)
         return NULL;
     
-    node = mb_malloc(sizeof(mb_slavenode_t));
+    node = (mb_slavenode_t *)mb_malloc(sizeof(mb_slavenode_t));
     if(node){
         lens = xMBRegBufSizeCal(reg_holding_num,reg_input_num,reg_coils_num,reg_discrete_num);
 
-        regbuf = mb_malloc(lens);
+        regbuf = (uint8_t *)mb_malloc(lens);
         if(regbuf == NULL){
             mb_free(node);
             return NULL;

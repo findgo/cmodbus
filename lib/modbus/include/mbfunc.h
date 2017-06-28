@@ -12,7 +12,6 @@ extern "C" {
 #include "mbcpu.h"
 
 #include "mbutils.h"
-#include "mbbuf.h"
 #include "mb.h"
     
 // read holding input coil disc offset in pdu
@@ -60,6 +59,8 @@ typedef enum
     MB_REG_WRITE                /*!< Update register values. */
 } mb_RegisterMode_t;
 
+#if MB_SLAVE_ENABLED > 0
+
 #if MB_FUNC_OTHER_REP_SLAVEID_BUF > 0
 eMBException_t eMBFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t * usLen);
 #endif
@@ -101,6 +102,11 @@ eMBException_t eMBFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint
 #endif
 
 pxMBFunctionHandler xMBSearchCB(uint8_t ucFunctionCode);
+
+#endif
+
+#if MB_MASTER_ENABLED > 0
+
 pxMBParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode);
 
 /* for bits */                                    
@@ -134,7 +140,8 @@ mb_reqresult_t eMBParseRspRdWrMulHoldingRegister(mb_Reg_t *regs,
 mb_reqresult_t eMBParseRdInputRegister(mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength);
-    
+#endif
+
 #ifdef __cplusplus
 }
 #endif

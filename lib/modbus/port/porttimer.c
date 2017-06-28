@@ -3,6 +3,7 @@
 #include "mbascii.h"
 #include "modbus.h"
 
+#if MB_RTU_ENABLED > 0 ||  MB_ASCII_ENABLED > 0
 //STM32相关头文件
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
@@ -223,3 +224,6 @@ uint32_t xMBsys_now(void)
     return sysclocktime;
 }
 #endif
+
+#endif
+

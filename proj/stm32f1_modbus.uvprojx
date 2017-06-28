@@ -335,7 +335,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,DEBUG_MSG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\freemodbus\modbus;..\lib\freemodbus\modbus\include;..\lib\freemodbus\modbus\rtu;..\lib\freemodbus\modbus\ascii;..\lib\freemodbus\port;..\lib\freemodbus\modbus\memmange</IncludePath>
+              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\modbus\include;..\lib\modbus\include\rtu;..\lib\modbus\include\ascii;..\lib\modbus\port;..\lib\modbus\memmange</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -408,44 +408,39 @@
           <GroupName>mastermodbus</GroupName>
           <Files>
             <File>
-              <FileName>mb_m.c</FileName>
+              <FileName>mb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\mb_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\mb.c</FilePath>
             </File>
             <File>
-              <FileName>mbrtu_m.c</FileName>
+              <FileName>mbrtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\rtu\mbrtu_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\rtu\mbrtu.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncregs_m.c</FileName>
+              <FileName>mbascii.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncregs_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\ascii\mbascii.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncother_m.c</FileName>
+              <FileName>mbfunc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncother_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfunc.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncbits_m.c</FileName>
+              <FileName>mbfuncbits.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncbits_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfuncbits.c</FilePath>
             </File>
             <File>
-              <FileName>mbascii_m.c</FileName>
+              <FileName>mbfuncother.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\ascii\mbascii_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfuncother.c</FilePath>
             </File>
             <File>
-              <FileName>mbbuf.c</FileName>
+              <FileName>mbfuncregs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\mbbuf.c</FilePath>
-            </File>
-            <File>
-              <FileName>mbfunc_m.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfunc_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfuncregs.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -453,89 +448,44 @@
           <GroupName>slavermodbus</GroupName>
           <Files>
             <File>
-              <FileName>mb.c</FileName>
+              <FileName>mb_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\mb.c</FilePath>
+              <FilePath>..\lib\modbus\src\mb_m.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncregs.c</FileName>
+              <FileName>mbbuf.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncregs.c</FilePath>
+              <FilePath>..\lib\modbus\src\mbbuf.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncbits.c</FileName>
+              <FileName>mbrtu_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncbits.c</FilePath>
+              <FilePath>..\lib\modbus\src\rtu\mbrtu_m.c</FilePath>
             </File>
             <File>
-              <FileName>mbascii.c</FileName>
+              <FileName>mbfunc_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\ascii\mbascii.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfunc_m.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncother.c</FileName>
+              <FileName>mbfuncbits_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfuncother.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfuncbits_m.c</FilePath>
             </File>
             <File>
-              <FileName>mbrtu.c</FileName>
+              <FileName>mbfuncother_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\rtu\mbrtu.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>1</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define></Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
+              <FilePath>..\lib\modbus\src\func\mbfuncother_m.c</FilePath>
             </File>
             <File>
-              <FileName>mbfunc.c</FileName>
+              <FileName>mbfuncregs_m.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbfunc.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbfuncregs_m.c</FilePath>
+            </File>
+            <File>
+              <FileName>mbascii_m.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\modbus\src\ascii\mbascii_m.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -543,14 +493,14 @@
           <GroupName>modbuscommon</GroupName>
           <Files>
             <File>
-              <FileName>heap_2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\memmange\heap_2.c</FilePath>
-            </File>
-            <File>
               <FileName>mbutils.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\modbus\functions\mbutils.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbutils.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\modbus\memmange\heap_4.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -558,14 +508,14 @@
           <GroupName>modbusport</GroupName>
           <Files>
             <File>
-              <FileName>portserial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\port\portserial.c</FilePath>
-            </File>
-            <File>
               <FileName>porttimer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\freemodbus\port\porttimer.c</FilePath>
+              <FilePath>..\lib\modbus\port\porttimer.c</FilePath>
+            </File>
+            <File>
+              <FileName>portserial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\modbus\port\portserial.c</FilePath>
             </File>
           </Files>
         </Group>

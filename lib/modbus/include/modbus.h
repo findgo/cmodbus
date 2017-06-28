@@ -4,6 +4,10 @@
 
 #include "mb.h"
 
+#if MB_RTU_ENABLED > 0 ||  MB_ASCII_ENABLED > 0
+
+#if MB_SLAVE_ENABLED > 0
+
 // for slave 
 #define xMBRegHoldPtr(pdev) ((uint16_t *)((mb_Device_t *)dev)->regs.pReghold)
 #define xMBRegInputPtr(pdev) ((uint16_t *)((mb_Device_t *)dev)->regs.pReginput)
@@ -55,7 +59,6 @@ mb_ErrorCode_t eMBRegisterCB(uint8_t ucFunctionCode, pxMBFunctionHandler pxHandl
 mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
 
-mb_Device_t *xMBTCPNew(uint16_t ucTCPPort);
 void vMBDelete(uint8_t ucSlaveAddress);
 mb_ErrorCode_t eMBRegAssign(mb_Device_t *dev,
                                 uint8_t *regbuf,
@@ -72,10 +75,11 @@ mb_ErrorCode_t eMBStart(mb_Device_t *dev);
 mb_ErrorCode_t eMBStop(mb_Device_t *dev);
 mb_ErrorCode_t eMBClose(mb_Device_t *dev);
 void vMBPoll(void);
+#endif
 
+#if MB_MASTER_ENABLED
 /* TODO implement modbus master */
 mb_MasterDevice_t *xMBMasterNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
-mb_MasterDevice_t *xMBMasterTCPNew(uint16_t ucTCPPort);
 mb_ErrorCode_t eMBMasterDelete(uint8_t ucPort);
 mb_ErrorCode_t eMBMasterSetPara(mb_MasterDevice_t *dev, 
                                     uint8_t retry,uint32_t replytimeout,
@@ -138,8 +142,9 @@ mb_reqresult_t eMBReqRdWrMulHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t sla
                                                 uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                                 uint16_t *valbuf, uint16_t valcnt, pReqResultCB cb);
 
+#endif
 
-
+#endif
 
 #endif
 

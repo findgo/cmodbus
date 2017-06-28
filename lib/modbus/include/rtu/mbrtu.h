@@ -20,7 +20,7 @@ typedef enum
     STATE_RTU_TX_XMIT               /*!< RTU Transmitter is in transfer state. */
 } eMBRTUSndRcvState;    
 
-
+#if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
 mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,mb_Parity_t eParity);
 void vMBRTUStart(void *dev);
 void vMBRTUStop(void *dev);
@@ -32,8 +32,9 @@ void vMBRTUReceiveFSM(  mb_Device_t *dev);
 void vMBRTUTransmitFSM(  mb_Device_t *dev);
 void vMBRTUTimerT15Expired(  mb_Device_t *dev);
 void vMBRTUTimerT35Expired(  mb_Device_t *dev);
+#endif
 
-
+#if MB_RTU_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
 void vMBMasterRTUStart(void *dev);
 void vMBMasterRTUStop(void *dev);
@@ -45,6 +46,7 @@ void vMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev);
 void vMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev);
 void vMBMasterRTUTimerT15Expired(  mb_MasterDevice_t *dev);
 void vMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev);
+#endif
 
 #ifdef __cplusplus
 }

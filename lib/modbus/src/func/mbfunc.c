@@ -52,7 +52,6 @@ mb_ErrorCode_t eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHand
     if((ucFunctionCode < MB_FUNC_MIN) || (ucFunctionCode > MB_FUNC_MAX))
         return MB_EINVAL;
 
-    ENTER_CRITICAL_SECTION();
     for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ ){
         if((xFuncHandlers[i].ucFunctionCode == 0) 
             || (xFuncHandlers[i].ucFunctionCode == ucFunctionCode)){ 
@@ -70,7 +69,6 @@ mb_ErrorCode_t eMBRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHand
     }
     if(!pxHandler) // remove can't failed!
         eStatus = MB_ENOERR;
-    EXIT_CRITICAL_SECTION();
     
     return eStatus;
 }

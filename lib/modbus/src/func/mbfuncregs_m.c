@@ -1,9 +1,9 @@
 
 #include "mbfunc.h"
 #include "modbus.h"
-/*************************************************************************************************/
-/* TODO implement modbus master */
+
 #if MB_MASTER_ENABLED > 0
+#include "mbbuf.h"
 /* ok */
 mb_reqresult_t eMBReqRdHoldingRegister(mb_MasterDevice_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate, pReqResultCB cb)
