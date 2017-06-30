@@ -5,13 +5,13 @@
 typedef struct
 {
     uint8_t ucFunctionCode;
-    pxMBFunctionHandler pxHandler;
-} xMBFunctionHandler;
+    pxMbsFunctionHandler pxHandler;
+} xMbsFunctionHandler;
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
  */
-static xMBFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
+static xMbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, eMbsFuncReportSlaveID},
 #endif
@@ -44,7 +44,7 @@ static xMBFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #endif
 };
 
-mb_ErrorCode_t eMbsRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHandler )
+mb_ErrorCode_t eMbsRegisterCB( uint8_t ucFunctionCode, pxMbsFunctionHandler pxHandler )
 {
     int i;
     mb_ErrorCode_t eStatus = MB_ENORES;
@@ -73,10 +73,10 @@ mb_ErrorCode_t eMbsRegisterCB( uint8_t ucFunctionCode, pxMBFunctionHandler pxHan
     return eStatus;
 }
 
-pxMBFunctionHandler xMbsSearchCB(uint8_t ucFunctionCode)
+pxMbsFunctionHandler xMbsSearchCB(uint8_t ucFunctionCode)
 {
     int i;
-    pxMBFunctionHandler srch = NULL;
+    pxMbsFunctionHandler srch = NULL;
 
     for( i = 0; i < MBS_FUNC_HANDLERS_MAX; i++){
         /* No more function handlers registered. Abort. */

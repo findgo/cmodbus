@@ -9,10 +9,10 @@
 #if MB_SLAVE_ENABLED > 0
 
 // for slave 
-#define xMBRegHoldPtr(pdev) ((uint16_t *)((mbs_Device_t *)dev)->regs.pReghold)
-#define xMBRegInputPtr(pdev) ((uint16_t *)((mbs_Device_t *)dev)->regs.pReginput)
-#define xMBRegCoilPtr(pdev) ((uint8_t *)((mbs_Device_t *)dev)->regs.pRegCoil)
-#define xMBRegDiscPtr(pdev) ((uint8_t *)((mbs_Device_t *)dev)->regs.pRegDisc)
+#define xMbsRegHoldPtr(pdev) ((uint16_t *)((mbs_Device_t *)dev)->regs.pReghold)
+#define xMbsRegInputPtr(pdev) ((uint16_t *)((mbs_Device_t *)dev)->regs.pReginput)
+#define xMbsRegCoilPtr(pdev) ((uint8_t *)((mbs_Device_t *)dev)->regs.pRegCoil)
+#define xMbsRegDiscPtr(pdev) ((uint8_t *)((mbs_Device_t *)dev)->regs.pRegDisc)
 /*! \ingroup modbus
  * \brief Configure the slave id of the device.
  *
@@ -54,7 +54,7 @@ mb_ErrorCode_t eMbsSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning
  *   case the values in mbconfig.h should be adjusted. If the argument was not
  *   valid it returns mb_ErrorCode_t::MB_EINVAL.
  */
-mb_ErrorCode_t eMbsRegisterCB(uint8_t ucFunctionCode, pxMBFunctionHandler pxHandler);
+mb_ErrorCode_t eMbsRegisterCB(uint8_t ucFunctionCode, pxMbsFunctionHandler pxHandler);
 
 mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);

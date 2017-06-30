@@ -86,9 +86,9 @@ typedef struct
     }introute;
 }mb_header_t;
 
-typedef eMBException_t (*pxMBFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
+typedef eMBException_t (*pxMbsFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef mb_reqresult_t (*pxMBParseRspHandler)(mb_Reg_t *regs, 
+typedef mb_reqresult_t (*pxMBMParseRspHandler)(mb_Reg_t *regs, 
                                             uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                             uint8_t *premain,uint16_t remainLength);
 

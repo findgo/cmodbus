@@ -470,7 +470,7 @@ static mb_ErrorCode_t eMBMhandle(mbm_Device_t *dev,uint32_t timediff)
     mb_header_t header;
     mbm_request_t *req;
 
-    pxMBParseRspHandler handle;
+    pxMBMParseRspHandler handle;
 
     /* Check if the protocol stack is ready. */
     if( dev->devstate != DEV_STATE_ENABLED ){

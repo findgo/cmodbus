@@ -101,13 +101,13 @@ eMBException_t eMbsFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t *pPdu, uint16_t 
 eMBException_t eMbsFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
 
-pxMBFunctionHandler xMbsSearchCB(uint8_t ucFunctionCode);
+pxMbsFunctionHandler xMbsSearchCB(uint8_t ucFunctionCode);
 
 #endif
 
 #if MB_MASTER_ENABLED > 0
 
-pxMBParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode);
+pxMBMParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode);
 
 /* for bits */                                    
 /* for parse response */

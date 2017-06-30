@@ -6,11 +6,11 @@
 typedef struct
 {
     uint8_t ucFunctionCode;
-    pxMBParseRspHandler pxHandler;
-} xMBParseRspHandler;
+    pxMBMParseRspHandler pxHandler;
+} xMBMParseRspHandler;
 
 
-static xMBParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
+static xMBMParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #if MBM_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
 #endif
@@ -42,10 +42,10 @@ static xMBParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
     {MB_FUNC_READ_DISCRETE_INPUTS, eMBMParseRspRdDiscreteInputs},
 #endif
 };
-pxMBParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode)
+pxMBMParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode)
 {
     int i;
-    pxMBParseRspHandler srch = NULL;
+    pxMBMParseRspHandler srch = NULL;
 
     for( i = 0; i < MBM_PARSE_RSP_HANDLERS_MAX; i++ ){
         /* No more function handlers registered. Abort. */
