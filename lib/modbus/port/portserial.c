@@ -10,10 +10,10 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern mb_Device_t *device0;
-extern mb_Device_t *device1;
-extern mb_MasterDevice_t *deviceM0;
-extern mb_MasterDevice_t *deviceM1;
+extern mbs_Device_t *device0;
+extern mbs_Device_t *device1;
+extern mbm_Device_t *deviceM0;
+extern mbm_Device_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -233,19 +233,19 @@ void USART1_IRQHandler(void)
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUReceiveFSM(device0);
+        vMbsRTUReceiveFSM(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIIReceiveFSM(device0);
+        vMbsASCIIReceiveFSM(device0);
 #endif
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUReceiveFSM(deviceM0);
+        vMBMRTUReceiveFSM(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIIReceiveFSM(deviceM0);
+        vMBMASCIIReceiveFSM(deviceM0);
 #endif
 #endif
         //清除中断标志位    
@@ -256,19 +256,19 @@ void USART1_IRQHandler(void)
     if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUTransmitFSM(device0);
+        vMbsRTUTransmitFSM(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIITransmitFSM(device0);
+        vMbsASCIITransmitFSM(device0);
 #endif
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUTransmitFSM(deviceM0);
+        vMBMRTUTransmitFSM(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIITransmitFSM(deviceM0);
+        vMBMASCIITransmitFSM(deviceM0);
 #endif
 #endif
 
@@ -296,19 +296,19 @@ void USART2_IRQHandler(void)
     if(USART_GetITStatus(USART2, USART_IT_RXNE) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUReceiveFSM(device1);
+        vMbsRTUReceiveFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIIReceiveFSM(device1);
+        vMbsASCIIReceiveFSM(device1);
 #endif
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUReceiveFSM(deviceM1);
+        vMBMRTUReceiveFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIIReceiveFSM(deviceM1);
+        vMBMASCIIReceiveFSM(deviceM1);
 #endif
 #endif
         //清除中断标志位    
@@ -319,18 +319,18 @@ void USART2_IRQHandler(void)
     if(USART_GetITStatus(USART2, USART_IT_TC) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUTransmitFSM(device1);
+        vMbsRTUTransmitFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIITransmitFSM(device1);
+        vMbsASCIITransmitFSM(device1);
 #endif
 #endif
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUTransmitFSM(deviceM1);
+        vMBMRTUTransmitFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIITransmitFSM(deviceM1);
+        vMBMASCIITransmitFSM(deviceM1);
 #endif
 #endif
 

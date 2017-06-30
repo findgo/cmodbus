@@ -21,31 +21,31 @@ typedef enum
 } eMBRTUSndRcvState;    
 
 #if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
-mb_ErrorCode_t eMBRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,mb_Parity_t eParity);
-void vMBRTUStart(void *dev);
-void vMBRTUStop(void *dev);
-void vMBRTUClose(void *dev);
-mb_ErrorCode_t eMBRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
-mb_ErrorCode_t eMBRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+mb_ErrorCode_t eMbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,mb_Parity_t eParity);
+void vMbsRTUStart(void *dev);
+void vMbsRTUStop(void *dev);
+void vMbsRTUClose(void *dev);
+mb_ErrorCode_t eMbsRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+mb_ErrorCode_t eMbsRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void vMBRTUReceiveFSM(  mb_Device_t *dev);
-void vMBRTUTransmitFSM(  mb_Device_t *dev);
-void vMBRTUTimerT15Expired(  mb_Device_t *dev);
-void vMBRTUTimerT35Expired(  mb_Device_t *dev);
+void vMbsRTUReceiveFSM(  mbs_Device_t *dev);
+void vMbsRTUTransmitFSM(  mbs_Device_t *dev);
+void vMBRTUTimerT15Expired(  mbs_Device_t *dev);
+void vMbsRTUTimerT35Expired(  mbs_Device_t *dev);
 #endif
 
 #if MB_RTU_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
-mb_ErrorCode_t eMBMasterRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
-void vMBMasterRTUStart(void *dev);
-void vMBMasterRTUStop(void *dev);
-void vMBMasterRTUClose(void *dev);
-mb_reqresult_t eMBMasterRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-mb_reqresult_t eMBMasterRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usLength);
+mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
+void vMBMRTUStart(void *dev);
+void vMBMRTUStop(void *dev);
+void vMBMRTUClose(void *dev);
+mb_reqresult_t eMBMRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+mb_reqresult_t eMBMRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usLength);
 
-void vMBMasterRTUReceiveFSM(  mb_MasterDevice_t *dev);
-void vMBMasterRTUTransmitFSM(  mb_MasterDevice_t *dev);
-void vMBMasterRTUTimerT15Expired(  mb_MasterDevice_t *dev);
-void vMBMasterRTUTimerT35Expired(  mb_MasterDevice_t *dev);
+void vMBMRTUReceiveFSM(  mbm_Device_t *dev);
+void vMBMRTUTransmitFSM(  mbm_Device_t *dev);
+void vMBMRTUTimerT15Expired(  mbm_Device_t *dev);
+void vMBMRTUTimerT35Expired(  mbm_Device_t *dev);
 #endif
 
 #ifdef __cplusplus

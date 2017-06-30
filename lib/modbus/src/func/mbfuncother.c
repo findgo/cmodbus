@@ -4,12 +4,12 @@
 
 #include "mbfunc.h"
 
-#if MB_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
+#if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
 
-static uint8_t    ucMBSlaveID[MB_FUNC_OTHER_REP_SLAVEID_BUF];
+static uint8_t    ucMBSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t   usMBSlaveIDLen;
 
-mb_ErrorCode_t eMBSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
+mb_ErrorCode_t eMbsSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
                 uint8_t const *pucAdditional, uint16_t usAdditionalLen)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
@@ -19,7 +19,7 @@ mb_ErrorCode_t eMBSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
     /* the first byte and second byte in the buffer is reserved for
      * the parameter ucSlaveID and the running flag. The rest of
      * the buffer is available for additional data. */
-    if(usAdditionalLen + 2 < MB_FUNC_OTHER_REP_SLAVEID_BUF){
+    if(usAdditionalLen + 2 < MBS_FUNC_OTHER_REP_SLAVEID_BUF){
         
         usMBSlaveIDLen = 0;
         ucMBSlaveID[usMBSlaveIDLen++] = ucSlaveID;
@@ -36,7 +36,7 @@ mb_ErrorCode_t eMBSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
     return eStatus;
 }
 
-eMBException_t eMBFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen)
+eMBException_t eMbsFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen)
 {
     (void)regs;
 

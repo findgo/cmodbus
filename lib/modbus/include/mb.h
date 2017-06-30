@@ -75,9 +75,9 @@ typedef struct
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufrPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}mb_Device_t;
+}mbs_Device_t;
 
-#define xMBSemGive(dev) do { ((mb_Device_t *)dev)->xEventInFlag = true;}while(0)
+#define xMBSemGive(dev) do { ((mbs_Device_t *)dev)->xEventInFlag = true;}while(0)
 
 /***************************************************/
 /**************** define for master ********************/
@@ -91,7 +91,7 @@ typedef enum {
     MASTER_WAITRSP,
     MASTER_RSPEXCUTE,
     MASTER_RSPTIMEOUT
-}Master_Pollstate_t;
+}mbm_Pollstate_t;
 
 typedef mb_reqresult_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
 typedef mb_reqresult_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
@@ -103,11 +103,11 @@ typedef struct
     uint16_t reserved1;
     mb_Reg_t regs;
     void *next;
-}mb_slavenode_t;
+}mbm_slavenode_t;
 
 typedef struct
 {
-    mb_slavenode_t *node;   /* mark the node */
+    mbm_slavenode_t *node;   /* mark the node */
     uint32_t errcnt;        /* request errcnt */
     uint8_t slaveaddr;      /* mark slave address */
     uint8_t funcode;        /* mark function code */
@@ -119,7 +119,7 @@ typedef struct
     uint16_t scanrate;      /* scan rate  if 0 : once,other request on scan rate */
     pReqResultCB cb;
     void *next;
-}mb_request_t;
+}mbm_request_t;
 
 typedef struct
 {
@@ -127,11 +127,11 @@ typedef struct
     mb_DevState_t devstate;
     uint16_t reserved0;
     
-    mb_slavenode_t *nodehead;   /* slave node list on this host */
+    mbm_slavenode_t *nodehead;   /* slave node list on this host */
 
-    mb_request_t *Reqreadyhead; /* request ready list  head*/
-    mb_request_t *Reqreadytail; /* request ready list  tail*/
-    mb_request_t *Reqpendhead;  /* request suspend list */
+    mbm_request_t *Reqreadyhead; /* request ready list  head*/
+    mbm_request_t *Reqreadytail; /* request ready list  tail*/
+    mbm_request_t *Reqpendhead;  /* request suspend list */
 
     mb_Mode_t currentMode;    
 
@@ -161,11 +161,11 @@ typedef struct
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufrPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}mb_MasterDevice_t;
+}mbm_Device_t;
 
 #define vMBMasterSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
 
-mb_reqresult_t eMBMaster_Reqsend(mb_MasterDevice_t *dev, mb_request_t *req);
+mb_reqresult_t eMBM_Reqsend(mbm_Device_t *dev, mbm_request_t *req);
 
 
 #endif

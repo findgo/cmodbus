@@ -5,14 +5,14 @@
 #if MB_MASTER_ENABLED > 0
 #include "mem_mange.h"
 
-mb_request_t *xMB_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize)
+mbm_request_t *xMBM_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize)
 {
     uint16_t size;
-    mb_request_t *req;
+    mbm_request_t *req;
     
-    req = (mb_request_t *)mb_malloc(sizeof(mb_request_t));
+    req = (mbm_request_t *)mb_malloc(sizeof(mbm_request_t));
     if(req){
-        memset(req,0,sizeof(mb_request_t));
+        memset(req,0,sizeof(mbm_request_t));
         
         if(mode == MB_RTU)
             size = MB_SER_ADU_SIZE_ADDR + MB_SER_ADU_SIZE_CRC;
@@ -31,16 +31,16 @@ mb_request_t *xMB_ReqBufNew(mb_Mode_t mode,uint16_t Pdusize)
     return req;
 }
 
-void vMB_ReqBufDelete(void *ptr)
+void vMBM_ReqBufDelete(void *ptr)
 {
     if(ptr){
-        mb_free(((mb_request_t *)ptr)->padu);
+        mb_free(((mbm_request_t *)ptr)->padu);
         mb_free(ptr);
     }
 }
 
 /* set head and return head length */
-uint8_t xMBsetHead(mb_Mode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pdulength)
+uint8_t xMBMsetHead(mb_Mode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pdulength)
 {
     if(mode == MB_RTU || mode == MB_ASCII){
         pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;

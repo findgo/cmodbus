@@ -10,10 +10,10 @@
 
 uint32_t sysclocktime = 0;
 
-extern mb_Device_t *device0;
-extern mb_Device_t *device1;
-extern mb_MasterDevice_t *deviceM0;
-extern mb_MasterDevice_t *deviceM1;
+extern mbs_Device_t *device0;
+extern mbs_Device_t *device1;
+extern mbm_Device_t *deviceM0;
+extern mbm_Device_t *deviceM1;
 /* ----------------------- Start implementation -----------------------------*/
 /**
   * @brief  定时器初始化函数
@@ -164,19 +164,19 @@ void TIM3_IRQHandler(void)
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUTimerT35Expired(device0);
+        vMbsRTUTimerT35Expired(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIITimerT1SExpired(device0);
+        vMbsASCIITimerT1SExpired(device0);
 #endif        
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUTimerT35Expired(deviceM0);
+        vMBMRTUTimerT35Expired(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIITimerT1SExpired(deviceM0);
+        vMBMASCIITimerT1SExpired(deviceM0);
 #endif        
 
 #endif
@@ -195,19 +195,19 @@ void TIM4_IRQHandler(void)
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBRTUTimerT35Expired(device1);
+        vMbsRTUTimerT35Expired(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBASCIITimerT1SExpired(device1);
+        vMbsASCIITimerT1SExpired(device1);
 #endif        
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMasterRTUTimerT35Expired(deviceM1);
+        vMBMRTUTimerT35Expired(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMasterASCIITimerT1SExpired(deviceM1);
+        vMBMASCIITimerT1SExpired(deviceM1);
 #endif        
 
 #endif

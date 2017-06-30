@@ -10,7 +10,7 @@ extern "C" {
 /*! \ingroup modbus
  * \brief Use the default Modbus TCP port (502)
  */
-#define MB_TCP_PORT_USE_DEFAULT     (502)   
+#define MB_TCP_PORT_USE_DEFAULT	(502)   
 
 #define MB_ADDRESS_BROADCAST    ( 0 )   /*! Modbus broadcast address. */
 #define MB_ADDRESS_MIN          ( 1 )   /*! Smallest possible slave address. */
@@ -21,7 +21,7 @@ extern "C" {
  */
 #define MB_TCP_PSEUDO_ADDRESS   ( 255 )
 /* modbus tcp MBAP TID */
-#define MB_TCP_PROTOCOL_ID  0   /* 0 = Modbus Protocol */
+#define MB_TCP_PROTOCOL_ID  	 ( 0 )   /* 0 = Modbus Protocol */
 
 /* modbus function code */
 #define MB_FUNC_MIN                           ( 1 )
@@ -61,16 +61,16 @@ extern "C" {
 /* ----------------------- Type definitions ---------------------------------*/
 typedef enum
 {
-    MB_EX_NONE = 0x00,
-    MB_EX_ILLEGAL_FUNCTION = 0x01,
-    MB_EX_ILLEGAL_DATA_ADDRESS = 0x02,
-    MB_EX_ILLEGAL_DATA_VALUE = 0x03,
-    MB_EX_SLAVE_DEVICE_FAILURE = 0x04,
-    MB_EX_ACKNOWLEDGE = 0x05,
-    MB_EX_SLAVE_BUSY = 0x06,
-    MB_EX_MEMORY_PARITY_ERROR = 0x08,
-    MB_EX_GATEWAY_PATH_FAILED = 0x0A,
-    MB_EX_GATEWAY_TGT_FAILED = 0x0B
+    MB_EX_NONE 					= 0x00,
+    MB_EX_ILLEGAL_FUNCTION 		= 0x01,
+    MB_EX_ILLEGAL_DATA_ADDRESS 	= 0x02,
+    MB_EX_ILLEGAL_DATA_VALUE 	= 0x03,
+    MB_EX_SLAVE_DEVICE_FAILURE  = 0x04,
+    MB_EX_ACKNOWLEDGE 			= 0x05,
+    MB_EX_SLAVE_BUSY 			= 0x06,
+    MB_EX_MEMORY_PARITY_ERROR 	= 0x08,
+    MB_EX_GATEWAY_PATH_FAILED 	= 0x0A,
+    MB_EX_GATEWAY_TGT_FAILED 	= 0x0B
 } eMBException_t;
 
 #ifdef __cplusplus

@@ -14,22 +14,22 @@
 
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
-static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev);
+static mb_ErrorCode_t __eMbsADUFramehandle(mbs_Device_t *dev);
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
 
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
 static uint8_t mb_devmask = 0;
-static mb_Device_t mb_devTal[MB_SUPPORT_MULTIPLE_NUMBER];
+static mbs_Device_t mb_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 #else 
-static mb_Device_t mb_devTal;
+static mbs_Device_t mb_devTal;
 #endif
 
 #else /* use dynamic memory */
-static void __dev_add(mb_Device_t *dev);
-static mb_Device_t *__dev_search(uint8_t port);
+static void __dev_add(mbs_Device_t *dev);
+static mbs_Device_t *__dev_search(uint8_t port);
 
-static mb_Device_t *mb_dev_head = NULL;
+static mbs_Device_t *mb_dev_head = NULL;
 uint8_t *xMBRegBufNew(uint32_t size)
 {
     uint8_t *pregbuf;
@@ -38,18 +38,18 @@ uint8_t *xMBRegBufNew(uint32_t size)
     if(pregbuf == NULL)
         return NULL;
     
-    memset(pregbuf,0,sizeof(mb_Device_t));
+    memset(pregbuf,0,sizeof(mbs_Device_t));
     
     return pregbuf;    
 }
 #endif
 
-mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
+mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
 {
-    mb_Device_t *dev = NULL;
+    mbs_Device_t *dev = NULL;
     mb_ErrorCode_t eStatus;
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
     uint8_t mask;
     uint8_t idx;
 #endif
@@ -66,11 +66,11 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
     if(dev) /* exist ? */
         return NULL; 
     
-    dev = mb_malloc(sizeof(mb_Device_t));
+    dev = mb_malloc(sizeof(mbs_Device_t));
     if(dev == NULL)
         return NULL;
 #else
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
     /* check port exist ?*/
     idx = 0;
     mask = (uint8_t)1 << idx; 
@@ -83,38 +83,38 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
         mask <<= 1;
     }
     /* check range */
-    if(idx >= MB_SUPPORT_MULTIPLE_NUMBER)
+    if(idx >= MBS_SUPPORT_MULTIPLE_NUMBER)
         return NULL;
     /* can find it,alloc a dev object*/
     mb_devmask |= (uint8_t)1 << idx; /* mark it */
-    dev = (mb_Device_t *)&mb_devTal[idx];
+    dev = (mbs_Device_t *)&mb_devTal[idx];
 #else
-    dev = (mb_Device_t *)&mb_devTal;
+    dev = (mbs_Device_t *)&mb_devTal;
 #endif    
 #endif
-    memset(dev,0,sizeof(mb_Device_t));    
+    memset(dev,0,sizeof(mbs_Device_t));    
 
     switch (eMode){
 #if MB_RTU_ENABLED > 0
     case MB_RTU:
-        dev->pvMBStartCur = vMBRTUStart;
-        dev->pvMBStopCur = vMBRTUStop;
-        dev->pvMBCloseCur = vMBRTUClose;
-        dev->peMBSendCur = eMBRTUSend;
-        dev->peMBReceivedCur = eMBRTUReceive;
+        dev->pvMBStartCur = vMbsRTUStart;
+        dev->pvMBStopCur = vMbsRTUStop;
+        dev->pvMBCloseCur = vMbsRTUClose;
+        dev->peMBSendCur = eMbsRTUSend;
+        dev->peMBReceivedCur = eMbsRTUReceive;
 
-        eStatus = eMBRTUInit(dev, ucPort, ulBaudRate, eParity);
+        eStatus = eMbsRTUInit(dev, ucPort, ulBaudRate, eParity);
         break;
 #endif
 #if MB_ASCII_ENABLED > 0
     case MB_ASCII:
-        dev->pvMBStartCur = vMBASCIIStart;
-        dev->pvMBStopCur = vMBASCIIStop;
-        dev->pvMBCloseCur = vMBASCIIClose;
-        dev->peMBSendCur = eMBASCIISend;
-        dev->peMBReceivedCur = eMBASCIIReceive;
+        dev->pvMBStartCur = vMbsASCIIStart;
+        dev->pvMBStopCur = vMbsASCIIStop;
+        dev->pvMBCloseCur = vMbsASCIIClose;
+        dev->peMBSendCur = eMbsASCIISend;
+        dev->peMBReceivedCur = eMbsASCIIReceive;
         
-        eStatus = eMBASCIIInit(dev, ucPort, ulBaudRate, eParity);
+        eStatus = eMbsASCIIInit(dev, ucPort, ulBaudRate, eParity);
         break;
 #endif
     default:
@@ -126,7 +126,7 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
         mb_free(dev);
 #else
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
         mb_devmask &= ~((uint8_t)1 << idx); /* delete it */ 
         mb_devTal[idx].devstate = DEV_STATE_NOT_INITIALIZED;
 #else
@@ -149,11 +149,11 @@ mb_Device_t *xMBNew(mb_Mode_t eMode, uint8_t ucSlaveAddress,
     return dev;
 }
 
-mb_ErrorCode_t eMBDelete(uint8_t ucPort)
+void vMbsDelete(uint8_t ucPort)
 {
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
-    mb_Device_t *srh = NULL;
-    mb_Device_t *pre = NULL;
+    mbs_Device_t *srh = NULL;
+    mbs_Device_t *pre = NULL;
     
     srh = mb_dev_head;
     pre = NULL;
@@ -175,7 +175,7 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
         mb_free(srh);
     }
 #else
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
     uint8_t idx,mask;
 		/* check port exist ?*/
     idx = 0;
@@ -189,7 +189,7 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
         mask <<= idx;
     }
     /* check range */
-    if(idx < MB_SUPPORT_MULTIPLE_NUMBER){
+    if(idx < MBS_SUPPORT_MULTIPLE_NUMBER){
         /* can find it,alloc a dev object*/
         mb_devmask &= ~((uint8_t)1 << idx); /* delete it */ 
         mb_devTal[idx].devstate = DEV_STATE_NOT_INITIALIZED;
@@ -197,14 +197,12 @@ mb_ErrorCode_t eMBDelete(uint8_t ucPort)
 #else
     mb_devTal.devstate = DEV_STATE_NOT_INITIALIZED;
 #endif    
-#endif  
-    
-    return MB_ENOERR;    
+#endif     
 }
 
 //__align(2)  
 //static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-mb_ErrorCode_t eMBRegAssign(mb_Device_t *dev,
+mb_ErrorCode_t eMbsRegAssign(mbs_Device_t *dev,
                                 uint8_t *regbuf,
                                 uint32_t regbufsize, 
                                 uint16_t reg_holding_addr_start,
@@ -253,7 +251,7 @@ mb_ErrorCode_t eMBRegAssign(mb_Device_t *dev,
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMBStart(mb_Device_t *dev)
+mb_ErrorCode_t eMbsStart(mbs_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -267,7 +265,7 @@ mb_ErrorCode_t eMBStart(mb_Device_t *dev)
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMBStop(mb_Device_t *dev)
+mb_ErrorCode_t eMbsStop(mbs_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -280,7 +278,7 @@ mb_ErrorCode_t eMBStop(mb_Device_t *dev)
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMBClose(mb_Device_t *dev)
+mb_ErrorCode_t eMbsClose(mbs_Device_t *dev)
 {
     // must be stop first then it can close
     if( dev->devstate == DEV_STATE_DISABLED ){
@@ -294,19 +292,19 @@ mb_ErrorCode_t eMBClose(mb_Device_t *dev)
     return MB_EILLSTATE;
 }
 
-void vMBPoll(void)
+void vMbsPoll(void)
 {
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
-    mb_Device_t *srchdev;
+    mbs_Device_t *srchdev;
 
     srchdev = mb_dev_head;
     while(srchdev)
     {
-        __eMBADUFramehandle(srchdev);
+        __eMbsADUFramehandle(srchdev);
         srchdev = srchdev->next;
     }
 #else
-#if MB_SUPPORT_MULTIPLE_NUMBER > 1
+#if MBS_SUPPORT_MULTIPLE_NUMBER > 1
     uint8_t idx;
     uint8_t mask;
     
@@ -314,18 +312,18 @@ void vMBPoll(void)
     mask = (uint8_t)1 << idx; 
     while(mb_devmask & mask)
 	{
-        __eMBADUFramehandle(&mb_devTal[idx]);
+        __eMbsADUFramehandle(&mb_devTal[idx]);
         idx++;
         mask <<=1;
     }
 #else
-    __eMBADUFramehandle(&mb_devTal);
+    __eMbsADUFramehandle(&mb_devTal);
 #endif
 
 #endif
 }
 
-static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
+static mb_ErrorCode_t __eMbsADUFramehandle(mbs_Device_t *dev)
 {
     uint8_t *pPduFrame; // pdu fram
     uint8_t ucRcvAddress;
@@ -354,7 +352,7 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
         if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
             ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = xMBSearchCB(ucFunctionCode);
+            handle = xMbsSearchCB(ucFunctionCode);
             if(handle)
                 eException = handle(&dev->regs,pPduFrame, &usLength);
             
@@ -370,8 +368,8 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
                 pPduFrame[usLength++] = eException;
             }
             
-            if((dev->currentMode == MB_ASCII) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
-                vMBPortTimersDelay(dev->port, MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
+            if((dev->currentMode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
+                vMBPortTimersDelay(dev->port, MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
             }        
             
             (void)dev->peMBSendCur(dev,dev->slaveaddr, pPduFrame, usLength);
@@ -382,7 +380,7 @@ static mb_ErrorCode_t __eMBADUFramehandle(mb_Device_t *dev)
 }
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
-static void __dev_add(mb_Device_t *dev)
+static void __dev_add(mbs_Device_t *dev)
 {
     if(mb_dev_head == NULL){
         dev->next = NULL;
@@ -397,9 +395,9 @@ static void __dev_add(mb_Device_t *dev)
 /* RTU 和 ASCII 的硬件口是唯一的，不可重复
  * TCP service 端口也是唯一的
  */
-static mb_Device_t *__dev_search(uint8_t port)
+static mbs_Device_t *__dev_search(uint8_t port)
 {
-    mb_Device_t *srh = NULL;
+    mbs_Device_t *srh = NULL;
     
     if(mb_dev_head == NULL)
         return NULL;

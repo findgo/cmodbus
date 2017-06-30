@@ -34,30 +34,30 @@ typedef enum
 } eMBBytePos;
 #if MB_ASCII_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
 
-mb_ErrorCode_t eMBASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
-void vMBASCIIStart(void *dev);
-void vMBASCIIStop(void *dev);
-void vMBASCIIClose(void *dev);
-mb_ErrorCode_t eMBASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
-mb_ErrorCode_t eMBASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+mb_ErrorCode_t eMbsASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
+void vMbsASCIIStart(void *dev);
+void vMbsASCIIStop(void *dev);
+void vMbsASCIIClose(void *dev);
+mb_ErrorCode_t eMbsASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
+mb_ErrorCode_t eMbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void vMBASCIIReceiveFSM(mb_Device_t *dev);
-void vMBASCIITransmitFSM(mb_Device_t *dev);
-void vMBASCIITimerT1SExpired(mb_Device_t *dev);
+void vMbsASCIIReceiveFSM(mbs_Device_t *dev);
+void vMbsASCIITransmitFSM(mbs_Device_t *dev);
+void vMbsASCIITimerT1SExpired(mbs_Device_t *dev);
 #endif
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
-mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
-void vMBMasterASCIIStart(void *dev);
-void vMBMasterASCIIStop(void *dev);
-void vMBMasterASCIIClose(void *dev);
-mb_reqresult_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+mb_ErrorCode_t eMBMASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
+void vMBMASCIIStart(void *dev);
+void vMBMASCIIStop(void *dev);
+void vMBMASCIIClose(void *dev);
+mb_reqresult_t eMBMASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+mb_reqresult_t eMBMASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
 
-void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev);
-void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev);
-void vMBMasterASCIITimerT1SExpired(mb_MasterDevice_t *dev);
+void vMBMASCIIReceiveFSM(mbm_Device_t *dev);
+void vMBMASCIITransmitFSM(mbm_Device_t *dev);
+void vMBMASCIITimerT1SExpired(mbm_Device_t *dev);
 #endif
 
 #ifdef __cplusplus

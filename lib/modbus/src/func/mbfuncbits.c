@@ -71,8 +71,8 @@ static mb_ErrorCode_t __eMBRegDiscreteCB(mb_Reg_t *regs, uint8_t * pucRegBuffer,
     return MB_ENOREG;
 }
 
-#if MB_FUNC_READ_COILS_ENABLED > 0
-eMBException_t eMBFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+#if MBS_FUNC_READ_COILS_ENABLED > 0
+eMBException_t eMbsFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCount;
@@ -137,8 +137,8 @@ eMBException_t eMBFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 }
 #endif
 
-#if MB_FUNC_WRITE_COIL_ENABLED > 0
-eMBException_t eMBFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
+#if MBS_FUNC_WRITE_COIL_ENABLED > 0
+eMBException_t eMbsFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
     uint8_t  ucBuf[2];
@@ -184,8 +184,8 @@ eMBException_t eMBFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 }
 #endif
 
-#if MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException_t eMBFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
+#if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
+eMBException_t eMbsFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCnt;
@@ -240,8 +240,8 @@ eMBException_t eMBFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen
 }
 #endif
 
-#if MB_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException_t eMBFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
+#if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
+eMBException_t eMbsFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usDiscreteCnt;

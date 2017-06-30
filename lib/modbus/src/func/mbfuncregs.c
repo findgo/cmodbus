@@ -85,8 +85,8 @@ static mb_ErrorCode_t __eMBRegInputCB(mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
 }
 
 
-#if MB_FUNC_READ_HOLDING_ENABLED > 0
-eMBException_t eMBFuncRdHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+#if MBS_FUNC_READ_HOLDING_ENABLED > 0
+eMBException_t eMbsFuncRdHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;
@@ -142,8 +142,8 @@ eMBException_t eMBFuncRdHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t
 }
 #endif
 
-#if MB_FUNC_WRITE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncWrHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+#if MBS_FUNC_WRITE_HOLDING_ENABLED > 0
+eMBException_t eMbsFuncWrHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     eMBException_t eStatus = MB_EX_NONE;
@@ -172,8 +172,8 @@ eMBException_t eMBFuncWrHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t 
 }
 #endif
 
-#if MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncWrMulHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+#if MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
+eMBException_t eMbsFuncWrMulHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;
@@ -225,8 +225,8 @@ eMBException_t eMBFuncWrMulHoldingRegister(mb_Reg_t *regs, uint8_t * pPdu, uint1
 }
 #endif
 
-#if MB_FUNC_READWRITE_HOLDING_ENABLED > 0
-eMBException_t eMBFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+#if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
+eMBException_t eMbsFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegReadAddress;
     uint16_t usRegReadCount;
@@ -299,8 +299,8 @@ eMBException_t eMBFuncRdWrMulHoldingRegister(mb_Reg_t *regs, uint8_t *pPdu, uint
 
 #endif
 
-#if MB_FUNC_READ_INPUT_ENABLED > 0
-eMBException_t eMBFuncRdInputRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+#if MBS_FUNC_READ_INPUT_ENABLED > 0
+eMBException_t eMbsFuncRdInputRegister(mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;

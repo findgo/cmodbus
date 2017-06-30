@@ -45,18 +45,18 @@ extern "C" {
  * a configuration option. It should be set to the maximum expected delay
  * time of the network.
  */
-#define MB_ASCII_TIMEOUT_SEC                    (  1 )
+#define MBS_ASCII_TIMEOUT_SEC                    (  1 )
 /*! \brief Timeout to wait in ASCII prior to enabling transmitter.
  *
  * If defined the function calls vMBPortSerialDelay with the argument
- * MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS to allow for a delay before
+ * MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS to allow for a delay before
  * the serial transmitter is enabled. This is required because some
  * targets are so fast that there is no time between receiving and
  * transmitting the frame. If the master is to slow with enabling its 
  * receiver then he will not receive the response correctly.
  */
-#ifndef MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS
-#define MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    ( 0 )
+#ifndef MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS
+#define MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS    ( 0 )
 #endif
 /*! \brief Maximum number of Modbus functions codes the protocol stack
  *    should support.
@@ -65,44 +65,44 @@ extern "C" {
  * the sum of all enabled functions in this file and custom function
  * handlers. If set to small adding more functions will fail.
  */
-#define MB_FUNC_HANDLERS_MAX                    ( 16 )
+#define MBS_FUNC_HANDLERS_MAX                    ( 16 )
 /*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
  *    </em>command.
  *
  * This number limits the maximum size of the additional segment in the
- * report slave id function. See eMBSetSlaveID(  ) for more information on
- * how to set this value. It is only used if MB_FUNC_OTHER_REP_SLAVEID_ENABLED
+ * report slave id function. See eMbsSetSlaveID(  ) for more information on
+ * how to set this value. It is only used if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED
  * is set to <code>1</code>.
  */
-#define MB_FUNC_OTHER_REP_SLAVEID_BUF           ( 32 )
+#define MBS_FUNC_OTHER_REP_SLAVEID_BUF           ( 32 )
 
 /*! \brief If the <em>Report Slave ID</em> function should be enabled. */
-#define MB_FUNC_OTHER_REP_SLAVEID_ENABLED       (  1 )
+#define MBS_FUNC_OTHER_REP_SLAVEID_ENABLED       (  1 )
 
 /*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
-#define MB_FUNC_READ_HOLDING_ENABLED            (  1 )
+#define MBS_FUNC_READ_HOLDING_ENABLED            (  1 )
 /*! \brief If the <em>Write Single Register</em> function should be enabled. */
-#define MB_FUNC_WRITE_HOLDING_ENABLED           (  1 )
+#define MBS_FUNC_WRITE_HOLDING_ENABLED           (  1 )
 /*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
-#define MB_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
+#define MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
 /*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
-#define MB_FUNC_READWRITE_HOLDING_ENABLED       (  1 )
+#define MBS_FUNC_READWRITE_HOLDING_ENABLED       (  1 )
 
 /*! \brief If the <em>Read Input Registers</em> function should be enabled. */
-#define MB_FUNC_READ_INPUT_ENABLED              (  1 )
+#define MBS_FUNC_READ_INPUT_ENABLED              (  1 )
 /*! \brief If the <em>Read Coils</em> function should be enabled. */
-#define MB_FUNC_READ_COILS_ENABLED              (  1 )
+#define MBS_FUNC_READ_COILS_ENABLED              (  1 )
 /*! \brief If the <em>Write Coils</em> function should be enabled. */
-#define MB_FUNC_WRITE_COIL_ENABLED              (  1 )
+#define MBS_FUNC_WRITE_COIL_ENABLED              (  1 )
 /*! \brief If the <em>Write Multiple Coils</em> function should be enabled. */
-#define MB_FUNC_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
+#define MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
 
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
-#define MB_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
+#define MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED == 0
 /*! \brief the number of support multiple slaves  range(1 - 8 )*/
-#define MB_SUPPORT_MULTIPLE_NUMBER              ( 2 )
+#define MBS_SUPPORT_MULTIPLE_NUMBER              ( 2 )
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -116,41 +116,41 @@ extern "C" {
  * the sum of all enabled functions in this file and custom function
  * handlers. If set to small adding more functions will fail.
  */
-#define MB_PARSE_RSP_HANDLERS_MAX               ( 16 )
+#define MBM_PARSE_RSP_HANDLERS_MAX               ( 16 )
 
 /*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
  *    </em>command.
  *
  * This number limits the maximum size of the additional segment in the
- * report slave id function. See eMBSetSlaveID(  ) for more information on
- * how to set this value. It is only used if MB_FUNC_OTHER_REP_SLAVEID_ENABLED
+ * report slave id function. See eMbsSetSlaveID(  ) for more information on
+ * how to set this value. It is only used if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED
  * is set to <code>1</code>.
  */
-#define MB_PARSE_RSP_OTHER_REP_SLAVEID_BUF           ( 32 )
+#define MBM_PARSE_RSP_OTHER_REP_SLAVEID_BUF           ( 32 )
 
 /*! \brief If the <em>Report Slave ID</em> function should be enabled. */
-#define MB_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED       (  1 )
+#define MBM_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED       (  1 )
 
 /*! \brief If the <em>Read Holding Registers</em> function should be enabled. */
-#define MB_PARSE_RSP_READ_HOLDING_ENABLED            (  1 )
+#define MBM_PARSE_RSP_READ_HOLDING_ENABLED            (  1 )
 /*! \brief If the <em>Write Single Register</em> function should be enabled. */
-#define MB_PARSE_RSP_WRITE_HOLDING_ENABLED           (  1 )
+#define MBM_PARSE_RSP_WRITE_HOLDING_ENABLED           (  1 )
 /*! \brief If the <em>Write Multiple registers</em> function should be enabled. */
-#define MB_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
+#define MBM_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED  (  1 )
 /*! \brief If the <em>Read/Write Multiple Registers</em> function should be enabled. */
-#define MB_PARSE_RSP_READWRITE_HOLDING_ENABLED       (  1 )
+#define MBM_PARSE_RSP_READWRITE_HOLDING_ENABLED       (  1 )
 
 /*! \brief If the <em>Read Input Registers</em> function should be enabled. */
-#define MB_PARSE_RSP_READ_INPUT_ENABLED              (  1 )
+#define MBM_PARSE_RSP_READ_INPUT_ENABLED              (  1 )
 /*! \brief If the <em>Read Coils</em> function should be enabled. */
-#define MB_PARSE_RSP_READ_COILS_ENABLED              (  1 )
+#define MBM_PARSE_RSP_READ_COILS_ENABLED              (  1 )
 /*! \brief If the <em>Write Coils</em> function should be enabled. */
-#define MB_PARSE_RSP_WRITE_COIL_ENABLED              (  1 )
+#define MBM_PARSE_RSP_WRITE_COIL_ENABLED              (  1 )
 /*! \brief If the <em>Write Multiple Coils</em> function should be enabled. */
-#define MB_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
+#define MBM_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED    (  1 )
 
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
-#define MB_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED    (  1 )
+#define MBM_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
 
 /*! @} */

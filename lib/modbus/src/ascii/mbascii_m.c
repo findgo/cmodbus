@@ -5,7 +5,7 @@
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
-mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity )
+mb_ErrorCode_t eMBMASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity )
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
     (void)dev;
@@ -15,7 +15,7 @@ mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate,
     if(xMBPortSerialInit( ucPort, ulBaudRate, 7, eParity) != true){
         eStatus = MB_EPORTERR;
     }
-    else if(xMBPortTimersInit(ucPort, MB_ASCII_TIMEOUT_SEC * 20000UL) != true){
+    else if(xMBPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != true){
         eStatus = MB_EPORTERR;
     }
     
@@ -24,33 +24,33 @@ mb_ErrorCode_t eMBMasterASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate,
     return eStatus;
 }
 
-void vMBMasterASCIIStart(void *dev)
+void vMBMASCIIStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
 
-    ((mb_MasterDevice_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
-    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, true, false);
+    ((mbm_Device_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
+    vMBPortSerialEnable(((mbm_Device_t *)dev)->port, true, false);
     
     EXIT_CRITICAL_SECTION();
 }
 
-void vMBMasterASCIIStop(void *dev)
+void vMBMASCIIStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    vMBPortSerialEnable(((mb_MasterDevice_t *)dev)->port, false, false);
-    vMBPortTimersDisable(((mb_MasterDevice_t *)dev)->port);
+    vMBPortSerialEnable(((mbm_Device_t *)dev)->port, false, false);
+    vMBPortTimersDisable(((mbm_Device_t *)dev)->port);
     
     EXIT_CRITICAL_SECTION();
 }
-void vMBMasterASCIIClose(void *dev)
+void vMBMASCIIClose(void *dev)
 {
 
 }
-mb_reqresult_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+mb_reqresult_t eMBMASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
     mb_reqresult_t result = MBR_ENOERR;
-    mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
+    mbm_Device_t *dev = (mbm_Device_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
 
@@ -82,11 +82,11 @@ mb_reqresult_t eMBMasterASCIIReceive(void *pdev,mb_header_t *phead,uint8_t *pfun
     return result;
 }
 
-mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
+mb_reqresult_t eMBMASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
 {
     mb_reqresult_t result = MBR_ENOERR;
     uint8_t ucByte;
-    mb_MasterDevice_t *dev = (mb_MasterDevice_t *)pdev;
+    mbm_Device_t *dev = (mbm_Device_t *)pdev;
     
     ENTER_CRITICAL_SECTION(  );
     /* Check if the receiver is still in idle state. If not we where too
@@ -118,7 +118,7 @@ mb_reqresult_t eMBMasterASCIISend(void *pdev,const uint8_t *pAdu, uint16_t usAdu
     return result;
 }
 
-void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev)
+void vMBMASCIIReceiveFSM(mbm_Device_t *dev)
 {
     uint8_t ucByte;
     uint8_t ucResult;
@@ -178,7 +178,7 @@ void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev)
             /* Receiver is again in idle state. */
             dev->sndrcvState = STATE_ASCII_RX_IDLE;
 
-            /* Notify the caller of eMBASCIIReceive that a new frame was received. */
+            /* Notify the caller of eMbsASCIIReceive that a new frame was received. */
             if(dev->Pollstate == MASTER_WAITRSP);
                 vMBMasterSetPollmode(dev, MASTER_RSPEXCUTE);
          }
@@ -210,7 +210,7 @@ void vMBMasterASCIIReceiveFSM(mb_MasterDevice_t *dev)
     }
 }
 
-void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev)
+void vMBMASCIITransmitFSM(mbm_Device_t *dev)
 {
     uint8_t ucByte;
     
@@ -261,7 +261,7 @@ void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev)
         dev->sndrcvState = STATE_ASCII_TX_NOTIFY;
         break;
 
-        /* Notify the task which called eMBASCIISend that the frame has
+        /* Notify the task which called eMbsASCIISend that the frame has
          * been sent. */
     case STATE_ASCII_TX_NOTIFY:
         /* Disable transmitter. This prevents another transmit buffer
@@ -275,7 +275,7 @@ void vMBMasterASCIITransmitFSM(mb_MasterDevice_t *dev)
     }
 }
 
-void vMBMasterASCIITimerT1SExpired(mb_MasterDevice_t *dev)
+void vMBMASCIITimerT1SExpired(mbm_Device_t *dev)
 {
     /* If we have a timeout we go back to the idle state and wait for
      * the next frame.
