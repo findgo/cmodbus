@@ -12,6 +12,7 @@ extern "C" {
 /* dynamic memory allocation ENABLE*/
 #define MB_DYNAMIC_MEMORY_ALLOC_ENABLED    (0)
 
+/*! note master must be use dynamic memory allocation */
 #if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0 || MB_MASTER_ENABLED > 0
 #define mb_malloc pvPortMalloc
 #define mb_free vfree
@@ -151,6 +152,7 @@ extern "C" {
 
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MBM_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED    (  1 )
+
 
 
 /*! @} */

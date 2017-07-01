@@ -26,10 +26,7 @@ eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode);
 const char *xMBstr2Error(eMBException_t excode);
 
 void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length);
-uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
-                                  uint16_t reg_input_num,
-                                  uint16_t reg_coils_num,
-                                  uint16_t reg_discrete_num);
+
 
 #ifdef __cplusplus
 }

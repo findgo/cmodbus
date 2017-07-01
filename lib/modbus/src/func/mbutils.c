@@ -307,9 +307,9 @@ void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length)
 }
 
 uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
-                                  uint16_t reg_input_num,
-                                  uint16_t reg_coils_num,
-                                  uint16_t reg_discrete_num)
+                               uint16_t reg_input_num,
+                               uint16_t reg_coils_num,
+                               uint16_t reg_discrete_num)
 {
     uint32_t size;
 
@@ -319,4 +319,23 @@ uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
 
     return size;
 }
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
+uint8_t *xMBRegBufNew(uint32_t size)
+{
+    uint8_t *pregbuf;
+    
+    pregbuf = mb_malloc(size);
+    if(pregbuf == NULL)
+        return NULL;
+    
+    memset(pregbuf,0,sizeof(mbs_Device_t));
+    
+    return pregbuf;    
+}
 
+void vMBRegBufFree(void *ptr)
+{
+    if(ptr)
+        mb_free(ptr);
+}
+#endif

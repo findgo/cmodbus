@@ -40,6 +40,7 @@ typedef enum
     MB_EILLSTATE,               /*!< protocol stack in illegal state. */
     MB_ETIMEDOUT,               /*!< timeout error occurred. */
     MB_EDEVEXIST,
+    MB_EILLNODEADDR,
     MB_ENODEEXIST,             /*!< node exist */
 }mb_ErrorCode_t;
 typedef enum

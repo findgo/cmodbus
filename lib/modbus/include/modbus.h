@@ -5,6 +5,14 @@
 #include "mb.h"
 
 #if MB_RTU_ENABLED > 0 ||  MB_ASCII_ENABLED > 0
+//public
+uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
+                               uint16_t reg_input_num,
+                               uint16_t reg_coils_num,
+                               uint16_t reg_discrete_num);
+uint8_t *xMBRegBufNew(uint32_t size);
+void vMBRegBufFree(void *ptr);
+
 
 #if MB_SLAVE_ENABLED > 0
 
@@ -59,7 +67,8 @@ mb_ErrorCode_t eMbsRegisterCB(uint8_t ucFunctionCode, pxMbsFunctionHandler pxHan
 mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, 
                         uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
 
-void vMbsDelete(uint8_t ucSlaveAddress);
+void vMbsFree(uint8_t ucSlaveAddress);
+/* 注意,这里的静态或动态分配的rebuf,必需2字节对齐地址 */
 mb_ErrorCode_t eMbsRegAssign(mbs_Device_t *dev,
                                 uint8_t *regbuf,
                                 uint32_t regbufsize, 
@@ -80,33 +89,23 @@ void vMbsPoll(void);
 #if MB_MASTER_ENABLED
 /* TODO implement modbus master */
 mbm_Device_t *xMBMNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity);
-mb_ErrorCode_t eMBMDelete(uint8_t ucPort);
+void vMBMFree(uint8_t ucPort);
 mb_ErrorCode_t eMBMSetPara(mbm_Device_t *dev, 
                                     uint8_t retry,uint32_t replytimeout,
                                     uint32_t delaypolltime, uint32_t broadcastturntime);
-mbm_slavenode_t *xMBMNodeNew(mbm_Device_t *dev,
-                                        uint8_t slaveaddr,
-                                        uint16_t reg_holding_addr_start,
-                                        uint16_t reg_holding_num,
-                                        uint16_t reg_input_addr_start,
-                                        uint16_t reg_input_num,
-                                        uint16_t reg_coils_addr_start,
-                                        uint16_t reg_coils_num,
-                                        uint16_t reg_discrete_addr_start,
-                                        uint16_t reg_discrete_num);
-mb_ErrorCode_t eMBMNodedelete(mbm_Device_t *dev, uint8_t slaveaddr);
-mbm_slavenode_t *xMBMNodeCreate(uint8_t slaveaddr,
-                                            uint16_t reg_holding_addr_start,
-                                            uint16_t reg_holding_num,
-                                            uint16_t reg_input_addr_start,
-                                            uint16_t reg_input_num,
-                                            uint16_t reg_coils_addr_start,
-                                            uint16_t reg_coils_num,
-                                            uint16_t reg_discrete_addr_start,
-                                            uint16_t reg_discrete_num);
-void vMBMNodeDestroy(mbm_slavenode_t *node);
+//mb_ErrorCode_t eMBMNodedelete(mbm_Device_t *dev, uint8_t slaveaddr);
+mbm_slavenode_t *xMBMNodeNew(uint8_t slaveaddr,
+                                uint16_t reg_holding_addr_start,
+                                uint16_t reg_holding_num,
+                                uint16_t reg_input_addr_start,
+                                uint16_t reg_input_num,
+                                uint16_t reg_coils_addr_start,
+                                uint16_t reg_coils_num,
+                                uint16_t reg_discrete_addr_start,
+                                uint16_t reg_discrete_num);
+void vMBMNodeFree(mbm_slavenode_t *node);
 mb_ErrorCode_t eMBMNodeadd(mbm_Device_t *dev, mbm_slavenode_t *node);
-mb_ErrorCode_t eMBMNoderemove(mbm_Device_t *dev, mbm_slavenode_t *node);
+mb_ErrorCode_t eMBMNodedelete(mbm_Device_t *dev, mbm_slavenode_t *node);
 mbm_slavenode_t *xMBMNodeSearch(mbm_Device_t *dev,uint8_t slaveaddr);
 mb_ErrorCode_t eMBMStart(mbm_Device_t *dev);
 mb_ErrorCode_t eMBMStop(mbm_Device_t *dev);

@@ -21,7 +21,8 @@ mbm_Device_t* deviceM1;
 int main(void)
 {	
     mbm_slavenode_t *node;
-  
+    mb_ErrorCode_t status;
+    
 //	prvClockInit();
     prvnvicInit();
     Systick_Configuration();
@@ -34,9 +35,10 @@ int main(void)
     deviceM0= xMBMNew(MB_ASCII, MBCOM0, 9600, MB_PAR_NONE);
 #endif
     if(deviceM0){
-       node = xMBMNodeNew(deviceM0,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+       node = xMBMNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
                                         0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
-        if(node){
+       status = eMBMNodeadd(deviceM0, node);
+        if(status == MB_ENOERR){
            (void)eMBMReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000,NULL);
            (void)eMBMReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000,NULL);        
            (void)eMBMReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000,NULL);        
@@ -50,9 +52,10 @@ int main(void)
     deviceM1= xMBMNew(MB_ASCII, MBCOM1, 9600, MB_PAR_NONE);
 #endif
     if(deviceM1){
-       node = xMBMNodeNew(deviceM1,0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+       node = xMBMNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
                                         0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
-        if(node){
+       status = eMBMNodeadd(deviceM1, node);
+        if(status == MB_ENOERR){
            (void)eMBMReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000,NULL);
            (void)eMBMReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000,NULL);        
            (void)eMBMReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000,NULL);        

@@ -408,39 +408,39 @@
           <GroupName>mastermodbus</GroupName>
           <Files>
             <File>
-              <FileName>mb.c</FileName>
+              <FileName>mbsfunc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\mb.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbsfunc.c</FilePath>
             </File>
             <File>
-              <FileName>mbrtu.c</FileName>
+              <FileName>mbsfuncbits.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\rtu\mbrtu.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbsfuncbits.c</FilePath>
             </File>
             <File>
-              <FileName>mbascii.c</FileName>
+              <FileName>mbsfuncother.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\ascii\mbascii.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbsfuncother.c</FilePath>
             </File>
             <File>
-              <FileName>mbfunc.c</FileName>
+              <FileName>mbsfuncregs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfunc.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbsfuncregs.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncbits.c</FileName>
+              <FileName>mbsrtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncbits.c</FilePath>
+              <FilePath>..\lib\modbus\src\rtu\mbsrtu.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncother.c</FileName>
+              <FileName>mbsascii.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncother.c</FilePath>
+              <FilePath>..\lib\modbus\src\ascii\mbsascii.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncregs.c</FileName>
+              <FileName>mbs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncregs.c</FilePath>
+              <FilePath>..\lib\modbus\src\mbs.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -448,44 +448,44 @@
           <GroupName>slavermodbus</GroupName>
           <Files>
             <File>
-              <FileName>mb_m.c</FileName>
+              <FileName>mbmfunc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\mb_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbmfunc.c</FilePath>
             </File>
             <File>
-              <FileName>mbbuf.c</FileName>
+              <FileName>mbmfuncbits.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\mbbuf.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbmfuncbits.c</FilePath>
             </File>
             <File>
-              <FileName>mbrtu_m.c</FileName>
+              <FileName>mbmfuncother.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\rtu\mbrtu_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbmfuncother.c</FilePath>
             </File>
             <File>
-              <FileName>mbfunc_m.c</FileName>
+              <FileName>mbmfuncregs.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfunc_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\func\mbmfuncregs.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncbits_m.c</FileName>
+              <FileName>mbmascii.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncbits_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\ascii\mbmascii.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncother_m.c</FileName>
+              <FileName>mbmrtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncother_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\rtu\mbmrtu.c</FilePath>
             </File>
             <File>
-              <FileName>mbfuncregs_m.c</FileName>
+              <FileName>mbm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\func\mbfuncregs_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\mbm.c</FilePath>
             </File>
             <File>
-              <FileName>mbascii_m.c</FileName>
+              <FileName>mbmbuf.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\lib\modbus\src\ascii\mbascii_m.c</FilePath>
+              <FilePath>..\lib\modbus\src\mbmbuf.c</FilePath>
             </File>
           </Files>
         </Group>
