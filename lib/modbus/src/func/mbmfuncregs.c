@@ -5,7 +5,7 @@
 #if MB_MASTER_ENABLED > 0
 #include "mbmbuf.h"
 /* ok */
-mb_reqresult_t eMBMReqRdHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqRdHoldingRegister(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -65,7 +65,7 @@ mb_reqresult_t eMBMReqRdHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqWrHoldingRegister(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegAddr, uint16_t val, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -122,7 +122,7 @@ mb_reqresult_t eMBMReqWrHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrMulHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqWrMulHoldingRegister(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt,
                                         uint16_t *valbuf, uint16_t valcnt, pReqResultCB cb)
 {
@@ -197,7 +197,7 @@ mb_reqresult_t eMBMReqWrMulHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqRdInputRegister(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqRdInputRegister(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -257,7 +257,7 @@ mb_reqresult_t eMBMReqRdInputRegister(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqRdWrMulHoldingRegister(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqRdWrMulHoldingRegister(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                                     uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                                     uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                                     uint16_t *valbuf, uint16_t valcnt, pReqResultCB cb)
@@ -356,7 +356,7 @@ void __vMBLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *puc
     }
 }
 /* ok */
-mb_reqresult_t eMBMParseRspRdHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspRdHoldingRegister(Mb_Reg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength)
 {
@@ -371,7 +371,7 @@ mb_reqresult_t eMBMParseRspRdHoldingRegister(mb_Reg_t *regs,
     return MBR_ENOERR;    
 }
 /* ok */
-mb_reqresult_t eMBMParseRspWrHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspWrHoldingRegister(Mb_Reg_t *regs, 
                                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -388,7 +388,7 @@ mb_reqresult_t eMBMParseRspWrHoldingRegister(mb_Reg_t *regs,
     return MBR_ENOERR;   
 }
 /* ok */                                                        
-mb_reqresult_t eMBMParseRspWrMulHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspWrMulHoldingRegister(Mb_Reg_t *regs, 
                                                         uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                         uint8_t *premain, uint16_t remainLength)
 {
@@ -402,7 +402,7 @@ mb_reqresult_t eMBMParseRspWrMulHoldingRegister(mb_Reg_t *regs,
     return MBR_ENOERR;    
 }                                                        
 /* ok */
-mb_reqresult_t eMBMParseRspRdWrMulHoldingRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspRdWrMulHoldingRegister(Mb_Reg_t *regs, 
                                                         uint16_t ReqRegAddr,uint16_t ReqRegcnt, 
                                                         uint8_t *premain, uint16_t remainLength)
 {
@@ -411,7 +411,7 @@ mb_reqresult_t eMBMParseRspRdWrMulHoldingRegister(mb_Reg_t *regs,
     
 }
 /* ok */
-mb_reqresult_t eMBMParseRdInputRegister(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRdInputRegister(Mb_Reg_t *regs, 
                                             uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                             uint8_t *premain, uint16_t remainLength)
 {

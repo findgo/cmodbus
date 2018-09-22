@@ -6,12 +6,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+#include "mbproto.h"
+#include "mbframe.h"
 #include "mbconfig.h"
 #include "mbcpu.h"
 
-#include "mb.h"
+#include "mem_mange.h"
 
+#include "mb.h"
+#include "string.h"
 
 void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );
 uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits );
@@ -24,8 +27,6 @@ uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen);
 
 eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode);
 const char *xMBstr2Error(eMBException_t excode);
-
-void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length);
 
 
 #ifdef __cplusplus

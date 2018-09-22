@@ -23,7 +23,7 @@
 
 
 #ifndef TRUE
-#define TURE 0
+#define TURE 1
 #endif
 
 //IO口操作宏定义

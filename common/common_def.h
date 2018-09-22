@@ -16,6 +16,14 @@
 #ifndef __COMMON_DEF_H_
 #define __COMMON_DEF_H_
 
+#ifndef FALSE
+#define FALSE   0
+#endif
+
+#ifndef TRUE
+#define TRUE   1
+#endif
+
 
 /* ------------------------------------------------------------------------------------------------
  *                                             Macros
@@ -78,7 +86,7 @@
  *  This should simply be...
  *    #define CALL_FUNC()   func()
  *
- * (The while condition below evaluates false without generating a
+ * (The while condition below evaluates FALSE without generating a
  *  constant-controlling-loop type of warning on most compilers.)
  */
 #define st(x)      do { x } while (__LINE__ == -1)

@@ -10,10 +10,10 @@
 
 uint32_t sysclocktime = 0;
 
-extern mbs_Device_t *device0;
-extern mbs_Device_t *device1;
-extern mbm_Device_t *deviceM0;
-extern mbm_Device_t *deviceM1;
+extern Mbs_Device_t *device0;
+extern Mbs_Device_t *device1;
+extern Mbm_Device_t *deviceM0;
+extern Mbm_Device_t *deviceM1;
 /* ----------------------- Start implementation -----------------------------*/
 /**
   * @brief  定时器初始化函数
@@ -96,10 +96,10 @@ bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
         TIM_Cmd(TIM4,  DISABLE);
         break;
     default:
-        return false;
+        return FALSE;
     }
     
-    return true;
+    return TRUE;
 }
 
 

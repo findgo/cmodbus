@@ -8,6 +8,7 @@
 #include "string.h"
 
 #include "stm32f10x.h"
+#include "mbconfig.h"
 
 #define assert(expr) 
 

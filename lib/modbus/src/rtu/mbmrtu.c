@@ -14,7 +14,7 @@ mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
     
     ENTER_CRITICAL_SECTION();
     /* Modbus RTU uses 8 Databits. */
-    if( xMBPortSerialInit( ucPort, ulBaudRate, 8, eParity ) != true ){
+    if( xMBPortSerialInit( ucPort, ulBaudRate, 8, eParity ) != TRUE ){
         eStatus = MB_EPORTERR;
     }
     else{
@@ -35,7 +35,7 @@ mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
              */
             usTimerT35_50us = ( 7UL * 220000UL ) / ( 2UL * ulBaudRate );
         }
-        if( xMBPortTimersInit(ucPort, (uint16_t)usTimerT35_50us ) != true){
+        if( xMBPortTimersInit(ucPort, (uint16_t)usTimerT35_50us ) != TRUE){
             eStatus = MB_EPORTERR;
         }
     }
@@ -48,9 +48,9 @@ void vMBMRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    ((mbm_Device_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    vMBPortSerialEnable(((mbm_Device_t *)dev)->port, true, false);
-    vMBPortTimersDisable(((mbm_Device_t *)dev)->port);
+    ((Mbm_Device_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
+    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, TRUE, FALSE);
+    vMBPortTimersDisable(((Mbm_Device_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -59,8 +59,8 @@ void vMBMRTUStart(void *dev)
 void vMBMRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    vMBPortSerialEnable(((mbm_Device_t *)dev)->port, false, false);
-    vMBPortTimersDisable(((mbm_Device_t *)dev)->port);
+    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, FALSE, FALSE);
+    vMBPortTimersDisable(((Mbm_Device_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
 void vMBMRTUClose(void *dev)
@@ -70,31 +70,31 @@ void vMBMRTUClose(void *dev)
 
 }
 
-mb_reqresult_t eMBMRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+mb_reqresult_t eMBMRTUReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
     mb_reqresult_t result = MBR_ENOERR;
-    mbm_Device_t *dev = (mbm_Device_t *)pdev;
+    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
-    if((dev->rcvAduBufrPos >= 5) /* addr+funcode+(other >= 1)+crc(2)  */
-        && (prvxMBCRC16((uint8_t *)dev->AduBuf, dev->rcvAduBufrPos) == 0)){
+    if((pdev->rcvAduBufPos >= 5) /* addr+funcode+(other >= 1)+crc(2)  */
+        && (prvxMBCRC16((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
 
-        phead->introute.slaveid = dev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        phead->introute.slaveid = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
-        *pfunCode = dev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
+        *pfunCode = pdev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
 
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */
-        *premainLength = (uint16_t)(dev->rcvAduBufrPos - MB_SER_ADU_SIZE_ADDR - MB_PDU_SIZE_FUNCODE - MB_SER_ADU_SIZE_CRC);
+        *premainLength = (uint16_t)(pdev->rcvAduBufPos - MB_SER_ADU_SIZE_ADDR - MB_PDU_SIZE_FUNCODE - MB_SER_ADU_SIZE_CRC);
 
         /* Return the start of the Modbus PDU to the caller. */
-        *premain = (uint8_t *) & dev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
+        *premain = (uint8_t *) & pdev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
     }
-    else if(dev->rcvAduBufrPos < 5){
+    else if(pdev->rcvAduBufPos < 5){
         result = MBR_MISSBYTE;
     }else{
         result = MBR_ECHECK;
@@ -104,30 +104,30 @@ mb_reqresult_t eMBMRTUReceive(void *pdev,mb_header_t *phead,uint8_t *pfunCode, u
     return result;
 }
 
-mb_reqresult_t eMBMRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
+mb_reqresult_t eMBMRTUSend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
 {
     mb_reqresult_t result = MBR_ENOERR;
-    mbm_Device_t *dev = (mbm_Device_t *)pdev;
+    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
     
     ENTER_CRITICAL_SECTION();
     /* Check if the receiver is still in idle state. If not we where to
      * slow with processing the received frame and the master sent another
      * frame on the network. We have to abort sending the frame.
      */
-    if( dev->sndrcvState == STATE_RTU_RX_IDLE ){
+    if( pdev->sndrcvState == STATE_RTU_RX_IDLE ){
         // copy to sendbuff
-        dev->sndAduBufCount = usAduLength;
-        pvMBmemcpy((uint8_t *)dev->AduBuf,pAdu,usAduLength);
+        pdev->sndAduBufCount = usAduLength;
+        memcpy((uint8_t *)pdev->AduBuf,pAdu,usAduLength);
 
         /* Activate the transmitter. */
-		dev->sndrcvState = STATE_RTU_TX_XMIT;
+		pdev->sndrcvState = STATE_RTU_TX_XMIT;
         
 		/* start the first transmitter then into serial tc interrupt */
-        xMBPortSerialPutByte(dev->port, pAdu[0]);
-        dev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
-        dev->sndAduBufCount--;
+        xMBPortSerialPutByte(pdev->port, pAdu[0]);
+        pdev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
+        pdev->sndAduBufCount--;
      	
-        vMBPortSerialEnable(dev->port, false, true);
+        vMBPortSerialEnable(pdev->port, FALSE, TRUE);
     }
     else{
         result = MBR_BUSY;
@@ -137,7 +137,7 @@ mb_reqresult_t eMBMRTUSend(void *pdev,const uint8_t *pAdu, uint16_t usAduLength)
     return result;
 }
 
-void vMBMRTUReceiveFSM(  mbm_Device_t *dev)
+void vMBMRTUReceiveFSM(  Mbm_Device_t *dev)
 {
     uint8_t ucByte;
 
@@ -149,8 +149,8 @@ void vMBMRTUReceiveFSM(  mbm_Device_t *dev)
      * receiver is in the state STATE_RX_RECEIVCE.
      */
     if(dev->sndrcvState == STATE_RTU_RX_IDLE){
-        dev->rcvAduBufrPos = 0;
-        dev->AduBuf[dev->rcvAduBufrPos++] = ucByte;
+        dev->rcvAduBufPos = 0;
+        dev->AduBuf[dev->rcvAduBufPos++] = ucByte;
         dev->sndrcvState = STATE_RTU_RX_RCV;
 
     }
@@ -160,8 +160,8 @@ void vMBMRTUReceiveFSM(  mbm_Device_t *dev)
          * number of bytes in a modbus frame is received the frame is
          * ignored.
          */
-        if(dev->rcvAduBufrPos < MB_ADU_SIZE_MAX){
-            dev->AduBuf[dev->rcvAduBufrPos++] = ucByte;
+        if(dev->rcvAduBufPos < MB_ADU_SIZE_MAX){
+            dev->AduBuf[dev->rcvAduBufPos++] = ucByte;
         }
         else{
             /* In the error state we wait until all characters in the
@@ -177,7 +177,7 @@ void vMBMRTUReceiveFSM(  mbm_Device_t *dev)
 
 
 
-void vMBMRTUTransmitFSM(  mbm_Device_t *dev)
+void vMBMRTUTransmitFSM(  Mbm_Device_t *dev)
 {
     /* We should get a transmitter event in transmitter state.  */
     if(dev->sndrcvState == STATE_RTU_TX_XMIT){
@@ -189,7 +189,7 @@ void vMBMRTUTransmitFSM(  mbm_Device_t *dev)
         }
         else{
             /* Disable transmitter. This prevents another transmit buffer empty interrupt. */             
-            vMBPortSerialEnable(dev->port, true, false);
+            vMBPortSerialEnable(dev->port, TRUE, FALSE);
             dev->sndrcvState = STATE_RTU_RX_IDLE;
             if(dev->Pollstate == MASTER_XMITING)
                 vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
@@ -197,11 +197,11 @@ void vMBMRTUTransmitFSM(  mbm_Device_t *dev)
     }
     else {
         /* enable receiver/disable transmitter. */
-        vMBPortSerialEnable(dev->port, true, false);
+        vMBPortSerialEnable(dev->port, TRUE, FALSE);
     }
 }
 
-void vMBMRTUTimerT35Expired(  mbm_Device_t *dev)
+void vMBMRTUTimerT35Expired(  Mbm_Device_t *dev)
 {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */

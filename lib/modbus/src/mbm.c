@@ -17,27 +17,29 @@
 #include "mem_mange.h"
 #include "mbmbuf.h"
 
-static mb_ErrorCode_t eMBMhandle(mbm_Device_t *dev,uint32_t timediff);
-static mb_ErrorCode_t __masterReqreadylist_addtail(mbm_Device_t *dev, mbm_request_t *req);
+static mb_ErrorCode_t eMBMhandle(Mbm_Device_t *dev,uint32_t timediff);
+static mb_ErrorCode_t __masterReqreadylist_addtail(Mbm_Device_t *dev, mbm_request_t *req);
 /* peek ready list */
-static mbm_request_t *__masterReqreadylist_peek(mbm_Device_t *dev);
-static void __masterReqreadylist_removehead(mbm_Device_t *dev);
-static mb_ErrorCode_t __masterReqpendlist_add(mbm_Device_t *dev, mbm_request_t *req);
-static void __masterReqpendlistScan(mbm_Device_t *dev, uint32_t diff);
-static mb_ErrorCode_t __masterdev_add(mbm_Device_t *dev);
-static mbm_Device_t *__masterdev_search(uint8_t port);
+static mbm_request_t *__masterReqreadylist_peek(Mbm_Device_t *dev);
+static void __masterReqreadylist_removehead(Mbm_Device_t *dev);
+static mb_ErrorCode_t __masterReqpendlist_add(Mbm_Device_t *dev, mbm_request_t *req);
+static void __masterReqpendlistScan(Mbm_Device_t *dev, uint32_t diff);
+static mb_ErrorCode_t __masterdev_add(Mbm_Device_t *dev);
+static Mbm_Device_t *__masterdev_search(uint8_t port);
 
-static mbm_Device_t *mbm_dev_head = NULL;
+static Mbm_Device_t *mbm_dev_head = NULL;
 
-mbm_Device_t *xMBMNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
+Mbm_Device_t *xMBMNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
-    mbm_Device_t *dev;
+    Mbm_Device_t *dev;
 
-    dev = (mbm_Device_t *)mb_malloc(sizeof(mbm_Device_t));
+    dev = (Mbm_Device_t *)mb_malloc(sizeof(Mbm_Device_t));
     if(dev == NULL)
         return NULL;
-
+    
+    memset(dev, 0, sizeof(Mbm_Device_t));    
+    
     switch (eMode){
 #if MB_RTU_ENABLED > 0
     case MB_RTU:
@@ -107,8 +109,8 @@ mbm_Device_t *xMBMNew(mb_Mode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, mb_P
 
 void vMBMFree(uint8_t ucPort)
 {
-     mbm_Device_t *srh = NULL;
-     mbm_Device_t *pre = NULL;
+     Mbm_Device_t *srh = NULL;
+     Mbm_Device_t *pre = NULL;
      
     if(mbm_dev_head == NULL)
         return;
@@ -134,7 +136,7 @@ void vMBMFree(uint8_t ucPort)
     }
 }
 
-mb_ErrorCode_t eMBMSetPara(mbm_Device_t *dev, 
+mb_ErrorCode_t eMBMSetPara(Mbm_Device_t *dev, 
                                 uint8_t retry,uint32_t replytimeout,
                                 uint32_t delaypolltime, uint32_t broadcastturntime)
 {
@@ -179,7 +181,7 @@ mbm_slavenode_t *xMBMNodeNew(uint8_t slaveaddr,
 {
     uint32_t lens;
     uint8_t *regbuf;
-    mb_Reg_t *reg;
+    Mb_Reg_t *reg;
     mbm_slavenode_t *node;
 
     /* check slave address valid */
@@ -195,7 +197,7 @@ mbm_slavenode_t *xMBMNodeNew(uint8_t slaveaddr,
             mb_free(node);
             return NULL;
         }
-        reg = (mb_Reg_t *)&node->regs;
+        reg = (Mb_Reg_t *)&node->regs;
         
         reg->reg_holding_addr_start = reg_holding_addr_start;
         reg->reg_holding_num = reg_holding_num;
@@ -235,7 +237,7 @@ void vMBMNodeFree(mbm_slavenode_t *node)
 }
 
 /* 将节点加入到主机，节点可有静态或动态分配 */
-mb_ErrorCode_t eMBMNodeadd(mbm_Device_t *dev, mbm_slavenode_t *node)
+mb_ErrorCode_t eMBMNodeadd(Mbm_Device_t *dev, mbm_slavenode_t *node)
 {
     mbm_slavenode_t *srhnode;
     
@@ -261,7 +263,7 @@ mb_ErrorCode_t eMBMNodeadd(mbm_Device_t *dev, mbm_slavenode_t *node)
     return MB_ENOERR;
 }
 /* 将节点从主机删除 */
-mb_ErrorCode_t eMBMNodedelete(mbm_Device_t *dev, mbm_slavenode_t *node)
+mb_ErrorCode_t eMBMNodedelete(Mbm_Device_t *dev, mbm_slavenode_t *node)
 {
     mbm_slavenode_t *srchnode;
     mbm_slavenode_t *prenode;
@@ -293,7 +295,7 @@ mb_ErrorCode_t eMBMNodedelete(mbm_Device_t *dev, mbm_slavenode_t *node)
 }
 
 /* search node on the host list ? */
-mbm_slavenode_t *xMBMNodeSearch(mbm_Device_t *dev, uint8_t slaveaddr)
+mbm_slavenode_t *xMBMNodeSearch(Mbm_Device_t *dev, uint8_t slaveaddr)
 {
     mbm_slavenode_t *srh;
 
@@ -314,7 +316,7 @@ mbm_slavenode_t *xMBMNodeSearch(mbm_Device_t *dev, uint8_t slaveaddr)
 }
 
 
-mb_ErrorCode_t eMBMStart(mbm_Device_t *dev)
+mb_ErrorCode_t eMBMStart(Mbm_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -328,7 +330,7 @@ mb_ErrorCode_t eMBMStart(mbm_Device_t *dev)
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMBMStop(mbm_Device_t *dev)
+mb_ErrorCode_t eMBMStop(Mbm_Device_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -341,7 +343,7 @@ mb_ErrorCode_t eMBMStop(mbm_Device_t *dev)
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMBMClose(mbm_Device_t *dev)
+mb_ErrorCode_t eMBMClose(Mbm_Device_t *dev)
 {
     // must be stop first then it can close
     if( dev->devstate == DEV_STATE_DISABLED ){
@@ -358,7 +360,7 @@ mb_ErrorCode_t eMBMClose(mbm_Device_t *dev)
 void vMBMPoll(void)
 {
     static uint32_t HistimerCounter = 0;
-    mbm_Device_t *curdev;    
+    Mbm_Device_t *curdev;    
     uint32_t elapsedMSec = 0;
 
     elapsedMSec = (uint32_t)(xMBsys_now() - HistimerCounter);
@@ -372,7 +374,7 @@ void vMBMPoll(void)
     }
 }
 
-static mb_ErrorCode_t eMBMhandle(mbm_Device_t *dev,uint32_t timediff)
+static mb_ErrorCode_t eMBMhandle(Mbm_Device_t *dev,uint32_t timediff)
 {
     uint8_t *pRemainFrame; // remain fram
     uint8_t ucFunctionCode;
@@ -532,7 +534,7 @@ static mb_ErrorCode_t eMBMhandle(mbm_Device_t *dev,uint32_t timediff)
 
 
 
- mb_reqresult_t eMBM_Reqsend(mbm_Device_t *dev, mbm_request_t *req)
+ mb_reqresult_t eMBM_Reqsend(Mbm_Device_t *dev, mbm_request_t *req)
 {   
     uint16_t crc_lrc;
     
@@ -561,7 +563,7 @@ static mb_ErrorCode_t eMBMhandle(mbm_Device_t *dev,uint32_t timediff)
 
 
 /*## 向主机就绪列表尾部增加一个请求 这是个fifo的队列*/
-static mb_ErrorCode_t __masterReqreadylist_addtail(mbm_Device_t *dev, mbm_request_t *req)
+static mb_ErrorCode_t __masterReqreadylist_addtail(Mbm_Device_t *dev, mbm_request_t *req)
 {
     req->next = NULL; /* make sure next is NULL , may be link previous list*/
     if(dev->Reqreadyhead == NULL){
@@ -576,12 +578,12 @@ static mb_ErrorCode_t __masterReqreadylist_addtail(mbm_Device_t *dev, mbm_reques
 }
 
 /* peek ready list */
-static mbm_request_t *__masterReqreadylist_peek(mbm_Device_t *dev)
+static mbm_request_t *__masterReqreadylist_peek(Mbm_Device_t *dev)
 {
     return dev->Reqreadyhead;
 }
 
-static void __masterReqreadylist_removehead(mbm_Device_t *dev)
+static void __masterReqreadylist_removehead(Mbm_Device_t *dev)
 {
     if(dev == NULL || dev->Reqreadyhead == NULL) /* nothing to remove */ 
         return;
@@ -593,7 +595,7 @@ static void __masterReqreadylist_removehead(mbm_Device_t *dev)
 
 
 /*## 向主机挂起列表增加一个请求 */
-static mb_ErrorCode_t __masterReqpendlist_add(mbm_Device_t *dev, mbm_request_t *req)
+static mb_ErrorCode_t __masterReqpendlist_add(Mbm_Device_t *dev, mbm_request_t *req)
 {
     req->scancnt = 0;  // clear sacn count
     if(dev->Reqpendhead == NULL){
@@ -609,7 +611,7 @@ static mb_ErrorCode_t __masterReqpendlist_add(mbm_Device_t *dev, mbm_request_t *
 }
 
 /*##  */
-static void __masterReqpendlistScan(mbm_Device_t *dev, uint32_t diff)
+static void __masterReqpendlistScan(Mbm_Device_t *dev, uint32_t diff)
 {
     mbm_request_t *prevReq;
     mbm_request_t *srchReq;
@@ -644,7 +646,7 @@ static void __masterReqpendlistScan(mbm_Device_t *dev, uint32_t diff)
 
 
 /* ok */
-static mb_ErrorCode_t __masterdev_add(mbm_Device_t *dev)
+static mb_ErrorCode_t __masterdev_add(Mbm_Device_t *dev)
 {
     
     if(__masterdev_search(dev->port))
@@ -666,9 +668,9 @@ static mb_ErrorCode_t __masterdev_add(mbm_Device_t *dev)
  * RTU 和 ASCII 的硬件口是唯一的，不可重复
  * TCP service 端口也是唯一的
  */
-static mbm_Device_t *__masterdev_search(uint8_t port)
+static Mbm_Device_t *__masterdev_search(uint8_t port)
 {
-    mbm_Device_t *srh = NULL;
+    Mbm_Device_t *srh = NULL;
     
     if(mbm_dev_head == NULL)
         return NULL;

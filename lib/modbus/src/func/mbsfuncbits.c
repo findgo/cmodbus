@@ -14,7 +14,7 @@
   * @retval eStatus       寄存器状态
   */
   /* 根据定义，这里只处理线圈状态数据*/
-static mb_ErrorCode_t __eMBRegCoilsCB(mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
+static mb_ErrorCode_t __eMBRegCoilsCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
     uint16_t usBitOffset;
@@ -49,7 +49,7 @@ static mb_ErrorCode_t __eMBRegCoilsCB(mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
     return MB_ENOREG;
 }
 
-static mb_ErrorCode_t __eMBRegDiscreteCB(mb_Reg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
+static mb_ErrorCode_t __eMBRegDiscreteCB(Mb_Reg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
 {
   int16_t iNDiscrete = (int16_t)usNDiscrete;
   uint16_t usBitOffset;
@@ -72,7 +72,7 @@ static mb_ErrorCode_t __eMBRegDiscreteCB(mb_Reg_t *regs, uint8_t * pucRegBuffer,
 }
 
 #if MBS_FUNC_READ_COILS_ENABLED > 0
-eMBException_t eMbsFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+eMBException_t eMbsFuncRdCoils(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCount;
@@ -138,7 +138,7 @@ eMBException_t eMbsFuncRdCoils(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 #endif
 
 #if MBS_FUNC_WRITE_COIL_ENABLED > 0
-eMBException_t eMbsFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
+eMBException_t eMbsFuncWrCoil(Mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
     uint8_t  ucBuf[2];
@@ -185,7 +185,7 @@ eMBException_t eMbsFuncWrCoil(mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 #endif
 
 #if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException_t eMbsFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
+eMBException_t eMbsFuncWrMulCoils(Mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCnt;
@@ -241,7 +241,7 @@ eMBException_t eMbsFuncWrMulCoils(mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLe
 #endif
 
 #if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException_t eMbsFuncRdDiscreteInputs(mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
+eMBException_t eMbsFuncRdDiscreteInputs(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usDiscreteCnt;

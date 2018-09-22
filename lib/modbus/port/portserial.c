@@ -10,10 +10,10 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern mbs_Device_t *device0;
-extern mbs_Device_t *device1;
-extern mbm_Device_t *deviceM0;
-extern mbm_Device_t *deviceM1;
+extern Mbs_Device_t *device0;
+extern Mbs_Device_t *device1;
+extern Mbm_Device_t *deviceM0;
+extern Mbm_Device_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -47,6 +47,7 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
             USART_ITConfig(USART1, USART_IT_TC, DISABLE);
         }
         break;
+        
      case MBCOM1:
         if(xRxEnable){
             //使能接收和接收中断
@@ -69,6 +70,7 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
             USART_ITConfig(USART2, USART_IT_TC, DISABLE);
         }
         break;
+        
      default:
         break;
     }
@@ -133,6 +135,7 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
         GPIO_Init(GPIOD, &GPIO_InitStructure); 
         break;
+        
      case MBCOM1:
         //使能USART2，GPIOA
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
@@ -175,11 +178,12 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
         GPIO_Init(GPIOD, &GPIO_InitStructure); 
 
         break;
+        
      default:
-        return false;
+        return FALSE;
     }
 
-  return true;
+  return TRUE;
 }
 
 /**
@@ -193,14 +197,16 @@ bool xMBPortSerialPutByte(uint8_t port, char ucByte )
     case MBCOM0:
         USART_SendData(USART1, ucByte);
         break;
+    
     case MBCOM1:
         USART_SendData(USART2, ucByte);
         break;
+    
     default:
         break;
     }
   
-  return true;
+  return TRUE;
 }
 
 /**
@@ -214,13 +220,16 @@ bool xMBPortSerialGetByte(uint8_t port, char *pucByte )
     case MBCOM0:    
         *pucByte = USART_ReceiveData(USART1);
         break;
+    
     case MBCOM1:
         *pucByte = USART_ReceiveData(USART2);
         break;
+    
     default:
         break;
     }
-    return true;
+    
+    return TRUE;
 }
 /**
   * @brief  USART1中断服务函数
@@ -231,6 +240,16 @@ void USART1_IRQHandler(void)
 {
   //发生接收中断
     if(USART_GetITStatus(USART1, USART_IT_RXNE) == SET){
+        
+#if MB_MASTER_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+                vMBMRTUReceiveFSM(deviceM0);
+#endif
+#if MB_ASCII_ENABLED > 0
+                vMBMASCIIReceiveFSM(deviceM0);
+#endif
+#endif
+    
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
         vMbsRTUReceiveFSM(device0);
@@ -239,29 +258,12 @@ void USART1_IRQHandler(void)
         vMbsASCIIReceiveFSM(device0);
 #endif
 #endif
-
-#if MB_MASTER_ENABLED > 0
-#if MB_RTU_ENABLED > 0
-        vMBMRTUReceiveFSM(deviceM0);
-#endif
-#if MB_ASCII_ENABLED > 0
-        vMBMASCIIReceiveFSM(deviceM0);
-#endif
-#endif
         //清除中断标志位    
         USART_ClearITPendingBit(USART1, USART_IT_RXNE);   
     }
   
   //发生完成中断
     if(USART_GetITStatus(USART1, USART_IT_TC) == SET){
-#if MB_SLAVE_ENABLED > 0
-#if MB_RTU_ENABLED > 0
-        vMbsRTUTransmitFSM(device0);
-#endif
-#if MB_ASCII_ENABLED > 0
-        vMbsASCIITransmitFSM(device0);
-#endif
-#endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
@@ -272,6 +274,14 @@ void USART1_IRQHandler(void)
 #endif
 #endif
 
+#if MB_SLAVE_ENABLED > 0
+#if MB_RTU_ENABLED > 0
+        vMbsRTUTransmitFSM(device0);
+#endif
+#if MB_ASCII_ENABLED > 0
+        vMbsASCIITransmitFSM(device0);
+#endif
+#endif
         USART_ClearITPendingBit(USART1, USART_IT_TC);
     }
   

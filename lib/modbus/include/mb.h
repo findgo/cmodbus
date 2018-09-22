@@ -50,34 +50,33 @@ typedef mb_ErrorCode_t (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const u
 
 typedef struct
 {
-    uint16_t port; // ¶Ë¿ÚºÅ
-    uint16_t reserved0;
+    uint16_t port; 
+    uint8_t inuse;
+    uint8_t reserved0;
     
     uint8_t slaveaddr;
     mb_Mode_t currentMode;    
     mb_DevState_t devstate;
     bool xEventInFlag; // for event?
-    
-    mb_Reg_t regs;
+    // register list
+    Mb_Reg_t regs;
     
     pActionHandle pvMBStartCur;
     pActionHandle pvMBStopCur;
     pActionHandle pvMBCloseCur;
     pActionReceive peMBReceivedCur;
     pActionSend peMBSendCur;
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0    
-    void *next;
-#endif
+
     /*  */
     volatile uint8_t AsciiBytePos; // only for ascii
     volatile uint8_t sndrcvState;
     volatile uint16_t sndAduBufCount;
     volatile uint16_t sndAduBufPos;
-    volatile uint16_t rcvAduBufrPos;
+    volatile uint16_t rcvAduBufPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}mbs_Device_t;
+}Mbs_Device_t;
 
-#define xMBSemGive(dev) do { ((mbs_Device_t *)dev)->xEventInFlag = true;}while(0)
+#define xMBSemGive(dev) do { ((Mbs_Device_t *)dev)->xEventInFlag = TRUE;}while(0)
 
 /***************************************************/
 /**************** define for master ********************/
@@ -101,7 +100,7 @@ typedef struct
     uint8_t slaveaddr;
     uint8_t reserved0;
     uint16_t reserved1;
-    mb_Reg_t regs;
+    Mb_Reg_t regs;
     void *next;
 }mbm_slavenode_t;
 
@@ -123,7 +122,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t port; // ¶Ë¿ÚºÅ
+    uint8_t port; // 
     mb_DevState_t devstate;
     uint16_t reserved0;
     
@@ -159,13 +158,13 @@ typedef struct
     volatile uint8_t sndrcvState;
     volatile uint16_t sndAduBufCount;
     volatile uint16_t sndAduBufPos;
-    volatile uint16_t rcvAduBufrPos;
+    volatile uint16_t rcvAduBufPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}mbm_Device_t;
+}Mbm_Device_t;
 
 #define vMBMasterSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
 
-mb_reqresult_t eMBM_Reqsend(mbm_Device_t *dev, mbm_request_t *req);
+mb_reqresult_t eMBM_Reqsend(Mbm_Device_t *dev, mbm_request_t *req);
 
 
 #endif

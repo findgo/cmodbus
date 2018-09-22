@@ -9,7 +9,7 @@
 static uint8_t    ucMBSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t   usMBSlaveIDLen;
 
-mb_ErrorCode_t eMbsSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
+mb_ErrorCode_t eMbsSetSlaveID(Mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
                 uint8_t const *pucAdditional, uint16_t usAdditionalLen)
 {
     mb_ErrorCode_t eStatus = MB_ENOERR;
@@ -36,7 +36,7 @@ mb_ErrorCode_t eMbsSetSlaveID(mb_Reg_t *regs, uint8_t ucSlaveID, bool xIsRunning
     return eStatus;
 }
 
-eMBException_t eMbsFuncReportSlaveID(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen)
+eMBException_t eMbsFuncReportSlaveID(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen)
 {
     (void)regs;
 

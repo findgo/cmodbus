@@ -1,5 +1,4 @@
-#include "mbproto.h"
-#include "mbframe.h"
+
 #include "mbutils.h"
 
 #define BITS_uint8_t (8U)
@@ -293,19 +292,6 @@ const char *xMBstr2Error(eMBException_t excode)
     }
 }
 
-void *pvMBmemcpy(uint8_t *dst, const uint8_t *src, uint16_t length)
-{
-    if((dst == NULL) || (src == NULL))
-        return NULL;
-    
-    while(length--)
-    {
-        *dst++ = *src++;
-    }
-
-    return dst;
-}
-
 uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
                                uint16_t reg_input_num,
                                uint16_t reg_coils_num,
@@ -319,16 +305,15 @@ uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
 
     return size;
 }
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0
+#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0 && MB_MASTER_ENABLED > 0
 uint8_t *xMBRegBufNew(uint32_t size)
 {
     uint8_t *pregbuf;
     
-    pregbuf = mb_malloc(size);
-    if(pregbuf == NULL)
-        return NULL;
-    
-    memset(pregbuf,0,sizeof(mbs_Device_t));
+    pregbuf = (uint8_t *)mb_malloc(size);
+    if(pregbuf){   
+        memset( pregbuf, 0, size );
+    }
     
     return pregbuf;    
 }

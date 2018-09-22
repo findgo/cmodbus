@@ -5,6 +5,15 @@
 #include "mbcpu.h"
 
 
+#ifndef FALSE
+#define FALSE   0
+#endif
+
+#ifndef TRUE
+#define TRUE   1
+#endif
+
+
 /*! \ingroup modbus
  * \brief Modbus serial transmission modes (RTU/ASCII).
  *
@@ -43,6 +52,7 @@ typedef enum
     MB_EILLNODEADDR,
     MB_ENODEEXIST,             /*!< node exist */
 }mb_ErrorCode_t;
+    
 typedef enum
 {
     MBR_ENOERR,
@@ -74,7 +84,7 @@ typedef struct
     uint16_t *pReginput;
     uint8_t *pRegCoil;
     uint8_t *pRegDisc;
-}mb_Reg_t;
+}Mb_Reg_t;
 
 typedef struct 
 {
@@ -87,9 +97,9 @@ typedef struct
     }introute;
 }mb_header_t;
 
-typedef eMBException_t (*pxMbsFunctionHandler)(mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
+typedef eMBException_t (*pxMbsFunctionHandler)(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef mb_reqresult_t (*pxMBMParseRspHandler)(mb_Reg_t *regs, 
+typedef mb_reqresult_t (*pxMBMParseRspHandler)(Mb_Reg_t *regs, 
                                             uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                             uint8_t *premain,uint16_t remainLength);
 

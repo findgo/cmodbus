@@ -6,7 +6,7 @@
 #include "mbmbuf.h"
 
 /* ok */
-mb_reqresult_t eMBMReqRdCoils(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqRdCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                 uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -68,7 +68,7 @@ mb_reqresult_t eMBMReqRdCoils(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrCoil(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqWrCoil(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                 uint16_t RegAddr, uint16_t val, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -127,7 +127,7 @@ mb_reqresult_t eMBMReqWrCoil(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrMulCoils(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqWrMulCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Coilcnt,
                                         uint8_t *valbuf, uint16_t valcnt, pReqResultCB cb)
 {
@@ -205,7 +205,7 @@ mb_reqresult_t eMBMReqWrMulCoils(mbm_Device_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 
-mb_reqresult_t eMBMReqRdDiscreteInputs(mbm_Device_t *Mdev, uint8_t slaveaddr, 
+mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate, pReqResultCB cb)
 {
     uint8_t *pAdu;
@@ -280,7 +280,7 @@ static void __vMBLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint
     }
 }
 /* ok */
-mb_reqresult_t eMBMParseRspRdCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspRdCoils(Mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength)
 {
@@ -297,7 +297,7 @@ mb_reqresult_t eMBMParseRspRdCoils(mb_Reg_t *regs,
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspWrCoil(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspWrCoil(Mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -320,7 +320,7 @@ mb_reqresult_t eMBMParseRspWrCoil(mb_Reg_t *regs,
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspWrMulCoils(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspWrMulCoils(Mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -334,7 +334,7 @@ mb_reqresult_t eMBMParseRspWrMulCoils(mb_Reg_t *regs,
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspRdDiscreteInputs(mb_Reg_t *regs, 
+mb_reqresult_t eMBMParseRspRdDiscreteInputs(Mb_Reg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength)
 {

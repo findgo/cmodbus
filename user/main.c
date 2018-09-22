@@ -2,8 +2,7 @@
 #include "systick.h"
 //for driver
 #include "modbus.h"
-#include "mbfunc.h"
-#include "list.h"
+
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 3 )
@@ -15,8 +14,8 @@ static void prvClockInit(void);
 static void prvnvicInit(void);
 
 #if MB_MASTER_ENABLED > 0
-mbm_Device_t* deviceM0;
-mbm_Device_t* deviceM1;
+Mbm_Device_t* deviceM0;
+Mbm_Device_t* deviceM1;
 
 int main(void)
 {	
@@ -73,8 +72,9 @@ int main(void)
 
 
 #if MB_SLAVE_ENABLED > 0
-mbs_Device_t *device0;
-mbs_Device_t *device1;
+
+Mbs_Device_t *device0;
+Mbs_Device_t *device1;
 static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
 static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
