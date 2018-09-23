@@ -40,7 +40,7 @@ void MbmReqBufDelete(void *ptr)
 }
 
 /* set head and return head length */
-uint8_t MbmsetHead(MbMode_t mode, uint8_t *pAdu, uint8_t slaveaddr, uint16_t pdulength)
+uint8_t MbmsetHead(MbMode_t mode, uint8_t slaveaddr, uint8_t *pAdu, uint16_t pdulength)
 {
     if(mode == MB_RTU || mode == MB_ASCII){
         pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;

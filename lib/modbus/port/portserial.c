@@ -10,8 +10,8 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern MbsDevice_t *device0;
-extern MbsDevice_t *device1;
+extern MbsDev_t *device0;
+extern MbsDev_t *device1;
 extern MbmDev_t *deviceM0;
 extern MbmDev_t *deviceM1;
 

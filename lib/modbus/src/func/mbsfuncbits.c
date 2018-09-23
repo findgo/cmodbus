@@ -14,7 +14,7 @@
   * @retval eStatus       寄存器状态
   */
   /* 根据定义，这里只处理线圈状态数据*/
-static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, Mb_RegisterMode_t eMode )
+static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, MbRegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
     uint16_t usBitOffset;

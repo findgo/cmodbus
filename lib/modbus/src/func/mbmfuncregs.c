@@ -38,7 +38,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu,MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -94,7 +94,7 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_REGISTER;
     pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF]      = RegAddr >> 8;
@@ -157,7 +157,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                    = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]        = RegStartAddr >> 8;
@@ -227,7 +227,7 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_INPUT_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -299,7 +299,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                         = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF]        = RegReadStartAddr >> 8;
@@ -340,7 +340,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     return result;
 }
 /* ok */
-void __MbsLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *pucRegRegsVal, uint16_t usNRegs)
+void __MbmLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *pucRegRegsVal, uint16_t usNRegs)
 {
     while( usNRegs > 0 )
     {
@@ -361,7 +361,7 @@ MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *regs,
     if((remainLength  != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL; 
         
-    __MbsLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MBR_ENOERR;    
 }
@@ -378,7 +378,7 @@ MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *regs,
     if(ReqRegAddr != ((premain[0] << 8) | premain[1]))
         return MBR_EINVAL;
 
-    __MbsLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
+    __MbmLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *)&premain[2], 1);
          
     return MBR_ENOERR;   
 }
@@ -415,7 +415,7 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
     if((remainLength  != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL; 
         
-    __MbsLocalWrRegRegs(regs->pReginput, ReqRegAddr - regs->reg_input_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(regs->pReginput, ReqRegAddr - regs->reg_input_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MBR_ENOERR;    
 }

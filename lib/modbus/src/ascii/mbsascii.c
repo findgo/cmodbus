@@ -27,8 +27,8 @@ void MbsASCIIStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
 
-    ((MbsDevice_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
-    MbPortSerialEnable(((MbsDevice_t *)dev)->port, TRUE, FALSE);
+    ((MbsDev_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
+    MbPortSerialEnable(((MbsDev_t *)dev)->port, TRUE, FALSE);
     
     EXIT_CRITICAL_SECTION();
 }
@@ -37,8 +37,8 @@ void MbsASCIIStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    MbPortSerialEnable(((MbsDevice_t *)dev)->port, FALSE, FALSE);
-    MbPortTimersDisable(((MbsDevice_t *)dev)->port);
+    MbPortSerialEnable(((MbsDev_t *)dev)->port, FALSE, FALSE);
+    MbPortTimersDisable(((MbsDev_t *)dev)->port);
     
     EXIT_CRITICAL_SECTION();
 }
@@ -51,7 +51,7 @@ void MbsASCIIClose(void *dev)
 MbErrorCode_t MbsASCIIReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
-    MbsDevice_t *pdev = (MbsDevice_t *)dev;
+    MbsDev_t *pdev = (MbsDev_t *)dev;
 
     ENTER_CRITICAL_SECTION();
 
@@ -86,7 +86,7 @@ MbErrorCode_t MbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPd
     uint8_t usLRC;
     uint8_t *pAdu;
     uint8_t ucByte;
-    MbsDevice_t *pdev = (MbsDevice_t *)dev;
+    MbsDev_t *pdev = (MbsDev_t *)dev;
     
     ENTER_CRITICAL_SECTION(  );
     /* Check if the receiver is still in idle state. If not we where too
@@ -127,7 +127,7 @@ MbErrorCode_t MbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPd
     return eStatus;
 }
 
-void MbsASCIIReceiveFSM(  MbsDevice_t *dev)
+void MbsASCIIReceiveFSM(  MbsDev_t *dev)
 {
     uint8_t ucByte;
     uint8_t ucResult;
@@ -218,7 +218,7 @@ void MbsASCIIReceiveFSM(  MbsDevice_t *dev)
     }
 }
 
-void MbsASCIITransmitFSM(  MbsDevice_t *dev)
+void MbsASCIITransmitFSM(  MbsDev_t *dev)
 {
     uint8_t ucByte;
     
@@ -280,7 +280,7 @@ void MbsASCIITransmitFSM(  MbsDevice_t *dev)
     }
 }
 
-void MbsASCIITimerT1SExpired(  MbsDevice_t *dev)
+void MbsASCIITimerT1SExpired(  MbsDev_t *dev)
 {
     /* If we have a timeout we go back to the idle state and wait for
      * the next frame.

@@ -18,15 +18,15 @@
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
 // local variate 
-static MbsDevice_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
+static MbsDev_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 
 //local function
-static MbErrorCode_t __MbsAduFramehandle(MbsDevice_t *dev);
+static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev);
 
 
-MbsDevice_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
+MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
 {
-    MbsDevice_t *dev = NULL;
+    MbsDev_t *dev = NULL;
     MbErrorCode_t eStatus;
     uint8_t i;
 
@@ -39,8 +39,8 @@ MbsDevice_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint
     // check port exit and dev in use ?
     for( i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++ ){
         if( mbs_devTal[i].inuse == 0 ){
-            dev = (MbsDevice_t *)&mbs_devTal[i];
-            memset(dev,0,sizeof(MbsDevice_t));
+            dev = (MbsDev_t *)&mbs_devTal[i];
+            memset(dev,0,sizeof(MbsDev_t));
         
             mbs_devTal[i].inuse = 1; // mark it in use!
             
@@ -112,7 +112,7 @@ void MbsFree(uint8_t ucPort)
 
 //__align(2)  
 //static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-MbErrorCode_t MbsRegAssign(MbsDevice_t *dev,
+MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
                                 uint8_t *regstoragebuf,  
                                 uint32_t regstoragesize, 
                                 uint16_t reg_holding_addr_start,
@@ -163,7 +163,7 @@ MbErrorCode_t MbsRegAssign(MbsDevice_t *dev,
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStart(MbsDevice_t *dev)
+MbErrorCode_t MbsStart(MbsDev_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -177,7 +177,7 @@ MbErrorCode_t MbsStart(MbsDevice_t *dev)
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStop(MbsDevice_t *dev)
+MbErrorCode_t MbsStop(MbsDev_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
@@ -190,7 +190,7 @@ MbErrorCode_t MbsStop(MbsDevice_t *dev)
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsClose(MbsDevice_t *dev)
+MbErrorCode_t MbsClose(MbsDev_t *dev)
 {
     // must be stop first then it can close
     if( dev->devstate == DEV_STATE_DISABLED ){
@@ -215,7 +215,7 @@ void MbsPoll(void)
     }
 }
 
-static MbErrorCode_t __MbsAduFramehandle(MbsDevice_t *dev)
+static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
 {
     uint8_t *pPduFrame; // pdu fram
     uint8_t ucRcvAddress;

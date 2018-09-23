@@ -24,16 +24,16 @@ typedef enum
     STATE_ASCII_TX_DATA,              /*!< ASCII Sending of data (Address, Data, LRC). */
     STATE_ASCII_TX_END,               /*!< ASCII End of transmission. */
     STATE_ASCII_TX_NOTIFY,            /*!< ASCII Notify sender that the frame has been sent. */
-} eMBASCIISndRcvState;
+} MbASCIISndRcvState;
 
 typedef enum
 {
     BYTE_HIGH_NIBBLE,           /*!< Character for high nibble of byte. */
     BYTE_LOW_NIBBLE             /*!< Character for low nibble of byte. */
-} eMBBytePos;
+} MbBytePos;
 
-
-#if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
+#if MB_ASCII_ENABLED > 0 
+#if MB_MASTER_ENABLED > 0 
 
 MbErrorCode_t MbmASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
 void MbmASCIIStart(void *dev);
@@ -48,7 +48,7 @@ void MbmASCIITimerT1SExpired(MbmDev_t *dev);
 
 #endif
 
-#if MB_ASCII_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
+#if MB_SLAVE_ENABLED > 0
     
 MbErrorCode_t MbsASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
 void MbsASCIIStart(void *dev);
@@ -57,10 +57,11 @@ void MbsASCIIClose(void *dev);
 MbErrorCode_t MbsASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
 MbErrorCode_t MbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void MbsASCIIReceiveFSM(MbsDevice_t *dev);
-void MbsASCIITransmitFSM(MbsDevice_t *dev);
-void MbsASCIITimerT1SExpired(MbsDevice_t *dev);
+void MbsASCIIReceiveFSM(MbsDev_t *dev);
+void MbsASCIITransmitFSM(MbsDev_t *dev);
+void MbsASCIITimerT1SExpired(MbsDev_t *dev);
     
+#endif
 #endif
 
 #ifdef __cplusplus

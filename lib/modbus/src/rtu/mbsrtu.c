@@ -48,9 +48,9 @@ void MbsRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    ((MbsDevice_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    MbPortSerialEnable(((MbsDevice_t *)dev)->port, TRUE, FALSE);
-    MbPortTimersDisable(((MbsDevice_t *)dev)->port);
+    ((MbsDev_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
+    MbPortSerialEnable(((MbsDev_t *)dev)->port, TRUE, FALSE);
+    MbPortTimersDisable(((MbsDev_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -58,8 +58,8 @@ void MbsRTUStart(void *dev)
 void MbsRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    MbPortSerialEnable(((MbsDevice_t *)dev)->port, FALSE, FALSE );
-    MbPortTimersDisable(((MbsDevice_t *)dev)->port);
+    MbPortSerialEnable(((MbsDev_t *)dev)->port, FALSE, FALSE );
+    MbPortTimersDisable(((MbsDev_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
 void MbsRTUClose(void *dev)
@@ -71,7 +71,7 @@ void MbsRTUClose(void *dev)
 MbErrorCode_t MbsRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
-    MbsDevice_t *dev = (MbsDevice_t *)pdev;
+    MbsDev_t *dev = (MbsDev_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
@@ -104,7 +104,7 @@ MbErrorCode_t MbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu,
     MbErrorCode_t eStatus = MB_ENOERR;
     uint16_t usCRC16;
     uint8_t *pAdu;
-    MbsDevice_t *dev = (MbsDevice_t *)pdev;
+    MbsDev_t *dev = (MbsDev_t *)pdev;
     
     ENTER_CRITICAL_SECTION();
     /* Check if the receiver is still in idle state. If not we where to
@@ -143,7 +143,7 @@ MbErrorCode_t MbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu,
     return eStatus;
 }
 
-void MbsRTUReceiveFSM(  MbsDevice_t *dev)
+void MbsRTUReceiveFSM(  MbsDev_t *dev)
 {
     uint8_t ucByte;
 
@@ -180,7 +180,7 @@ void MbsRTUReceiveFSM(  MbsDevice_t *dev)
     MbPortTimersEnable(dev->port);
 }
 
-void MbsRTUTransmitFSM(  MbsDevice_t *dev)
+void MbsRTUTransmitFSM(  MbsDev_t *dev)
 {
     /* We should get a transmitter event in transmitter state.  */
     if(dev->sndrcvState == STATE_RTU_TX_XMIT){
@@ -203,7 +203,7 @@ void MbsRTUTransmitFSM(  MbsDevice_t *dev)
     }
 }
 
-void MbsRTUTimerT35Expired(  MbsDevice_t *dev)
+void MbsRTUTimerT35Expired(  MbsDev_t *dev)
 {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */

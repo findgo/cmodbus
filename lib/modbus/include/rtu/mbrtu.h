@@ -17,9 +17,10 @@ typedef enum
     STATE_RTU_RX_IDLE,              /*!< RTU Receiver is in idle state. */
     STATE_RTU_RX_RCV,               /*!< RTU Frame is beeing received. */
     STATE_RTU_TX_XMIT               /*!< RTU Transmitter is in transfer state. */
-} eMBRTUSndRcvState;    
+} MbRTUSndRcvState;    
 
-#if MB_RTU_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
+#if MB_RTU_ENABLED > 0 
+#if MB_MASTER_ENABLED > 0
 
 MbErrorCode_t MbmRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 void MbmRTUStart(void *dev);
@@ -35,7 +36,7 @@ void MbmRTUTimerT35Expired(  MbmDev_t *dev);
 
 #endif
 
-#if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
+#if MB_SLAVE_ENABLED > 0
 
 MbErrorCode_t MbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,MbParity_t eParity);
 void MbsRTUStart(void *dev);
@@ -44,11 +45,12 @@ void MbsRTUClose(void *dev);
 MbErrorCode_t MbsRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
 MbErrorCode_t MbsRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void MbsRTUReceiveFSM(  MbsDevice_t *dev);
-void MbsRTUTransmitFSM(  MbsDevice_t *dev);
-void MbsRTUTimerT15Expired(  MbsDevice_t *dev);
-void MbsRTUTimerT35Expired(  MbsDevice_t *dev);
+void MbsRTUReceiveFSM(  MbsDev_t *dev);
+void MbsRTUTransmitFSM(  MbsDev_t *dev);
+void MbsRTUTimerT15Expired(  MbsDev_t *dev);
+void MbsRTUTimerT35Expired(  MbsDev_t *dev);
 
+#endif
 #endif
 
 #ifdef __cplusplus

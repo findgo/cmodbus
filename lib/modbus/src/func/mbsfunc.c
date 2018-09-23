@@ -6,12 +6,12 @@ typedef struct
 {
     uint8_t ucFunctionCode;
     pMbsFunctionHandler pxHandler;
-} xMbsFunctionHandler;
+} MbsFunctionHandler;
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
  */
-static xMbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
+static MbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
 
 #if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, MbsFuncReportSlaveID},

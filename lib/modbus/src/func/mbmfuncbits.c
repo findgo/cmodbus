@@ -39,7 +39,7 @@ MbReqResult_t MbmReqRdCoils( MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegStar
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_COILS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -95,7 +95,7 @@ MbReqResult_t MbmReqWrCoil(MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegAddr, 
     
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     val = (val > 0) ? 0xFF00 : 0x0000;
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_SINGLE_COIL;
@@ -166,7 +166,7 @@ MbReqResult_t MbmReqWrMulCoils(MbmDev_t *Mdev, uint8_t slaveaddr,
     
     pAdu = req->padu;
     // get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);    
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);    
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                      = MB_FUNC_WRITE_MULTIPLE_COILS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]          = RegStartAddr >> 8;
@@ -232,7 +232,7 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmDev_t *Mdev, uint8_t slaveaddr,
     
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_DISCRETE_INPUTS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -262,7 +262,7 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmDev_t *Mdev, uint8_t slaveaddr,
 /* TODO implement modbus master request parse */
 
 /* write local bits register to coils or discrete */
-static void __MbsLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint8_t *pucRegBitsVal, uint16_t usNCoils)
+static void __MbmLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint8_t *pucRegBitsVal, uint16_t usNCoils)
 {
     int16_t iNCoils = ( int16_t )usNCoils;
 
@@ -286,7 +286,7 @@ MbReqResult_t MbmParseRspRdCoils(MbReg_t *regs,
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
       
-    __MbsLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
+    __MbmLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
 
     return MBR_ENOERR;
 }
@@ -309,7 +309,7 @@ MbReqResult_t MbmParseRspWrCoil(MbReg_t *regs,
     if(premain[2] == 0xFF)
         bitval |= 0x01; 
 
-    __MbsLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
+    __MbmLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
 
     return MBR_ENOERR;
 }
@@ -340,7 +340,7 @@ MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *regs,
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
       
-    __MbsLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
+    __MbmLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }

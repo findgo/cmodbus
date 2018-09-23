@@ -10,8 +10,8 @@
 
 uint32_t sysclocktime = 0;
 
-extern MbsDevice_t *device0;
-extern MbsDevice_t *device1;
+extern MbsDev_t *device0;
+extern MbsDev_t *device1;
 extern MbmDev_t *deviceM0;
 extern MbmDev_t *deviceM1;
 /* ----------------------- Start implementation -----------------------------*/

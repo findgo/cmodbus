@@ -10,6 +10,14 @@
 #include "stm32f10x.h"
 #include "mbconfig.h"
 
+#ifndef FALSE
+#define FALSE   0
+#endif
+
+#ifndef TRUE
+#define TRUE   1
+#endif
+
 #define assert(expr) 
 
 #define ENTER_CRITICAL_SECTION()     __set_PRIMASK(1)

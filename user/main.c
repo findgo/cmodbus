@@ -73,8 +73,8 @@ int main(void)
 
 #if MB_SLAVE_ENABLED > 0
 
-MbsDevice_t *device0;
-MbsDevice_t *device1;
+MbsDev_t *device0;
+MbsDev_t *device1;
 static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
 static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 

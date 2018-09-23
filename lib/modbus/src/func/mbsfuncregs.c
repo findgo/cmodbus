@@ -12,7 +12,7 @@
   *         eMode         操作方式，读或者写
   * @retval eStatus       寄存器状态
   */
-static MbErrorCode_t __eMBRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, Mb_RegisterMode_t eMode)
+static MbErrorCode_t __eMBRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, MbRegisterMode_t eMode)
 {
     int16_t iRegIndex;
   
