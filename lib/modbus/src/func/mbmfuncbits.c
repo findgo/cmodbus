@@ -23,7 +23,7 @@ MbReqResult_t MbmReqRdCoils( MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegStar
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(Mdev, slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         

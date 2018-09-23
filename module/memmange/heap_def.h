@@ -1,4 +1,4 @@
-﻿/**
+/**
   ******************************************************************************
   * @file   heap_macros.h
   * @author   jgb
@@ -25,7 +25,6 @@
 #define __HEAP_MACROS_H_
 
 #include <stdint.h>
-#include "common_def.h"
 
 #define configSUPPORT_DYNAMIC_ALLOCATION    1
 

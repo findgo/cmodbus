@@ -38,7 +38,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 
     pAdu = req->padu;
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu,MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;

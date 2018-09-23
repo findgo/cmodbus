@@ -36,7 +36,7 @@ void MbmNodeFree(MbmNode_t *node);
 MbErrorCode_t MbmAddNode(MbmDev_t *dev, MbmNode_t *node);
 MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr);
 MbmNode_t *MbmSearchNode(MbmDev_t *dev,uint8_t slaveaddr);
-MbErrorCode_t MbmvStart(MbmDev_t *dev);
+MbErrorCode_t MbmStart(MbmDev_t *dev);
 MbErrorCode_t MbmStop(MbmDev_t *dev);
 MbErrorCode_t MbmClose(MbmDev_t *dev);
 void MbmPoll(void);

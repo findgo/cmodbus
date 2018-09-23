@@ -5,7 +5,7 @@
 #if MB_MASTER_ENABLED > 0
 #include "mbmem.h"
 
-MbmReq_t *MbmReqBufNew(MbMode_t mode,uint16_t Pdusize)
+MbmReq_t *MbmReqBufNew(MbMode_t mode, uint16_t Pdusize)
 {
     uint16_t size;
     MbmReq_t *req;

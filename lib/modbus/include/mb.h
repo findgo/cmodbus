@@ -186,7 +186,7 @@ typedef struct
 
     MbmReq_t *Reqreadyhead;     /* request ready list  head*/
     MbmReq_t *Reqreadytail;     /* request ready list  tail*/
-    MbmReq_t *Reqpendhead;      /* request suspend list */
+    MbmReq_t *Reqpendinghead;      /* request suspend list */
 
     MbMode_t currentMode;       // work mode as RTU ASCII TCP 
 

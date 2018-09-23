@@ -44,7 +44,7 @@ int main(void)
            (void)MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
            (void)MbmReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
         }
-        (void)MbmvStart(deviceM0);  
+        (void)MbmStart(deviceM0);  
     }
 #if MB_RTU_ENABLED > 0   
     deviceM1= MbmNew(MB_RTU, MBCOM1, 9600, MB_PAR_NONE);
@@ -61,7 +61,7 @@ int main(void)
            (void)MbmReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
            (void)MbmReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
         }
-        (void)MbmvStart(deviceM1);  
+        (void)MbmStart(deviceM1);  
     }    
 	while(1)
 	{
