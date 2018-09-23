@@ -22,7 +22,7 @@ extern MbmDev_t *deviceM1;
   *         xTxEnable 发送使能
   * @retval None
   */
-void MbPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
+void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable)
 {
     switch(port){
     case MBCOM0:
@@ -84,7 +84,7 @@ void MbPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
   *         eParity     校验位 
   * @retval None
   */
-bool MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, MbParity_t eParity)
+uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, MbParity_t eParity)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
@@ -191,7 +191,7 @@ bool MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, M
   * @param  None
   * @retval None
   */
-bool MbPortSerialPutByte(uint8_t port, char ucByte )
+uint8_t MbPortSerialPutByte(uint8_t port, char ucByte )
 {
     switch (port){
     case MBCOM0:
@@ -214,7 +214,7 @@ bool MbPortSerialPutByte(uint8_t port, char ucByte )
   * @param  None
   * @retval None
   */
-bool MbPortSerialGetByte(uint8_t port, char *pucByte )
+uint8_t MbPortSerialGetByte(uint8_t port, char *pucByte )
 {
     switch (port){
     case MBCOM0:    

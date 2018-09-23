@@ -6,6 +6,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <string.h>
 #include "mbproto.h"
 #include "mbconfig.h"
 #include "mbcpu.h"
@@ -13,7 +15,6 @@ extern "C" {
 #include "mbmem.h"
 
 #include "mb.h"
-#include "string.h"
 
 void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );
 uint8_t MbGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits );

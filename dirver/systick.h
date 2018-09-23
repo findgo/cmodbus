@@ -13,7 +13,7 @@
 #ifndef _USER_SYSTICK_H_
 #define _USER_SYSTICK_H_
 
-#include "app_cfg.h"
+#include "stm32F10x.h"
 
 void Systick_Configuration(void);
 

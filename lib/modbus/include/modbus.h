@@ -10,11 +10,13 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
                                uint16_t reg_input_num,
                                uint16_t reg_coils_num,
                                uint16_t reg_discrete_num);
-uint8_t *MbRegBufNew(uint32_t size);
-void MbRegBufFree(void *ptr);
 
 
 #if MB_MASTER_ENABLED
+
+uint8_t *MbRegBufNew(uint32_t size);
+void MbRegBufFree(void *ptr);
+
 /* TODO implement modbus master */
 MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 void MbmRemove(uint8_t ucPort);
@@ -73,19 +75,23 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
 #if MB_SLAVE_ENABLED > 0
 
 // for slave ,get register start address
-#define xMbsRegHoldPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReghold)
-#define xMbsRegInputPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReginput)
-#define xMbsRegCoilPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegCoil)
-#define xMbsRegDiscPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegDisc)
+#define MbsRegHoldPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReghold)
+#define MbsRegInputPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReginput)
+#define MbsRegCoilPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegCoil)
+#define MbsRegDiscPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegDisc)
+// for slave ,get register number
+#define MbsRegHoldNum(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.reg_holding_num)
+#define MbsRegInputNum(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.reg_input_num)
+#define MbsRegCoilNum(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.reg_coils_num)
+#define MbsRegDiscNum(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.reg_discrete_num)
 
 
-MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
-                uint8_t const *pucAdditional, uint16_t usAdditionalLen );
+MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
+                                        uint8_t const *pucAdditional, uint16_t usAdditionalLen );
 
 MbErrorCode_t MbsRegisterCB(uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler);
 
 MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
-
 void MbsFree(uint8_t ucPort);
 MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
                                 uint8_t *regstoragebuf,  
@@ -98,7 +104,19 @@ MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
                                 uint16_t reg_coils_num,
                                 uint16_t reg_discrete_addr_start,
                                 uint16_t reg_discrete_num);
-
+MbErrorCode_t MbsRegAssignSingle(MbsDev_t *dev,
+                                uint16_t *reg_holdingbuf,  
+                                uint16_t reg_holding_addr_start,
+                                uint16_t reg_holding_num,
+                                uint16_t *reg_inputbuf,  
+                                uint16_t reg_input_addr_start,
+                                uint16_t reg_input_num,
+                                uint8_t *reg_coilsbuf,  
+                                uint16_t reg_coils_addr_start,
+                                uint16_t reg_coils_num,
+                                uint8_t *reg_discretebuf,  
+                                uint16_t reg_discrete_addr_start,
+                                uint16_t reg_discrete_num);
 MbErrorCode_t MbsStart(MbsDev_t *dev);
 MbErrorCode_t MbsStop(MbsDev_t *dev);
 MbErrorCode_t MbsClose(MbsDev_t *dev);

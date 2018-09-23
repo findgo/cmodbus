@@ -85,7 +85,8 @@ MbErrorCode_t MbsRegisterCB( uint8_t ucFunctionCode, pMbsFunctionHandler pxHandl
     return eStatus;
 }
 
-pMbsFunctionHandler MbsSearchCB(uint8_t ucFunctionCode)
+// search function handle with function code
+pMbsFunctionHandler MbsFuncHandleSearch(uint8_t ucFunctionCode)
 {
     int i;
     pMbsFunctionHandler srch = NULL;

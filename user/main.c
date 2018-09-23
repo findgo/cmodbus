@@ -1,4 +1,5 @@
-#include "app_cfg.h"
+
+#include "stm32F10x.h"
 #include "systick.h"
 //for driver
 #include "modbus.h"
@@ -96,8 +97,10 @@ int main(void)
        status = MbsRegAssign(device0,
                         dev0regbuf,
                         sizeof(dev0regbuf),
-                        0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+                        0,REG_HOLDING_NREGS ,
+                        0,REG_INPUT_NREGS,
+                        0,REG_COILS_SIZE,
+                        0,REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
             (void)MbsStart(device0);
     }
@@ -110,8 +113,10 @@ int main(void)
        status = MbsRegAssign(device1,
                         dev1regbuf,
                         sizeof(dev1regbuf),
-                        0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+                        0,REG_HOLDING_NREGS ,
+                        0,REG_INPUT_NREGS,
+                        0,REG_COILS_SIZE,
+                        0,REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
             (void)MbsStart(device1);
     }

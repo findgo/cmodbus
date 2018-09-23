@@ -20,7 +20,7 @@ extern MbmDev_t *deviceM1;
   * @param  None
   * @retval None
   */
-bool MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
+uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
     NVIC_InitTypeDef NVIC_InitStructure;

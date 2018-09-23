@@ -9,7 +9,7 @@
 static uint8_t    ucMBSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t   usMBSlaveIDLen;
 
-MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, bool xIsRunning,
+MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
                 uint8_t const *pucAdditional, uint16_t usAdditionalLen)
 {
     MbErrorCode_t eStatus = MB_ENOERR;

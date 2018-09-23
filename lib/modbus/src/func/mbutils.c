@@ -3,35 +3,23 @@
 
 #define BITS_uint8_t (8U)
 
-/*! \defgroup modbus_utils Utilities
- *
- * This module contains some utility functions which can be used by
- * the application. It includes some special functions for working with
- * bitfields backed by a character array buffer.
- *
- */
-/*! \addtogroup modbus_utils
- *  @{
- */
 /*! \brief Function to set bits in a byte buffer.
  *
  * This function allows the efficient use of an array to implement bitfields.
  * The array used for storing the bits must always be a multiple of two
  * bytes. Up to eight bits can be set or cleared in one operation.
  *
- * \param ucByteBuf A buffer where the bit values are stored. Must be a
- *   multiple of 2 bytes. No length checking is performed and if
- *   usBitOffset / 8 is greater than the size of the buffer memory contents
- *   is overwritten.
- * \param usBitOffset The starting address of the bits to set. The first
- *   bit has the offset 0.
- * \param ucNBits Number of bits to modify. The value must always be smaller
- *   than 8.
- * \param ucValues Thew new values for the bits. The value for the first bit
- *   starting at <code>usBitOffset</code> is the LSB of the value
- *   <code>ucValues</code>
+ * @param : ucByteBuf A buffer where the bit values are stored. 
+ *          Must be a multiple of 2 bytes. No length checking is performed and if
+ *          usBitOffset / 8 is greater than the size of the buffer memory contents is overwritten.
  *
- * \code
+ * @param : usBitOffset The starting address of the bits to set. The first  bit has the offset 0.
+ * @param : ucNBits Number of bits to modify. The value must always be smaller than 8.
+ * @param : ucValues Thew new values for the bits. The value for the first bit
+ *   starting at <code> usBitOffset </code> is the LSB of the value
+ *   <code> ucValues </code>
+ *
+ * \! code
  * ucBits[2] = {0, 0};
  *
  * // Set bit 4 to 1 (read: set 1 bit starting at bit offset 4 to value 1)
@@ -42,7 +30,7 @@
  *
  * // Set bits 8 - 11 to 0x05 and bits 12 - 15 to 0x0A;
  * MbSetBits( ucBits, 8, 8, 0x5A);
- * \endcode
+ * \! endcode
  */
 void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue )
 {
@@ -83,22 +71,20 @@ void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8
                 
 /*! \brief Function to read bits in a byte buffer.
  *
- * This function is used to extract up bit values from an array. Up to eight
- * bit values can be extracted in one step.
+ * This function is used to extract up bit values from an array. 
+ * Up to eight bit values can be extracted in one step.
  *
- * \param ucByteBuf A buffer where the bit values are stored.
- * \param usBitOffset The starting address of the bits to set. The first
- *   bit has the offset 0.
- * \param ucNBits Number of bits to modify. The value must always be smaller
- *   than 8.
+ * @param : ucByteBuf A buffer where the bit values are stored.
+ * @param : usBitOffset The starting address of the bits to set. The first bit has the offset 0.
+ * @param : ucNBits Number of bits to modify. The value must always be smaller than 8.
  *
- * \code
+ * \! code
  * uint8_t ucBits[2] = {0, 0};
  * uint8_t ucResult;
  *
- * // Extract the bits 3 - 10.
+ * /! Extract the bits 3 - 10.
  * ucResult = MbGetBits( ucBits, 3, 8 );
- * \endcode
+ * \! endcode
  */
 uint8_t MbGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
 {
@@ -129,7 +115,6 @@ uint8_t MbGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
 
     return ( uint8_t ) usWordBuf;
 }
-
 
 #if MB_RTU_ENABLED > 0
 static const uint8_t aucCRCHi[] = {
@@ -314,7 +299,9 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
 
     return size;
 }
+                               
 #if  MB_MASTER_ENABLED > 0
+
 uint8_t *MbRegBufNew(uint32_t size)
 {
     uint8_t *pregbuf;
@@ -329,7 +316,7 @@ uint8_t *MbRegBufNew(uint32_t size)
 
 void MbRegBufFree(void *ptr)
 {
-    if(ptr)
-        mb_free(ptr);
+    mb_free(ptr);
 }
+
 #endif

@@ -13,10 +13,9 @@
 #ifndef __COMMON_SIGNAL_H_
 #define __COMMON_SIGNAL_H_
 
-#include "common_global.h"
-#include "common_def.h"
+#include <stdint.h>
 
-typedef bool halIntState_t;
+typedef uint8_t halIntState_t;
 
 #define OS_Enter_Criticial() 	st( __set_PRIMASK(1); )
 #define OS_Exit_Criticial()		st( __set_PRIMASK(0); )

@@ -36,14 +36,10 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
         return NULL;
     }
 
-    // check port exit and dev in use ?
+    // search device table and then check port exit and dev in use ?
     for( i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++ ){
         if( mbs_devTal[i].inuse == 0 ){
             dev = (MbsDev_t *)&mbs_devTal[i];
-            memset(dev,0,sizeof(MbsDev_t));
-        
-            mbs_devTal[i].inuse = 1; // mark it in use!
-            
             break;
         }
         // find port in used 
@@ -51,7 +47,13 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
             return NULL;
         }
     }
+    // no space in device table
+    if(i >= MBS_SUPPORT_MULTIPLE_NUMBER)
+        return NULL;
 
+    // find space to go on
+    memset(dev, 0, sizeof(MbsDev_t));
+    
     switch (eMode){
 #if MB_RTU_ENABLED > 0
     case MB_RTU:
@@ -76,6 +78,7 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
         eStatus = MbsASCIIInit(dev, ucPort, ulBaudRate, eParity);
         break;
 #endif
+
     default:
         eStatus = MB_EINVAL;
         break;
@@ -83,14 +86,12 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
 
     // init failed
     if(eStatus != MB_ENOERR){
-        dev->inuse = 0;
-
         return NULL;
     }
     
-    /* set slave address */
+    dev->inuse = 1;             // mark it in use!
     dev->port = ucPort;
-    dev->slaveaddr = ucSlaveAddress;
+    dev->slaveaddr = ucSlaveAddress;  /* set slave address */
     dev->currentMode = eMode;
     dev->devstate = DEV_STATE_DISABLED;    
     dev->xEventInFlag = FALSE;
@@ -163,6 +164,46 @@ MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
     return MB_ENOERR;
 }
 
+MbErrorCode_t MbsRegAssignSingle(MbsDev_t *dev,
+                                uint16_t *reg_holdingbuf,  
+                                uint16_t reg_holding_addr_start,
+                                uint16_t reg_holding_num,
+                                uint16_t *reg_inputbuf,  
+                                uint16_t reg_input_addr_start,
+                                uint16_t reg_input_num,
+                                uint8_t *reg_coilsbuf,  
+                                uint16_t reg_coils_addr_start,
+                                uint16_t reg_coils_num,
+                                uint8_t *reg_discretebuf,  
+                                uint16_t reg_discrete_addr_start,
+                                uint16_t reg_discrete_num)
+{
+    MbReg_t *regs;
+
+    if( dev == NULL )
+        return MB_EINVAL;
+
+    regs = (MbReg_t *)&(dev->regs);
+
+    regs->reg_holding_addr_start = reg_holding_addr_start;
+    regs->reg_holding_num = reg_holding_num;
+    regs->pReghold = reg_holdingbuf;
+    
+    regs->reg_input_addr_start = reg_input_addr_start;    
+    regs->reg_input_num = reg_input_num;
+    regs->pReginput = reg_inputbuf;
+    
+    regs->reg_coils_addr_start = reg_coils_addr_start;
+    regs->reg_coils_num = reg_coils_num;
+    regs->pRegCoil = reg_coilsbuf;
+    
+    regs->reg_discrete_addr_start = reg_discrete_addr_start;
+    regs->reg_discrete_num = reg_discrete_num;
+    regs->pRegDisc = reg_discretebuf;
+    
+    return MB_ENOERR;
+}
+
 MbErrorCode_t MbsStart(MbsDev_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
@@ -210,7 +251,7 @@ void MbsPoll(void)
 
     for(i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++){
         if(mbs_devTal[i].inuse) {
-            __MbsAduFramehandle(&mbs_devTal[i]);
+            ( void )__MbsAduFramehandle(&mbs_devTal[i]);
         }
     }
 }
@@ -244,7 +285,7 @@ static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
         if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
             ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = MbsSearchCB(ucFunctionCode);
+            handle = MbsFuncHandleSearch(ucFunctionCode);
             if(handle)
                 eException = handle(&dev->regs, pPduFrame, &usLength);
             

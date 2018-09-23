@@ -5,15 +5,14 @@
 
 #if MB_SLAVE_ENABLED > 0
 /**
-  * @brief  ÏßÈ¦¼Ä´æÆ÷´¦Àíº¯Êı£¬ÏßÈ¦¼Ä´æÆ÷¿É¶Á£¬¿É¶Á¿ÉĞ´
-  * @param  regs          ²Ù×÷¼Ä´æÆ÷Ö¸Õë
-  *         pucRegBuffer  ¶Á²Ù×÷---·µ»ØÊı¾İÖ¸Õë£¬Ğ´²Ù×÷--·µ»ØÊı¾İÖ¸Õë
-  *         usAddress     ¼Ä´æÆ÷ÆğÊ¼µØÖ·
-  *         usNRegs       ¼Ä´æÆ÷³¤¶È
-  *         eMode         ²Ù×÷·½Ê½£¬¶Á»òÕßĞ´
-  * @retval eStatus       ¼Ä´æÆ÷×´Ì¬
+  * @brief  çº¿åœˆå¯„å­˜å™¨å¤„ç†å‡½æ•°ï¼Œçº¿åœˆå¯„å­˜å™¨å¯è¯»ï¼Œå¯è¯»å¯å†™
+  * @param  regs          æ“ä½œå¯„å­˜å™¨æŒ‡é’ˆ
+  *         pucRegBuffer  è¯»æ“ä½œ---è¿”å›æ•°æ®æŒ‡é’ˆï¼Œå†™æ“ä½œ--è¿”å›æ•°æ®æŒ‡é’ˆ
+  *         usAddress     å¯„å­˜å™¨èµ·å§‹åœ°å€
+  *         usNRegs       å¯„å­˜å™¨é•¿åº¦
+  *         eMode         æ“ä½œæ–¹å¼ï¼Œè¯»æˆ–è€…å†™
+  * @retval eStatus       å¯„å­˜å™¨çŠ¶æ€
   */
-  /* ¸ù¾İ¶¨Òå£¬ÕâÀïÖ»´¦ÀíÏßÈ¦×´Ì¬Êı¾İ*/
 static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, MbRegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
@@ -48,6 +47,14 @@ static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint1
         
     return MB_ENOREG;
 }
+/**
+  * @brief  ç¦»æ•£è¾“å…¥å¯„å­˜å™¨å¤„ç†å‡½æ•°ï¼Œåªå¯è¯»
+  * @param  regs          æ“ä½œå¯„å­˜å™¨æŒ‡é’ˆ
+  *         pucRegBuffer  è¿”å›æ•°æ®æŒ‡é’ˆ
+  *         usAddress     å¯„å­˜å™¨èµ·å§‹åœ°å€
+  *         usNRegs       å¯„å­˜å™¨é•¿åº¦
+  * @retval eStatus       å¯„å­˜å™¨çŠ¶æ€
+  */
 
 static MbErrorCode_t __MbsRegDiscreteCB(MbReg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
 {

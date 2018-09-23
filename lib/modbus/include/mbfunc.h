@@ -137,8 +137,8 @@ MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t *pPdu, uint16_t *us
 #if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
 MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 #endif
-
-pMbsFunctionHandler MbsSearchCB(uint8_t ucFunctionCode);
+// search function handle with function code
+pMbsFunctionHandler MbsFuncHandleSearch(uint8_t ucFunctionCode);
 
 #endif
 

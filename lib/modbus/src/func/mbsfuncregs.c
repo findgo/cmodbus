@@ -3,16 +3,17 @@
 
 #if MB_SLAVE_ENABLED > 0
 
+
 /**
-  * @brief  ±£³Ö¼Ä´æÆ÷´¦Àíº¯Êı£¬±£³Ö¼Ä´æÆ÷¿É¶Á£¬¿É¶Á¿ÉĞ´
-  * @param  regs          ²Ù×÷¼Ä´æÆ÷Ö¸Õë
-  *         pucRegBuffer  ¶Á²Ù×÷Ê±--·µ»ØÊı¾İÖ¸Õë£¬Ğ´²Ù×÷Ê±--ÊäÈëÊı¾İÖ¸Õë
-  *         usAddress     ¼Ä´æÆ÷ÆğÊ¼µØÖ·
-  *         usNRegs       ¼Ä´æÆ÷³¤¶È
-  *         eMode         ²Ù×÷·½Ê½£¬¶Á»òÕßĞ´
-  * @retval eStatus       ¼Ä´æÆ÷×´Ì¬
+  * @brief  ä¿æŒå¯„å­˜å™¨å¤„ç†å‡½æ•°ï¼Œä¿æŒå¯„å­˜å™¨å¯è¯»ï¼Œå¯è¯»å¯å†™
+  * @param  regs          æ“ä½œå¯„å­˜å™¨æŒ‡é’ˆ
+  *         pucRegBuffer  è¯»æ“ä½œæ—¶--è¿”å›æ•°æ®æŒ‡é’ˆï¼Œå†™æ“ä½œæ—¶--è¾“å…¥æ•°æ®æŒ‡é’ˆ
+  *         usAddress     å¯„å­˜å™¨èµ·å§‹åœ°å€
+  *         usNRegs       å¯„å­˜å™¨é•¿åº¦
+  *         eMode         æ“ä½œæ–¹å¼ï¼Œè¯»æˆ–è€…å†™
+  * @retval eStatus       å¯„å­˜å™¨çŠ¶æ€
   */
-static MbErrorCode_t __eMBRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, MbRegisterMode_t eMode)
+static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, MbRegisterMode_t eMode)
 {
     int16_t iRegIndex;
   
@@ -51,15 +52,14 @@ static MbErrorCode_t __eMBRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uin
     return MB_ENOREG;
 }
 /**
-  * @brief  ÊäÈë¼Ä´æÆ÷´¦Àíº¯Êı£¬ÊäÈë¼Ä´æÆ÷¿É¶Á£¬µ«²»¿ÉĞ´¡£
-  * @param  regs          ²Ù×÷¼Ä´æÆ÷Ö¸Õë
-  *         pucRegBuffer  ·µ»ØÊı¾İÖ¸Õë
-  *         usAddress     ¼Ä´æÆ÷ÆğÊ¼µØÖ·
-  *         usNRegs       ¼Ä´æÆ÷³¤¶È
-  * @retval eStatus       ¼Ä´æÆ÷×´Ì¬
+  * @brief  è¾“å…¥å¯„å­˜å™¨å¤„ç†å‡½æ•°ï¼Œè¾“å…¥å¯„å­˜å™¨å¯è¯»ï¼Œä½†ä¸å¯å†™ã€‚
+  * @param  regs          æ“ä½œå¯„å­˜å™¨æŒ‡é’ˆ
+  *         pucRegBuffer  è¿”å›æ•°æ®æŒ‡é’ˆ
+  *         usAddress     å¯„å­˜å™¨èµ·å§‹åœ°å€
+  *         usNRegs       å¯„å­˜å™¨é•¿åº¦
+  * @retval eStatus       å¯„å­˜å™¨çŠ¶æ€
   */
-
-static MbErrorCode_t __eMBRegInputCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs)
+static MbErrorCode_t __MbsRegInputCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs)
 {
     int16_t iRegIndex;
   
@@ -121,7 +121,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t *
             *usLen += 1;
 
             /* Make callback to fill the buffer. */
-            eRegStatus = __eMBRegHoldingCB(regs,pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
+            eRegStatus = __MbsRegHoldingCB(regs,pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
                 eStatus = MbError2Exception( eRegStatus );
@@ -155,7 +155,7 @@ MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *u
         usRegAddress |= ( uint16_t )( pPdu[MB_PDU_FUNC_WRITE_ADDR_OFF + 1] );
 
         /* Make callback to update the value. */
-        eRegStatus = __eMBRegHoldingCB(regs,&pPdu[MB_PDU_FUNC_WRITE_VALUE_OFF],
+        eRegStatus = __MbsRegHoldingCB(regs,&pPdu[MB_PDU_FUNC_WRITE_VALUE_OFF],
                                       usRegAddress, 1, MB_REG_WRITE );
 
         /* If an error occured convert it into a Modbus exception. */
@@ -197,7 +197,7 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_
             
             /* Make callback to update the register values. */
             eRegStatus =
-                __eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
+                __MbsRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
                                  usRegAddress, usRegCount, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
@@ -261,7 +261,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16
             && ( ( 2 * usRegWriteCount ) == ucRegWriteByteCount ) ){
             
             /* Make callback to update the register values. */
-            eRegStatus = __eMBRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
+            eRegStatus = __MbsRegHoldingCB(regs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
                                           usRegWriteAddress, usRegWriteCount, MB_REG_WRITE );
 
             if( eRegStatus == MB_ENOERR ){
@@ -280,7 +280,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16
 
                 /* Make the read callback. */
                 eRegStatus =
-                    __eMBRegHoldingCB(regs, pucFrameCur, usRegReadAddress, usRegReadCount, MB_REG_READ );
+                    __MbsRegHoldingCB(regs, pucFrameCur, usRegReadAddress, usRegReadCount, MB_REG_READ );
                 if( eRegStatus == MB_ENOERR ){
                     *usLen += 2 * usRegReadCount;
                 }
@@ -335,7 +335,7 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * u
             *usLen += 1;
 
             eRegStatus =
-                __eMBRegInputCB(regs, pucFrameCur, usRegAddress, usRegCount );
+                __MbsRegInputCB(regs, pucFrameCur, usRegAddress, usRegCount );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){

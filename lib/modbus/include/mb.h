@@ -62,7 +62,7 @@ typedef enum
 // 
 typedef enum
 {
-    DEV_STATE_NOT_INITIALIZED,
+    DEV_STATE_NOT_INITIALIZED = 0,
     DEV_STATE_DISABLED,
     DEV_STATE_ENABLED
 }MbDevState_t;
