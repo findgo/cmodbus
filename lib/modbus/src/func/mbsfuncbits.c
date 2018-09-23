@@ -14,7 +14,7 @@
   * @retval eStatus       寄存器状态
   */
   /* 根据定义，这里只处理线圈状态数据*/
-static mb_ErrorCode_t __eMBRegCoilsCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, mb_RegisterMode_t eMode )
+static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, Mb_RegisterMode_t eMode )
 {
     int16_t iNCoils = ( int16_t )usNCoils;
     uint16_t usBitOffset;
@@ -27,7 +27,7 @@ static mb_ErrorCode_t __eMBRegCoilsCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
         case MB_REG_READ:
             while( iNCoils > 0 )
             {
-                *pucRegBuffer++ = xMBGetBits( regs->pRegCoil, usBitOffset,( uint8_t )( iNCoils > 8 ? 8 : iNCoils ) );
+                *pucRegBuffer++ = MbGetBits( regs->pRegCoil, usBitOffset,( uint8_t )( iNCoils > 8 ? 8 : iNCoils ) );
                 iNCoils -= 8;
                 usBitOffset += 8;
             }
@@ -36,7 +36,7 @@ static mb_ErrorCode_t __eMBRegCoilsCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
         case MB_REG_WRITE:
             while( iNCoils > 0 )
             {
-                vMBSetBits(regs->pRegCoil, usBitOffset,( uint8_t )( iNCoils > 8 ? 8 : iNCoils ),*pucRegBuffer++);
+                MbSetBits(regs->pRegCoil, usBitOffset,( uint8_t )( iNCoils > 8 ? 8 : iNCoils ),*pucRegBuffer++);
                 iNCoils -= 8;
                 usBitOffset+=8;
             }
@@ -49,7 +49,7 @@ static mb_ErrorCode_t __eMBRegCoilsCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
     return MB_ENOREG;
 }
 
-static mb_ErrorCode_t __eMBRegDiscreteCB(Mb_Reg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
+static MbErrorCode_t __MbsRegDiscreteCB(MbReg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
 {
   int16_t iNDiscrete = (int16_t)usNDiscrete;
   uint16_t usBitOffset;
@@ -60,7 +60,7 @@ static mb_ErrorCode_t __eMBRegDiscreteCB(Mb_Reg_t *regs, uint8_t * pucRegBuffer,
         usBitOffset = ( uint16_t )(usAddress - regs->reg_discrete_addr_start);
         while( iNDiscrete > 0 )
         {
-            *pucRegBuffer++ = xMBGetBits(regs->pRegDisc, usBitOffset,( uint8_t)(iNDiscrete > 8 ? 8 : iNDiscrete));
+            *pucRegBuffer++ = MbGetBits(regs->pRegDisc, usBitOffset,( uint8_t)(iNDiscrete > 8 ? 8 : iNDiscrete));
             iNDiscrete -= 8;
             usBitOffset += 8;
         }
@@ -72,15 +72,15 @@ static mb_ErrorCode_t __eMBRegDiscreteCB(Mb_Reg_t *regs, uint8_t * pucRegBuffer,
 }
 
 #if MBS_FUNC_READ_COILS_ENABLED > 0
-eMBException_t eMbsFuncRdCoils(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCount;
     uint8_t  ucNBytes;
     uint8_t  *pucFrameCur;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if( *usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN ) ){
         usRegAddress = ( uint16_t )( pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8 );
@@ -110,11 +110,11 @@ eMBException_t eMbsFuncRdCoils(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
             *usLen += 1;
 
             eRegStatus =
-                __eMBRegCoilsCB(regs, pucFrameCur, usRegAddress, usCoilCount,MB_REG_READ );
+                __MbsRegCoilsCB(regs, pucFrameCur, usRegAddress, usCoilCount, MB_REG_READ );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 /* The response contains the function code, the starting address
@@ -138,13 +138,13 @@ eMBException_t eMbsFuncRdCoils(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 #endif
 
 #if MBS_FUNC_WRITE_COIL_ENABLED > 0
-eMBException_t eMbsFuncWrCoil(Mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
+MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
     uint8_t  ucBuf[2];
 
-    eMBException_t    eStatus = MB_EX_NONE;
-    mb_ErrorCode_t    eRegStatus;
+    MbException_t    eStatus = MB_EX_NONE;
+    MbErrorCode_t    eRegStatus;
 
     if( *usLen == ( MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN ) ){
         
@@ -163,11 +163,11 @@ eMBException_t eMbsFuncWrCoil(Mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
                 ucBuf[0] = 0;
             }
             eRegStatus =
-                __eMBRegCoilsCB(regs,&ucBuf[0], usRegAddress, 1, MB_REG_WRITE );
+                __MbsRegCoilsCB(regs,&ucBuf[0], usRegAddress, 1, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
         }
         else{
@@ -185,15 +185,15 @@ eMBException_t eMbsFuncWrCoil(Mb_Reg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 #endif
 
 #if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-eMBException_t eMbsFuncWrMulCoils(Mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLen )
+MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usCoilCnt;
     uint8_t  ucByteCount;
     uint8_t  ucByteCountVerify;
 
-    eMBException_t    eStatus = MB_EX_NONE;
-    mb_ErrorCode_t    eRegStatus;
+    MbException_t    eStatus = MB_EX_NONE;
+    MbErrorCode_t    eRegStatus;
 
     if(*usLen > (MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN )){
         
@@ -213,11 +213,11 @@ eMBException_t eMbsFuncWrMulCoils(Mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLe
              && (ucByteCountVerify == ucByteCount ) ){
              
             eRegStatus =
-                __eMBRegCoilsCB(regs,&pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF], usRegAddress, usCoilCnt, MB_REG_WRITE );
+                __MbsRegCoilsCB(regs,&pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF], usRegAddress, usCoilCnt, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 /* The response contains the function code, the starting address
@@ -241,15 +241,15 @@ eMBException_t eMbsFuncWrMulCoils(Mb_Reg_t *regs,uint8_t * pPdu, uint16_t * usLe
 #endif
 
 #if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-eMBException_t eMbsFuncRdDiscreteInputs(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t *usLen )
+MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
     uint16_t usDiscreteCnt;
     uint8_t  ucNBytes;
     uint8_t  *pucFrameCur;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if(*usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN )){
 
@@ -280,11 +280,11 @@ eMBException_t eMbsFuncRdDiscreteInputs(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t
             *usLen += 1;
 
             eRegStatus =
-                __eMBRegDiscreteCB(regs, pucFrameCur, usRegAddress, usDiscreteCnt );
+                __MbsRegDiscreteCB(regs, pucFrameCur, usRegAddress, usDiscreteCnt );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 /* The response contains the function code, the starting address

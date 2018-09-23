@@ -5,17 +5,17 @@
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
-mb_ErrorCode_t eMBMASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity )
+MbErrorCode_t MbmASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity )
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    MbErrorCode_t eStatus = MB_ENOERR;
     (void)dev;
     
     ENTER_CRITICAL_SECTION();
 
-    if(xMBPortSerialInit( ucPort, ulBaudRate, 7, eParity) != TRUE){
+    if(MbPortSerialInit( ucPort, ulBaudRate, 7, eParity) != TRUE){
         eStatus = MB_EPORTERR;
     }
-    else if(xMBPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != TRUE){
+    else if(MbPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != TRUE){
         eStatus = MB_EPORTERR;
     }
     
@@ -24,39 +24,39 @@ mb_ErrorCode_t eMBMASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_P
     return eStatus;
 }
 
-void vMBMASCIIStart(void *dev)
+void MbmASCIIStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
 
-    ((Mbm_Device_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
-    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, TRUE, FALSE);
+    ((MbmDev_t *)dev)->sndrcvState = STATE_ASCII_RX_IDLE;
+    MbPortSerialEnable(((MbmDev_t *)dev)->port, TRUE, FALSE);
     
     EXIT_CRITICAL_SECTION();
 }
 
-void vMBMASCIIStop(void *dev)
+void MbmASCIIStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, FALSE, FALSE);
-    vMBPortTimersDisable(((Mbm_Device_t *)dev)->port);
+    MbPortSerialEnable(((MbmDev_t *)dev)->port, FALSE, FALSE);
+    MbPortTimersDisable(((MbmDev_t *)dev)->port);
     
     EXIT_CRITICAL_SECTION();
 }
-void vMBMASCIIClose(void *dev)
+void MbmASCIIClose(void *dev)
 {
 
 }
-mb_reqresult_t eMBMASCIIReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+MbReqResult_t MbmASCIIReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
-    mb_reqresult_t result = MBR_ENOERR;
-    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
+    MbReqResult_t result = MBR_ENOERR;
+    MbmDev_t *pdev = (MbmDev_t *)dev;
 
     ENTER_CRITICAL_SECTION();
 
     /* Length and LRC check */
     if((pdev->rcvAduBufPos >= 4)/* addr+funcode+(other >= 1)+lrc(1)  */
-        && (prvxMBLRC((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
+        && (MbLRC((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
         phead->introute.slaveid = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
@@ -82,11 +82,11 @@ mb_reqresult_t eMBMASCIIReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, 
     return result;
 }
 
-mb_reqresult_t eMBMASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
+MbReqResult_t MbmASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
 {
-    mb_reqresult_t result = MBR_ENOERR;
+    MbReqResult_t result = MBR_ENOERR;
     uint8_t ucByte;
-    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
+    MbmDev_t *pdev = (MbmDev_t *)dev;
     
     ENTER_CRITICAL_SECTION(  );
     /* Check if the receiver is still in idle state. If not we where too
@@ -103,12 +103,12 @@ mb_reqresult_t eMBMASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength
 
         /* start the first transmitter then into serial tc interrupt */
         ucByte = ':';
-        xMBPortSerialPutByte(pdev->port,(char)ucByte);
+        MbPortSerialPutByte(pdev->port,(char)ucByte);
         pdev->sndAduBufPos = 0;
         pdev->AsciiBytePos = BYTE_HIGH_NIBBLE;
         pdev->sndrcvState = STATE_ASCII_TX_DATA;
       
-        vMBPortSerialEnable(pdev->port, FALSE, TRUE );
+        MbPortSerialEnable(pdev->port, FALSE, TRUE );
     }
     else{
         result = MBR_BUSY;
@@ -118,12 +118,12 @@ mb_reqresult_t eMBMASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength
     return result;
 }
 
-void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
+void MbmASCIIReceiveFSM(MbmDev_t *dev)
 {
     uint8_t ucByte;
     uint8_t ucResult;
 
-    (void)xMBPortSerialGetByte(dev->port, (char *)&ucByte );
+    (void)MbPortSerialGetByte(dev->port, (char *)&ucByte );
     switch (dev->sndrcvState){
         /* A new character is received. If the character is a ':' the input
          * buffer is cleared. A CR-character signals the end of the data
@@ -132,7 +132,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
          */
     case STATE_ASCII_RX_RCV:
         /* Enable timer for character timeout. */
-        vMBPortTimersEnable(dev->port);
+        MbPortTimersEnable(dev->port);
         if( ucByte == ':' ){
             /* Empty receive buffer. */
             dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
@@ -142,7 +142,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
             dev->sndrcvState = STATE_ASCII_RX_WAIT_EOF;
         }
         else{
-            ucResult = prvxMBCHAR2BIN( ucByte );
+            ucResult = MbChar2Bin( ucByte );
             switch (dev->AsciiBytePos){
                 /* High nibble of the byte comes first. We check for
                  * a buffer overflow here. */
@@ -157,7 +157,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
                      * a resonable implementation. */
                     dev->sndrcvState = STATE_ASCII_RX_IDLE;
                     /* Disable previously activated timer because of error state. */
-                    vMBPortTimersDisable(dev->port);
+                    MbPortTimersDisable(dev->port);
                 }
                 break;
 
@@ -174,13 +174,13 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
         if( ucByte == MB_ASCII_DEFAULT_LF ){
             /* Disable character timeout timer because all characters are
              * received. */
-            vMBPortTimersDisable(dev->port);
+            MbPortTimersDisable(dev->port);
             /* Receiver is again in idle state. */
             dev->sndrcvState = STATE_ASCII_RX_IDLE;
 
-            /* Notify the caller of eMbsASCIIReceive that a new frame was received. */
-            if(dev->Pollstate == MASTER_WAITRSP);
-                vMBMasterSetPollmode(dev, MASTER_RSPEXCUTE);
+            /* Notify the caller of MbsASCIIReceive that a new frame was received. */
+            if(dev->Pollstate == MBM_WAITRSP);
+                MbmSetPollmode(dev, MBM_RSPEXCUTE);
          }
         else if( ucByte == ':' ){
             /* Empty receive buffer and back to receive state. */
@@ -189,7 +189,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
             dev->sndrcvState = STATE_ASCII_RX_RCV;
 
             /* Enable timer for character timeout. */
-            vMBPortTimersEnable(dev->port);
+            MbPortTimersEnable(dev->port);
         }
         else{
             /* Frame is not okay. Delete entire frame. */
@@ -200,7 +200,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
     case STATE_ASCII_RX_IDLE:
         if( ucByte == ':' ){
             /* Enable timer for character timeout. */
-            vMBPortTimersEnable(dev->port);
+            MbPortTimersEnable(dev->port);
             /* Reset the input buffers to store the frame. */
             dev->rcvAduBufPos = 0;
             dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
@@ -210,7 +210,7 @@ void vMBMASCIIReceiveFSM(Mbm_Device_t *dev)
     }
 }
 
-void vMBMASCIITransmitFSM(Mbm_Device_t *dev)
+void MbmASCIITransmitFSM(MbmDev_t *dev)
 {
     uint8_t ucByte;
     
@@ -219,7 +219,7 @@ void vMBMASCIITransmitFSM(Mbm_Device_t *dev)
          * the character ':'. */
     case STATE_ASCII_TX_START:
         ucByte = ':';
-        xMBPortSerialPutByte(dev->port, (char)ucByte );
+        MbPortSerialPutByte(dev->port, (char)ucByte );
         dev->sndAduBufPos = 0;
         dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
         dev->sndrcvState = STATE_ASCII_TX_DATA;
@@ -233,14 +233,14 @@ void vMBMASCIITransmitFSM(Mbm_Device_t *dev)
         if( dev->sndAduBufCount > 0 ){
             switch(dev->AsciiBytePos){
             case BYTE_HIGH_NIBBLE:
-                ucByte = prvxMBBIN2CHAR((uint8_t)(dev->AduBuf[dev->sndAduBufPos] >> 4));
-                xMBPortSerialPutByte(dev->port, (char)ucByte);
+                ucByte = MbBin2Char((uint8_t)(dev->AduBuf[dev->sndAduBufPos] >> 4));
+                MbPortSerialPutByte(dev->port, (char)ucByte);
                 dev->AsciiBytePos = BYTE_LOW_NIBBLE;
                 break;
 
             case BYTE_LOW_NIBBLE:
-                ucByte = prvxMBBIN2CHAR((uint8_t)(dev->AduBuf[dev->sndAduBufPos] & 0x0F));
-                xMBPortSerialPutByte(dev->port, (char)ucByte);
+                ucByte = MbBin2Char((uint8_t)(dev->AduBuf[dev->sndAduBufPos] & 0x0F));
+                MbPortSerialPutByte(dev->port, (char)ucByte);
                 dev->sndAduBufPos++;
                 dev->sndAduBufCount--;                
                 dev->AsciiBytePos = BYTE_HIGH_NIBBLE;
@@ -248,34 +248,34 @@ void vMBMASCIITransmitFSM(Mbm_Device_t *dev)
             }
         }
         else{
-            xMBPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_CR);
+            MbPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_CR);
             dev->sndrcvState = STATE_ASCII_TX_END;
         }
         break;
 
         /* Finish the frame by sending a LF character. */
     case STATE_ASCII_TX_END:
-        xMBPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_LF);
+        MbPortSerialPutByte(dev->port, (char)MB_ASCII_DEFAULT_LF);
         /* We need another state to make sure that the CR character has
          * been sent. */
         dev->sndrcvState = STATE_ASCII_TX_NOTIFY;
         break;
 
-        /* Notify the task which called eMbsASCIISend that the frame has
+        /* Notify the task which called MbsASCIISend that the frame has
          * been sent. */
     case STATE_ASCII_TX_NOTIFY:
         /* Disable transmitter. This prevents another transmit buffer
          * empty interrupt. */
-        vMBPortSerialEnable(dev->port, TRUE, FALSE);
+        MbPortSerialEnable(dev->port, TRUE, FALSE);
         dev->sndrcvState = STATE_ASCII_RX_IDLE;
 
-         if(dev->Pollstate == MASTER_XMITING)
-            vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
+         if(dev->Pollstate == MBM_XMITING)
+            MbmSetPollmode(dev, MBM_WAITRSP); // 发送完毕，进入等待应答
         break;
     }
 }
 
-void vMBMASCIITimerT1SExpired(Mbm_Device_t *dev)
+void MbmASCIITimerT1SExpired(MbmDev_t *dev)
 {
     /* If we have a timeout we go back to the idle state and wait for
      * the next frame.
@@ -283,7 +283,7 @@ void vMBMASCIITimerT1SExpired(Mbm_Device_t *dev)
     if((dev->sndrcvState == STATE_ASCII_RX_RCV) || (dev->sndrcvState == STATE_ASCII_RX_WAIT_EOF)){
         dev->sndrcvState = STATE_ASCII_RX_IDLE;
     }
-    vMBPortTimersDisable(dev->port);
+    MbPortTimersDisable(dev->port);
 }
 
 #endif

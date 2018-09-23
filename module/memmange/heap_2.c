@@ -1,6 +1,70 @@
 /*
     FreeRTOS V9.0.0 - Copyright (C) 2016 Real Time Engineers Ltd.
     All rights reserved
+
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+
+    This file is part of the FreeRTOS distribution.
+
+    FreeRTOS is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License (version 2) as published by the
+    Free Software Foundation >>>> AND MODIFIED BY <<<< the FreeRTOS exception.
+
+    ***************************************************************************
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+    ***************************************************************************
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
+    link: http://www.freertos.org/a00114.html
+
+    ***************************************************************************
+     *                                                                       *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that is more than just the market leader, it     *
+     *    is the industry's de facto standard.                               *
+     *                                                                       *
+     *    Help yourself get started quickly while simultaneously helping     *
+     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
+     *    tutorial book, reference manual, or both:                          *
+     *    http://www.FreeRTOS.org/Documentation                              *
+     *                                                                       *
+    ***************************************************************************
+
+    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
+    the FAQ page "My application does not run, what could be wrong?".  Have you
+    defined configASSERT()?
+
+    http://www.FreeRTOS.org/support - In return for receiving this top quality
+    embedded software for free we request you assist our global community by
+    participating in the support forum.
+
+    http://www.FreeRTOS.org/training - Investing in training allows your team to
+    be as productive as possible as early as possible.  Now you can receive
+    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
+    Ltd, and the world's leading authority on the world's leading RTOS.
+
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
+    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
+    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and commercial middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 /*
@@ -13,7 +77,7 @@
  * memory management pages of http://www.FreeRTOS.org for more information.
  */
 #include <stdlib.h>
-#include "mem_mange.h"
+#include "heap_mange.h"
 
 #if( configSUPPORT_DYNAMIC_ALLOCATION == 0 )
 	#error This file must not be used if configSUPPORT_DYNAMIC_ALLOCATION is 0
@@ -59,8 +123,8 @@ static size_t xFreeBytesRemaining = configADJUSTED_HEAP_SIZE;
  */
 #define prvInsertBlockIntoFreeList( pxBlockToInsert )								\
 {																					\
-    BlockLink_t *pxIterator;															\
-    size_t xBlockSize;																	\
+BlockLink_t *pxIterator;															\
+size_t xBlockSize;																	\
 																					\
 	xBlockSize = pxBlockToInsert->xBlockSize;										\
 																					\
@@ -80,12 +144,11 @@ static size_t xFreeBytesRemaining = configADJUSTED_HEAP_SIZE;
 
 void *pvPortMalloc( size_t xWantedSize )
 {
-    BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
-    static BaseType_t xHeapHasBeenInitialised = pdFALSE;
-    void *pvReturn = NULL;
-    halIntState_t bintstate;
-    
-	ENTER_SAFE_ATOM_CODE(bintstate);
+BlockLink_t *pxBlock, *pxPreviousBlock, *pxNewBlockLink;
+static BaseType_t xHeapHasBeenInitialised = pdFALSE;
+void *pvReturn = NULL;
+
+	//vTaskSuspendAll();
 	{
 		/* If this is the first call to malloc then the heap will require
 		initialisation to setup the list of free blocks. */
@@ -155,7 +218,7 @@ void *pvPortMalloc( size_t xWantedSize )
 
 		traceMALLOC( pvReturn, xWantedSize );
 	}
-    EXIT_SAFE_ATOM_CODE(bintstate);
+	//( void ) xTaskResumeAll();
 
 	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
 	{
@@ -172,9 +235,8 @@ void *pvPortMalloc( size_t xWantedSize )
 
 void vPortFree( void *pv )
 {
-    uint8_t *puc = ( uint8_t * ) pv;
-    BlockLink_t *pxLink;
-    halIntState_t bintstate;
+uint8_t *puc = ( uint8_t * ) pv;
+BlockLink_t *pxLink;
 
 	if( pv != NULL )
 	{
@@ -186,14 +248,14 @@ void vPortFree( void *pv )
 		byte alignment warnings. */
 		pxLink = ( void * ) puc;
 
-        ENTER_SAFE_ATOM_CODE(bintstate);
+		//vTaskSuspendAll();
 		{
 			/* Add this block to the list of free blocks. */
 			prvInsertBlockIntoFreeList( ( ( BlockLink_t * ) pxLink ) );
 			xFreeBytesRemaining += pxLink->xBlockSize;
 			traceFREE( pv, pxLink->xBlockSize );
 		}
-        EXIT_SAFE_ATOM_CODE(bintstate);
+		//( void ) xTaskResumeAll();
 	}
 }
 /*-----------------------------------------------------------*/
@@ -212,8 +274,8 @@ void vPortInitialiseBlocks( void )
 
 static void prvHeapInit( void )
 {
-    BlockLink_t *pxFirstFreeBlock;
-    uint8_t *pucAlignedHeap;
+BlockLink_t *pxFirstFreeBlock;
+uint8_t *pucAlignedHeap;
 
 	/* Ensure the heap starts on a correctly aligned boundary. */
 	pucAlignedHeap = ( uint8_t * ) ( ( ( portPOINTER_SIZE_TYPE ) &ucHeap[ portBYTE_ALIGNMENT ] ) & ( ~( ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) ) );

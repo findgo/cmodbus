@@ -10,10 +10,10 @@
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
-extern Mbs_Device_t *device0;
-extern Mbs_Device_t *device1;
-extern Mbm_Device_t *deviceM0;
-extern Mbm_Device_t *deviceM1;
+extern MbsDevice_t *device0;
+extern MbsDevice_t *device1;
+extern MbmDev_t *deviceM0;
+extern MbmDev_t *deviceM1;
 
 /* ----------------------- Start implementation -----------------------------*/
 /**
@@ -22,7 +22,7 @@ extern Mbm_Device_t *deviceM1;
   *         xTxEnable 发送使能
   * @retval None
   */
-void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
+void MbPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
 {
     switch(port){
     case MBCOM0:
@@ -84,7 +84,7 @@ void vMBPortSerialEnable(uint8_t port, bool xRxEnable, bool xTxEnable)
   *         eParity     校验位 
   * @retval None
   */
-bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, mb_Parity_t eParity)
+bool MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, MbParity_t eParity)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
@@ -191,7 +191,7 @@ bool xMBPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, 
   * @param  None
   * @retval None
   */
-bool xMBPortSerialPutByte(uint8_t port, char ucByte )
+bool MbPortSerialPutByte(uint8_t port, char ucByte )
 {
     switch (port){
     case MBCOM0:
@@ -214,7 +214,7 @@ bool xMBPortSerialPutByte(uint8_t port, char ucByte )
   * @param  None
   * @retval None
   */
-bool xMBPortSerialGetByte(uint8_t port, char *pucByte )
+bool MbPortSerialGetByte(uint8_t port, char *pucByte )
 {
     switch (port){
     case MBCOM0:    
@@ -243,19 +243,19 @@ void USART1_IRQHandler(void)
         
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-                vMBMRTUReceiveFSM(deviceM0);
+                MbmRTUReceiveFSM(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-                vMBMASCIIReceiveFSM(deviceM0);
+                MbmASCIIReceiveFSM(deviceM0);
 #endif
 #endif
     
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUReceiveFSM(device0);
+        MbsRTUReceiveFSM(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIIReceiveFSM(device0);
+        MbsASCIIReceiveFSM(device0);
 #endif
 #endif
         //清除中断标志位    
@@ -267,19 +267,19 @@ void USART1_IRQHandler(void)
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMRTUTransmitFSM(deviceM0);
+        MbmRTUTransmitFSM(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMASCIITransmitFSM(deviceM0);
+        MbmASCIITransmitFSM(deviceM0);
 #endif
 #endif
 
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUTransmitFSM(device0);
+        MbsRTUTransmitFSM(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIITransmitFSM(device0);
+        MbsASCIITransmitFSM(device0);
 #endif
 #endif
         USART_ClearITPendingBit(USART1, USART_IT_TC);
@@ -306,19 +306,19 @@ void USART2_IRQHandler(void)
     if(USART_GetITStatus(USART2, USART_IT_RXNE) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUReceiveFSM(device1);
+        MbsRTUReceiveFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIIReceiveFSM(device1);
+        MbsASCIIReceiveFSM(device1);
 #endif
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMRTUReceiveFSM(deviceM1);
+        MbmRTUReceiveFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMASCIIReceiveFSM(deviceM1);
+        MbmASCIIReceiveFSM(deviceM1);
 #endif
 #endif
         //清除中断标志位    
@@ -329,18 +329,18 @@ void USART2_IRQHandler(void)
     if(USART_GetITStatus(USART2, USART_IT_TC) == SET){
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUTransmitFSM(device1);
+        MbsRTUTransmitFSM(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIITransmitFSM(device1);
+        MbsASCIITransmitFSM(device1);
 #endif
 #endif
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMRTUTransmitFSM(deviceM1);
+        MbmRTUTransmitFSM(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMASCIITransmitFSM(deviceM1);
+        MbmASCIITransmitFSM(deviceM1);
 #endif
 #endif
 

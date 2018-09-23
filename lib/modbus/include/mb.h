@@ -2,11 +2,10 @@
 #define __MB_H_
 
 #include "mbconfig.h"
-#include "mbframe.h"
 #include "mbdef.h" 
 
-#define MBM_DEFAULT_RETRYCNT        0          /* default request failed to retry count */
-#define MBM_RETRYCNT_MAX            10
+#define MBM_DEFAULT_RETRY_COUNT        0          /* default request failed to retry count */
+#define MBM_RETRY_COUNT_MAX            6
 /* for master defined (units of millisecond)*/
 #define MBM_DEFAULT_REPLYTIMEOUT    1000     /* response timeout */
 #define MBM_DEFAULT_DELAYPOLLTIME   10         /* delay time between polls */
@@ -41,12 +40,12 @@ typedef enum
     MB_PAR_NONE,                /*!< No parity. */
     MB_PAR_ODD,                 /*!< Odd parity. */
     MB_PAR_EVEN                 /*!< Even parity. */
-}mb_Parity_t;
+}MbParity_t;
 
 typedef void (*pActionHandle)(void *dev);
 
-typedef mb_ErrorCode_t (*pActionReceive)(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
-typedef mb_ErrorCode_t (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+typedef MbErrorCode_t (*pActionReceive)(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+typedef MbErrorCode_t (*pActionSend)(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
 typedef struct
 {
@@ -55,17 +54,17 @@ typedef struct
     uint8_t reserved0;
     
     uint8_t slaveaddr;
-    mb_Mode_t currentMode;    
-    mb_DevState_t devstate;
-    bool xEventInFlag; // for event?
+    MbMode_t currentMode;    
+    MbDevState_t devstate;
+    uint8_t xEventInFlag; // for event?
     // register list
-    Mb_Reg_t regs;
+    MbReg_t regs;
     
-    pActionHandle pvMBStartCur;
-    pActionHandle pvMBStopCur;
-    pActionHandle pvMBCloseCur;
-    pActionReceive peMBReceivedCur;
-    pActionSend peMBSendCur;
+    pActionHandle pMbStartCur;
+    pActionHandle pMbStopCur;
+    pActionHandle pMbCloseCur;
+    pActionReceive pMbReceivedCur;
+    pActionSend pMbSendCur;
 
     /*  */
     volatile uint8_t AsciiBytePos; // only for ascii
@@ -74,39 +73,41 @@ typedef struct
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}Mbs_Device_t;
+}MbsDevice_t;
 
-#define xMBSemGive(dev) do { ((Mbs_Device_t *)dev)->xEventInFlag = TRUE;}while(0)
+#define xMBSemGive(dev) do { ((MbsDevice_t *)dev)->xEventInFlag = TRUE;}while(0)
 
 /***************************************************/
 /**************** define for master ********************/
 /***************************************************/
 typedef enum {
-    MASTER_IDLE,
-    MASTER_DELYPOLL,
-    MASTER_BROADCASTTURN,
-    MASTER_XMIT,
-    MASTER_XMITING,
-    MASTER_WAITRSP,
-    MASTER_RSPEXCUTE,
-    MASTER_RSPTIMEOUT
-}mbm_Pollstate_t;
+    MBM_IDLE,
+    MBM_DELYPOLL,
+    MBM_BROADCASTTURN,
+    MBM_XMIT,
+    MBM_XMITING,
+    MBM_WAITRSP,
+    MBM_RSPEXCUTE,
+    MBM_RSPTIMEOUT
+}MbmPollState_t;
 
-typedef mb_reqresult_t (*pActionMasterReceive)(void *pdev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-typedef mb_reqresult_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+typedef MbReqResult_t (*pActionMasterReceive)(void *pdev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+typedef MbReqResult_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
 
 typedef struct
 {
     uint8_t slaveaddr;
     uint8_t reserved0;
     uint16_t reserved1;
-    Mb_Reg_t regs;
+    MbReg_t regs;
+    pfnReqResultCB cb;        // call back function
+    void *arg;              // arg for callback function
     void *next;
-}mbm_slavenode_t;
+}MbmNode_t;
 
 typedef struct
 {
-    mbm_slavenode_t *node;   /* mark the node */
+    MbmNode_t *node;   /* mark the node */
     uint32_t errcnt;        /* request errcnt */
     uint8_t slaveaddr;      /* mark slave address */
     uint8_t funcode;        /* mark function code */
@@ -116,23 +117,22 @@ typedef struct
     uint8_t *padu;          /* mark adu for repeat send */
     uint16_t scancnt;       /* scan time cnt */
     uint16_t scanrate;      /* scan rate  if 0 : once,other request on scan rate */
-    pReqResultCB cb;
     void *next;
-}mbm_request_t;
+}MbmReq_t;
 
 typedef struct
 {
     uint8_t port; // 
-    mb_DevState_t devstate;
+    MbDevState_t devstate;
     uint16_t reserved0;
     
-    mbm_slavenode_t *nodehead;   /* slave node list on this host */
+    MbmNode_t *nodehead;   /* slave node list on this host */
 
-    mbm_request_t *Reqreadyhead; /* request ready list  head*/
-    mbm_request_t *Reqreadytail; /* request ready list  tail*/
-    mbm_request_t *Reqpendhead;  /* request suspend list */
+    MbmReq_t *Reqreadyhead; /* request ready list  head*/
+    MbmReq_t *Reqreadytail; /* request ready list  tail*/
+    MbmReq_t *Reqpendhead;  /* request suspend list */
 
-    mb_Mode_t currentMode;    
+    MbMode_t currentMode;    
 
     uint8_t Pollstate;
 
@@ -146,11 +146,11 @@ typedef struct
     uint16_t Broadcastturntime;         /* after broadcast turn round time */
     uint16_t Broadcastturntimecnt;      /* after broadcast turn round time count*/
     
-    pActionHandle pvMBStartCur;
-    pActionHandle pvMBStopCur;
-    pActionHandle pvMBCloseCur;
-    pActionMasterSend peMBSendCur;
-    pActionMasterReceive peMBReceivedCur;
+    pActionHandle pMbStartCur;
+    pActionHandle pMbStopCur;
+    pActionHandle pMbCloseCur;
+    pActionMasterSend pMbSendCur;
+    pActionMasterReceive pMbReceivedCur;
     
     void *next;
 
@@ -160,11 +160,11 @@ typedef struct
     volatile uint16_t sndAduBufPos;
     volatile uint16_t rcvAduBufPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
-}Mbm_Device_t;
+}MbmDev_t;
 
-#define vMBMasterSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
+#define MbmSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
 
-mb_reqresult_t eMBM_Reqsend(Mbm_Device_t *dev, mbm_request_t *req);
+MbReqResult_t MbmSend(MbmDev_t *dev, MbmReq_t *req);
 
 
 #endif

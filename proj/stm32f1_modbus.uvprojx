@@ -337,7 +337,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,DEBUG_MSG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\modbus\include;..\lib\modbus\include\rtu;..\lib\modbus\include\ascii;..\lib\modbus\port;..\lib\modbus\memmange</IncludePath>
+              <IncludePath>..\common;..\dirver;..\module;..\user;..\util;..\lib\modbus\include;..\lib\modbus\include\rtu;..\lib\modbus\include\ascii;..\lib\modbus\port;..\module\memmange</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -405,6 +405,13 @@
         </Group>
         <Group>
           <GroupName>module</GroupName>
+          <Files>
+            <File>
+              <FileName>heap_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\memmange\heap_4.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>mastermodbus</GroupName>
@@ -499,16 +506,16 @@
               <FileType>1</FileType>
               <FilePath>..\lib\modbus\src\func\mbutils.c</FilePath>
             </File>
-            <File>
-              <FileName>heap_4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\lib\modbus\memmange\heap_4.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>modbusport</GroupName>
           <Files>
+            <File>
+              <FileName>mbmem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\lib\modbus\port\mbmem.c</FilePath>
+            </File>
             <File>
               <FileName>porttimer.c</FileName>
               <FileType>1</FileType>

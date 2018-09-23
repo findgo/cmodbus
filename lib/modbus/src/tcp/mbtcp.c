@@ -7,33 +7,33 @@
 /* ----------------------- Start implementation -----------------------------*/
 #if MB_SLAVE_ENABLED > 0
 
-mb_ErrorCode_t eMBTCPInit(uint16_t ucTCPPort)
+MbErrorCode_t MbsTCPInit(uint16_t ucTCPPort)
 {
-    if( xMBTCPPortInit( ucTCPPort ) == FALSE )
+    if( MbTCPPortInit( ucTCPPort ) == FALSE )
         return MB_EPORTERR;
     
     return MB_ENOERR;
 }
 
-void vMBTCPStart(  void *dev)
+void MbsTCPStart(  void *dev)
 {
 
 }
 
-void vMBTCPStop(  void *dev)
+void MbsTCPStop(  void *dev)
 {
     /* Make sure that no more clients are connected. */
-    vMBTCPPortDisable( );
+    MbTCPPortDisable( );
 }
 
-mb_ErrorCode_t eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
+MbErrorCode_t MbsTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
 {
-    mb_ErrorCode_t    eStatus = MB_EIO;
+    MbErrorCode_t    eStatus = MB_EIO;
     uint8_t          *pucMBTCPFrame;
     uint16_t          usLength;
     uint16_t          usPID;
 
-    if( xMBTCPPortGetRequest( &pucMBTCPFrame, &usLength ) != FALSE ) {
+    if( MbTCPPortGetRequest( &pucMBTCPFrame, &usLength ) != FALSE ) {
         
         usPID = pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET] << 8U;
         usPID |= pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET + 1];
@@ -57,7 +57,7 @@ mb_ErrorCode_t eMBTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, 
     return eStatus;
 }
 
-mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
+MbErrorCode_t MbsTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
 {
     uint8_t *pAdu = ( uint8_t * ) pPdu - MB_TCP_ADU_PDU_OFFSET;
     uint16_t usTCPAduLength = usLength + MB_TCP_ADU_PDU_OFFSET;
@@ -70,7 +70,7 @@ mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint1
      */
     pAdu[MB_TCP_ADU_LEN_OFFSET] = ( usLength + 1 ) >> 8U;
     pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = ( usLength + 1 ) & 0xFF;
-    if( xMBTCPPortSendResponse( pAdu, usTCPAduLength ) == FALSE )
+    if( MbTCPPortSendResponse( pAdu, usTCPAduLength ) == FALSE )
         return MB_EIO;
     
     return MB_ENOERR;
@@ -79,22 +79,22 @@ mb_ErrorCode_t eMBTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint1
 #endif
 
 #if MB_MASTER_ENABLED > 0
-mb_ErrorCode_t eMBMasterTCPInit(uint16_t ucTCPPort)
+MbErrorCode_t MbmTCPInit(uint16_t ucTCPPort)
 {
 }
-void vMBMasterTCPStart(void *dev)
+void MbmTCPStart(void *dev)
 {
 }
-void vMBMasterTCPStop(void *dev)
+void MbmTCPStop(void *dev)
 {
 }
-void vMBMasterTCPClose(void *dev)
+void MbmTCPClose(void *dev)
 {
 }
-mb_ErrorCode_t eMBMasterTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength)
+MbErrorCode_t MbmTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength)
 {
 }
-mb_ErrorCode_t eMBMasterTCPSend(void *pdev,const uint8_t *pAdu, uint16_t usLength)
+MbErrorCode_t MbmTCPSend(void *pdev,const uint8_t *pAdu, uint16_t usLength)
 {
 }
 

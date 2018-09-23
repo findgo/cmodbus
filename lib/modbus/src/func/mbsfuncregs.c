@@ -12,7 +12,7 @@
   *         eMode         ²Ù×÷·½Ê½£¬¶Á»òÕßÐ´
   * @retval eStatus       ¼Ä´æÆ÷×´Ì¬
   */
-static mb_ErrorCode_t __eMBRegHoldingCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, mb_RegisterMode_t eMode)
+static MbErrorCode_t __eMBRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, Mb_RegisterMode_t eMode)
 {
     int16_t iRegIndex;
   
@@ -59,12 +59,12 @@ static mb_ErrorCode_t __eMBRegHoldingCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, u
   * @retval eStatus       ¼Ä´æÆ÷×´Ì¬
   */
 
-static mb_ErrorCode_t __eMBRegInputCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs)
+static MbErrorCode_t __eMBRegInputCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs)
 {
     int16_t iRegIndex;
   
     if(((int16_t) usAddress >= regs->reg_input_addr_start ) \
-        && ( usAddress + usNRegs) <= regs->reg_input_addr_start + regs->reg_input_num ){
+        && (( usAddress + usNRegs) <= (regs->reg_input_addr_start + regs->reg_input_num)) ){
         
         //offset index
         iRegIndex = ( int16_t )( usAddress - regs->reg_input_addr_start);
@@ -86,14 +86,14 @@ static mb_ErrorCode_t __eMBRegInputCB(Mb_Reg_t *regs, uint8_t *pucRegBuffer, uin
 
 
 #if MBS_FUNC_READ_HOLDING_ENABLED > 0
-eMBException_t eMbsFuncRdHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;
     uint8_t *pucFrameCur;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if(*usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN )){
         
@@ -124,7 +124,7 @@ eMBException_t eMbsFuncRdHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_
             eRegStatus = __eMBRegHoldingCB(regs,pucFrameCur, usRegAddress, usRegCount, MB_REG_READ );
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 *usLen += usRegCount * 2;
@@ -143,11 +143,11 @@ eMBException_t eMbsFuncRdHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_
 #endif
 
 #if MBS_FUNC_WRITE_HOLDING_ENABLED > 0
-eMBException_t eMbsFuncWrHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if(*usLen == ( MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN )){
         
@@ -160,7 +160,7 @@ eMBException_t eMbsFuncWrHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t
 
         /* If an error occured convert it into a Modbus exception. */
         if( eRegStatus != MB_ENOERR ){
-            eStatus = prveMBError2Exception( eRegStatus );
+            eStatus = MbError2Exception( eRegStatus );
         }
     }
     else{
@@ -173,14 +173,14 @@ eMBException_t eMbsFuncWrHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t
 #endif
 
 #if MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-eMBException_t eMbsFuncWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;
     uint8_t  ucRegByteCount;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if( *usLen >= ( MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN ) ){
         
@@ -202,7 +202,7 @@ eMBException_t eMbsFuncWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 /* The response contains the function code, the starting
@@ -226,7 +226,7 @@ eMBException_t eMbsFuncWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint
 #endif
 
 #if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
-eMBException_t eMbsFuncRdWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *usLen )
+MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegReadAddress;
     uint16_t usRegReadCount;
@@ -235,8 +235,8 @@ eMBException_t eMbsFuncRdWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uin
     uint8_t  ucRegWriteByteCount;
     uint8_t *pucFrameCur;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if( *usLen >= ( MB_PDU_FUNC_READWRITE_SIZE_MIN + MB_PDU_SIZE_MIN ) ){
         
@@ -286,7 +286,7 @@ eMBException_t eMbsFuncRdWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uin
                 }
             }
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
         }
         else{
@@ -300,14 +300,14 @@ eMBException_t eMbsFuncRdWrMulHoldingRegister(Mb_Reg_t *regs, uint8_t *pPdu, uin
 #endif
 
 #if MBS_FUNC_READ_INPUT_ENABLED > 0
-eMBException_t eMbsFuncRdInputRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t * usLen )
+MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
     uint16_t usRegCount;
     uint8_t *pucFrameCur;
 
-    eMBException_t eStatus = MB_EX_NONE;
-    mb_ErrorCode_t eRegStatus;
+    MbException_t eStatus = MB_EX_NONE;
+    MbErrorCode_t eRegStatus;
 
     if(*usLen == ( MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN )){
         
@@ -339,7 +339,7 @@ eMBException_t eMbsFuncRdInputRegister(Mb_Reg_t *regs, uint8_t * pPdu, uint16_t 
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
-                eStatus = prveMBError2Exception( eRegStatus );
+                eStatus = MbError2Exception( eRegStatus );
             }
             else{
                 *usLen += usRegCount * 2;

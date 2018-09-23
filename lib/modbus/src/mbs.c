@@ -18,16 +18,16 @@
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
 // local variate 
-static Mbs_Device_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
+static MbsDevice_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 
 //local function
-static mb_ErrorCode_t __eMbsADUFramehandle(Mbs_Device_t *dev);
+static MbErrorCode_t __MbsAduFramehandle(MbsDevice_t *dev);
 
 
-Mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
+MbsDevice_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
 {
-    Mbs_Device_t *dev = NULL;
-    mb_ErrorCode_t eStatus;
+    MbsDevice_t *dev = NULL;
+    MbErrorCode_t eStatus;
     uint8_t i;
 
     /* check preconditions */
@@ -39,8 +39,8 @@ Mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, u
     // check port exit and dev in use ?
     for( i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++ ){
         if( mbs_devTal[i].inuse == 0 ){
-            dev = (Mbs_Device_t *)&mbs_devTal[i];
-            memset(dev,0,sizeof(Mbs_Device_t));
+            dev = (MbsDevice_t *)&mbs_devTal[i];
+            memset(dev,0,sizeof(MbsDevice_t));
         
             mbs_devTal[i].inuse = 1; // mark it in use!
             
@@ -55,29 +55,30 @@ Mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, u
     switch (eMode){
 #if MB_RTU_ENABLED > 0
     case MB_RTU:
-        dev->pvMBStartCur = vMbsRTUStart;
-        dev->pvMBStopCur = vMbsRTUStop;
-        dev->pvMBCloseCur = vMbsRTUClose;
-        dev->peMBSendCur = eMbsRTUSend;
-        dev->peMBReceivedCur = eMbsRTUReceive;
+        dev->pMbStartCur = MbsRTUStart;
+        dev->pMbStopCur = MbsRTUStop;
+        dev->pMbCloseCur = MbsRTUClose;
+        dev->pMbSendCur = MbsRTUSend;
+        dev->pMbReceivedCur = MbsRTUReceive;
 
-        eStatus = eMbsRTUInit(dev, ucPort, ulBaudRate, eParity);
+        eStatus = MbsRTUInit(dev, ucPort, ulBaudRate, eParity);
         break;
 #endif
 
 #if MB_ASCII_ENABLED > 0
     case MB_ASCII:
-        dev->pvMBStartCur = vMbsASCIIStart;
-        dev->pvMBStopCur = vMbsASCIIStop;
-        dev->pvMBCloseCur = vMbsASCIIClose;
-        dev->peMBSendCur = eMbsASCIISend;
-        dev->peMBReceivedCur = eMbsASCIIReceive;
+        dev->pMbStartCur = MbsASCIIStart;
+        dev->pMbStopCur = MbsASCIIStop;
+        dev->pMbCloseCur = MbsASCIIClose;
+        dev->pMbSendCur = MbsASCIISend;
+        dev->pMbReceivedCur = MbsASCIIReceive;
         
-        eStatus = eMbsASCIIInit(dev, ucPort, ulBaudRate, eParity);
+        eStatus = MbsASCIIInit(dev, ucPort, ulBaudRate, eParity);
         break;
 #endif
     default:
         eStatus = MB_EINVAL;
+        break;
     }
 
     // init failed
@@ -97,7 +98,7 @@ Mbs_Device_t *xMbsNew(mb_Mode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, u
     return dev;
 }
 
-void vMbsFree(uint8_t ucPort)
+void MbsFree(uint8_t ucPort)
 {
     uint8_t i;
     
@@ -111,7 +112,7 @@ void vMbsFree(uint8_t ucPort)
 
 //__align(2)  
 //static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-mb_ErrorCode_t eMbsRegAssign(Mbs_Device_t *dev,
+MbErrorCode_t MbsRegAssign(MbsDevice_t *dev,
                                 uint8_t *regstoragebuf,  
                                 uint32_t regstoragesize, 
                                 uint16_t reg_holding_addr_start,
@@ -124,15 +125,15 @@ mb_ErrorCode_t eMbsRegAssign(Mbs_Device_t *dev,
                                 uint16_t reg_discrete_num)
 {
     uint32_t offset;
-    Mb_Reg_t *regs;
+    MbReg_t *regs;
 
     if(dev == NULL || regstoragebuf == NULL)
         return MB_EINVAL;
 
-    if( regstoragesize < xMBRegBufSizeCal( reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num ) )
+    if( regstoragesize < MbRegBufSizeCal( reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num ) )
         return MB_EINVAL;
 
-    regs = (Mb_Reg_t *)&(dev->regs);
+    regs = (MbReg_t *)&(dev->regs);
 
     regs->reg_holding_addr_start = reg_holding_addr_start;
     regs->reg_holding_num = reg_holding_num;
@@ -162,39 +163,39 @@ mb_ErrorCode_t eMbsRegAssign(Mbs_Device_t *dev,
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMbsStart(Mbs_Device_t *dev)
+MbErrorCode_t MbsStart(MbsDevice_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
     if( dev->devstate == DEV_STATE_DISABLED ){
         /* Activate the protocol stack. */
-        dev->pvMBStartCur(dev);
+        dev->pMbStartCur(dev);
         dev->devstate = DEV_STATE_ENABLED;
     }
 
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMbsStop(Mbs_Device_t *dev)
+MbErrorCode_t MbsStop(MbsDevice_t *dev)
 {
     if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
     if( dev->devstate == DEV_STATE_ENABLED ){
-        dev->pvMBStopCur(dev);
+        dev->pMbStopCur(dev);
         dev->devstate = DEV_STATE_DISABLED;
     }
 
     return MB_ENOERR;
 }
 
-mb_ErrorCode_t eMbsClose(Mbs_Device_t *dev)
+MbErrorCode_t MbsClose(MbsDevice_t *dev)
 {
     // must be stop first then it can close
     if( dev->devstate == DEV_STATE_DISABLED ){
-        if( dev->pvMBCloseCur != NULL ){
-            dev->pvMBCloseCur(dev);
+        if( dev->pMbCloseCur != NULL ){
+            dev->pMbCloseCur(dev);
         }
 
         return MB_ENOERR;
@@ -203,27 +204,27 @@ mb_ErrorCode_t eMbsClose(Mbs_Device_t *dev)
     return MB_EILLSTATE;
 }
 
-void vMbsPoll(void)
+void MbsPoll(void)
 {
     uint8_t i;
 
     for(i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++){
         if(mbs_devTal[i].inuse) {
-            __eMbsADUFramehandle(&mbs_devTal[i]);
+            __MbsAduFramehandle(&mbs_devTal[i]);
         }
     }
 }
 
-static mb_ErrorCode_t __eMbsADUFramehandle(Mbs_Device_t *dev)
+static MbErrorCode_t __MbsAduFramehandle(MbsDevice_t *dev)
 {
     uint8_t *pPduFrame; // pdu fram
     uint8_t ucRcvAddress;
     uint8_t ucFunctionCode;
     uint16_t usLength;
-    eMBException_t eException;
+    MbException_t eException;
 
-    pxMbsFunctionHandler handle;
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    pMbsFunctionHandler handle;
+    MbErrorCode_t eStatus = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
     if( dev->devstate != DEV_STATE_ENABLED ){
@@ -235,7 +236,7 @@ static mb_ErrorCode_t __eMbsADUFramehandle(Mbs_Device_t *dev)
     if(dev->xEventInFlag){
         dev->xEventInFlag = FALSE;
         /* parser a adu fram */
-        eStatus = dev->peMBReceivedCur(dev, &ucRcvAddress, &pPduFrame, &usLength );
+        eStatus = dev->pMbReceivedCur(dev, &ucRcvAddress, &pPduFrame, &usLength );
         if( eStatus != MB_ENOERR )
             return eStatus;
         
@@ -243,7 +244,7 @@ static mb_ErrorCode_t __eMbsADUFramehandle(Mbs_Device_t *dev)
         if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
             ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = xMbsSearchCB(ucFunctionCode);
+            handle = MbsSearchCB(ucFunctionCode);
             if(handle)
                 eException = handle(&dev->regs, pPduFrame, &usLength);
             
@@ -259,10 +260,10 @@ static mb_ErrorCode_t __eMbsADUFramehandle(Mbs_Device_t *dev)
             }
             
             if((dev->currentMode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
-                vMBPortTimersDelay(dev->port, MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
+                MbPortTimersDelay(dev->port, MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
             }        
             /* send a reply */
-            (void)dev->peMBSendCur(dev,dev->slaveaddr, pPduFrame, usLength);
+            (void)dev->pMbSendCur(dev,dev->slaveaddr, pPduFrame, usLength);
         }
     }
     

@@ -26,14 +26,14 @@ typedef enum
     MB_RTU,     /*!< RTU transmission mode. */
     MB_ASCII,   /*!< ASCII transmission mode. */
     MB_TCP      /*!< TCP mode. */
-} mb_Mode_t;
+} MbMode_t;
 
 typedef enum
 {
     DEV_STATE_NOT_INITIALIZED,
     DEV_STATE_DISABLED,
     DEV_STATE_ENABLED
-}mb_DevState_t;
+}MbDevState_t;
 
 /*! \ingroup modbus
  * \brief Errorcodes used by all function in the protocol stack.
@@ -51,7 +51,7 @@ typedef enum
     MB_EDEVEXIST,
     MB_EILLNODEADDR,
     MB_ENODEEXIST,             /*!< node exist */
-}mb_ErrorCode_t;
+}MbErrorCode_t;
     
 typedef enum
 {
@@ -68,7 +68,7 @@ typedef enum
     MBR_ECHECK,           /* response receive crc/lrc error */
     MBR_EREGDIFF,         /* response register address different from request */
     MBR_ERSPEXCEPTOIN,    /* response exception */
-}mb_reqresult_t;
+}MbReqResult_t;
 
 typedef struct
 {
@@ -84,7 +84,7 @@ typedef struct
     uint16_t *pReginput;
     uint8_t *pRegCoil;
     uint8_t *pRegDisc;
-}Mb_Reg_t;
+}MbReg_t;
 
 typedef struct 
 {
@@ -95,15 +95,15 @@ typedef struct
         uint8_t uid;
         uint8_t slaveid;
     }introute;
-}mb_header_t;
+}MbHeader_t;
 
-typedef eMBException_t (*pxMbsFunctionHandler)(Mb_Reg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
+typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef mb_reqresult_t (*pxMBMParseRspHandler)(Mb_Reg_t *regs, 
+typedef MbReqResult_t (*pMbmParseRspHandler)(MbReg_t *regs, 
                                             uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                             uint8_t *premain,uint16_t remainLength);
 
-typedef void (*pReqResultCB)(mb_reqresult_t result,eMBException_t eException, void *req);
+typedef void (*pfnReqResultCB)(MbReqResult_t result,MbException_t eException, void *req);
 
 
 #endif

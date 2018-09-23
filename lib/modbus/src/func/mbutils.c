@@ -35,16 +35,16 @@
  * ucBits[2] = {0, 0};
  *
  * // Set bit 4 to 1 (read: set 1 bit starting at bit offset 4 to value 1)
- * vMBSetBits( ucBits, 4, 1, 1 );
+ * MbSetBits( ucBits, 4, 1, 1 );
  *
  * // Set bit 7 to 1 and bit 8 to 0.
- * vMBSetBits( ucBits, 7, 2, 0x01 );
+ * MbSetBits( ucBits, 7, 2, 0x01 );
  *
  * // Set bits 8 - 11 to 0x05 and bits 12 - 15 to 0x0A;
- * vMBSetBits( ucBits, 8, 8, 0x5A);
+ * MbSetBits( ucBits, 8, 8, 0x5A);
  * \endcode
  */
-void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue )
+void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue )
 {
     uint16_t usWordBuf;
     uint16_t usMask;
@@ -97,10 +97,10 @@ void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint
  * uint8_t ucResult;
  *
  * // Extract the bits 3 - 10.
- * ucResult = xMBGetBits( ucBits, 3, 8 );
+ * ucResult = MbGetBits( ucBits, 3, 8 );
  * \endcode
  */
-uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
+uint8_t MbGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits )
 {
     uint16_t usWordBuf;
     uint16_t usMask;
@@ -182,7 +182,7 @@ static const uint8_t aucCRCLo[] = {
     0x41, 0x81, 0x80, 0x40
 };
     
-uint16_t prvxMBCRC16(uint8_t *pucFrame, uint16_t usLen)
+uint16_t MbCRC16(uint8_t *pucFrame, uint16_t usLen)
 {
 
     uint8_t ucCRCHi = 0xFF;
@@ -202,7 +202,7 @@ uint16_t prvxMBCRC16(uint8_t *pucFrame, uint16_t usLen)
 #endif
 
 #if MB_ASCII_ENABLED > 0
-uint8_t prvxMBCHAR2BIN( uint8_t ucCharacter )
+uint8_t MbChar2Bin( uint8_t ucCharacter )
 {
     if( ( ucCharacter >= '0' ) && ( ucCharacter <= '9' ) ){
         return ( uint8_t )( ucCharacter - '0' );
@@ -215,7 +215,7 @@ uint8_t prvxMBCHAR2BIN( uint8_t ucCharacter )
     }
 }
 
-uint8_t prvxMBBIN2CHAR( uint8_t ucByte )
+uint8_t MbBin2Char( uint8_t ucByte )
 {
     if( ucByte <= 0x09 ){
         return ( uint8_t )( '0' + ucByte );
@@ -232,7 +232,7 @@ uint8_t prvxMBBIN2CHAR( uint8_t ucByte )
 }
 
 
-uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
+uint8_t MbLRC(uint8_t *pucFrame, uint16_t usLen)
 {
     uint8_t ucLRC = 0;  /* LRC char initialized */
 
@@ -248,7 +248,7 @@ uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen)
 }
 #endif
 
-eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode)
+MbException_t MbError2Exception(MbErrorCode_t eErrorCode)
 {
     switch ( eErrorCode ){
         case MB_ENOERR:
@@ -264,7 +264,7 @@ eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode)
             return MB_EX_SLAVE_DEVICE_FAILURE;
     }
 }
-const char *xMBstr2Error(eMBException_t excode)
+const char *MbError2Str(MbException_t excode)
 {
     switch (excode){
         case MB_EX_NONE:
@@ -291,8 +291,17 @@ const char *xMBstr2Error(eMBException_t excode)
             return "Reserve exception code";
     }
 }
-
-uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
+/*********************************************************************
+ * @brief       计算寄存器所占内存字节数
+ *
+ * @param       reg_holding_num -  保持寄存器个数
+ * @param       reg_input_num -  输入寄存器个数
+ * @param       reg_coils_num - 线圈个数
+ * @param       reg_discrete_num - 离散输入个数
+ *
+ * @return      0 if OK
+ */
+uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
                                uint16_t reg_input_num,
                                uint16_t reg_coils_num,
                                uint16_t reg_discrete_num)
@@ -305,8 +314,8 @@ uint32_t xMBRegBufSizeCal(     uint16_t reg_holding_num,
 
     return size;
 }
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0 && MB_MASTER_ENABLED > 0
-uint8_t *xMBRegBufNew(uint32_t size)
+#if  MB_MASTER_ENABLED > 0
+uint8_t *MbRegBufNew(uint32_t size)
 {
     uint8_t *pregbuf;
     
@@ -318,7 +327,7 @@ uint8_t *xMBRegBufNew(uint32_t size)
     return pregbuf;    
 }
 
-void vMBRegBufFree(void *ptr)
+void MbRegBufFree(void *ptr)
 {
     if(ptr)
         mb_free(ptr);

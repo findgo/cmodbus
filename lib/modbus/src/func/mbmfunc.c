@@ -6,46 +6,46 @@
 typedef struct
 {
     uint8_t ucFunctionCode;
-    pxMBMParseRspHandler pxHandler;
-} xMBMParseRspHandler;
+    pMbmParseRspHandler pxHandler;
+} MbmParseRspHandler;
 
 
-static xMBMParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
+static MbmParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #if MBM_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
 #endif
 #if MBM_PARSE_RSP_READ_HOLDING_ENABLED > 0
-    {MB_FUNC_READ_HOLDING_REGISTER, eMBMParseRspRdHoldingRegister},
+    {MB_FUNC_READ_HOLDING_REGISTER, MbmParseRspRdHoldingRegister},
 #endif
 #if MBM_PARSE_RSP_WRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_REGISTER, eMBMParseRspWrHoldingRegister},
+    {MB_FUNC_WRITE_REGISTER, MbmParseRspWrHoldingRegister},
 #endif
 #if MBM_PARSE_RSP_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMBMParseRspWrMulHoldingRegister},
+    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, MbmParseRspWrMulHoldingRegister},
 #endif
 #if MBM_PARSE_RSP_READWRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMBMParseRspRdWrMulHoldingRegister},
+    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, MbmParseRspRdWrMulHoldingRegister},
 #endif
 #if MBM_PARSE_RSP_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMBMParseRdInputRegister},
+    {MB_FUNC_READ_INPUT_REGISTER, MbmParseRdInputRegister},
 #endif
 #if MBM_PARSE_RSP_READ_COILS_ENABLED > 0
-    {MB_FUNC_READ_COILS, eMBMParseRspRdCoils},
+    {MB_FUNC_READ_COILS, MbmParseRspRdCoils},
 #endif
 #if MBM_PARSE_RSP_WRITE_COIL_ENABLED > 0
-    {MB_FUNC_WRITE_SINGLE_COIL, eMBMParseRspWrCoil},
+    {MB_FUNC_WRITE_SINGLE_COIL, MbmParseRspWrCoil},
 #endif
 #if MBM_PARSE_RSP_WRITE_MULTIPLE_COILS_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_COILS, eMBMParseRspWrMulCoils},
+    {MB_FUNC_WRITE_MULTIPLE_COILS, MbmParseRspWrMulCoils},
 #endif
 #if MBM_PARSE_RSP_READ_DISCRETE_INPUTS_ENABLED > 0
-    {MB_FUNC_READ_DISCRETE_INPUTS, eMBMParseRspRdDiscreteInputs},
+    {MB_FUNC_READ_DISCRETE_INPUTS, MbmParseRspRdDiscreteInputs},
 #endif
 };
-pxMBMParseRspHandler xMBMasterSearchCB(uint8_t ucFunctionCode)
+pMbmParseRspHandler MbmSearchCB(uint8_t ucFunctionCode)
 {
     int i;
-    pxMBMParseRspHandler srch = NULL;
+    pMbmParseRspHandler srch = NULL;
 
     for( i = 0; i < MBM_PARSE_RSP_HANDLERS_MAX; i++ ){
         /* No more function handlers registered. Abort. */

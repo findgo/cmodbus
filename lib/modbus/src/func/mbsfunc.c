@@ -5,64 +5,76 @@
 typedef struct
 {
     uint8_t ucFunctionCode;
-    pxMbsFunctionHandler pxHandler;
+    pMbsFunctionHandler pxHandler;
 } xMbsFunctionHandler;
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
  */
 static xMbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
+
 #if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
-    {MB_FUNC_OTHER_REPORT_SLAVEID, eMbsFuncReportSlaveID},
+    {MB_FUNC_OTHER_REPORT_SLAVEID, MbsFuncReportSlaveID},
 #endif
+
 #if MBS_FUNC_READ_HOLDING_ENABLED > 0
-    {MB_FUNC_READ_HOLDING_REGISTER, eMbsFuncRdHoldingRegister},
+    {MB_FUNC_READ_HOLDING_REGISTER, MbsFuncRdHoldingRegister},
 #endif
+
 #if MBS_FUNC_WRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_REGISTER, eMbsFuncWrHoldingRegister},
+    {MB_FUNC_WRITE_REGISTER, MbsFuncWrHoldingRegister},
 #endif
+
 #if MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, eMbsFuncWrMulHoldingRegister},
+    {MB_FUNC_WRITE_MULTIPLE_REGISTERS, MbsFuncWrMulHoldingRegister},
 #endif
+
 #if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
-    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, eMbsFuncRdWrMulHoldingRegister},
+    {MB_FUNC_READWRITE_MULTIPLE_REGISTERS, MbsFuncRdWrMulHoldingRegister},
 #endif
+
 #if MBS_FUNC_READ_INPUT_ENABLED > 0
-    {MB_FUNC_READ_INPUT_REGISTER, eMbsFuncRdInputRegister},
+    {MB_FUNC_READ_INPUT_REGISTER, MbsFuncRdInputRegister},
 #endif
+
 #if MBS_FUNC_READ_COILS_ENABLED > 0
-    {MB_FUNC_READ_COILS, eMbsFuncRdCoils},
+    {MB_FUNC_READ_COILS, MbsFuncRdCoils},
 #endif
+
 #if MBS_FUNC_WRITE_COIL_ENABLED > 0
-    {MB_FUNC_WRITE_SINGLE_COIL, eMbsFuncWrCoil},
+    {MB_FUNC_WRITE_SINGLE_COIL, MbsFuncWrCoil},
 #endif
+
 #if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-    {MB_FUNC_WRITE_MULTIPLE_COILS, eMbsFuncWrMulCoils},
+    {MB_FUNC_WRITE_MULTIPLE_COILS, MbsFuncWrMulCoils},
 #endif
+
 #if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-    {MB_FUNC_READ_DISCRETE_INPUTS, eMbsFuncRdDiscreteInputs},
+    {MB_FUNC_READ_DISCRETE_INPUTS, MbsFuncRdDiscreteInputs},
 #endif
 };
-
-mb_ErrorCode_t eMbsRegisterCB( uint8_t ucFunctionCode, pxMbsFunctionHandler pxHandler )
+/*********************************************************************
+ * @brief 注册功能码回调函数  
+ *
+ * @param   ucFunctionCode - 功能码
+ * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ *
+ * @return  
+ */
+MbErrorCode_t MbsRegisterCB( uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler )
 {
     int i;
-    mb_ErrorCode_t eStatus = MB_ENORES;
+    MbErrorCode_t eStatus = MB_ENORES;
 
     if((ucFunctionCode < MB_FUNC_MIN) || (ucFunctionCode > MB_FUNC_MAX))
         return MB_EINVAL;
 
     for( i = 0; i < MBS_FUNC_HANDLERS_MAX; i++ ){
-        if((xFuncHandlers[i].ucFunctionCode == 0) 
-            || (xFuncHandlers[i].ucFunctionCode == ucFunctionCode)){ 
-            if( pxHandler){ // register
-                xFuncHandlers[i].ucFunctionCode = ucFunctionCode;
-                xFuncHandlers[i].pxHandler = pxHandler;            
-            }
-            else{   // unregister
-                xFuncHandlers[i].ucFunctionCode = 0;
-                xFuncHandlers[i].pxHandler = NULL;
-            }
+        if((xFuncHandlers[i].ucFunctionCode == 0) || (xFuncHandlers[i].ucFunctionCode == ucFunctionCode)){ 
+            // pxHandler != NULL register,  NULL is unregister
+            xFuncHandlers[i].ucFunctionCode = pxHandler ? ucFunctionCode : 0;
+            xFuncHandlers[i].pxHandler = pxHandler;
+            
             eStatus = MB_ENOERR;
             break;
         }
@@ -73,10 +85,10 @@ mb_ErrorCode_t eMbsRegisterCB( uint8_t ucFunctionCode, pxMbsFunctionHandler pxHa
     return eStatus;
 }
 
-pxMbsFunctionHandler xMbsSearchCB(uint8_t ucFunctionCode)
+pMbsFunctionHandler MbsSearchCB(uint8_t ucFunctionCode)
 {
     int i;
-    pxMbsFunctionHandler srch = NULL;
+    pMbsFunctionHandler srch = NULL;
 
     for( i = 0; i < MBS_FUNC_HANDLERS_MAX; i++){
         /* No more function handlers registered. Abort. */

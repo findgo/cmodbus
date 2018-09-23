@@ -6,14 +6,13 @@
 #include "mbmbuf.h"
 
 /* ok */
-mb_reqresult_t eMBMReqRdCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate, pReqResultCB cb)
+MbReqResult_t MbmReqRdCoils( MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate )
 {
     uint8_t *pAdu;
     uint16_t len;
-    mbm_request_t *req;
-    mbm_slavenode_t *node = NULL;
-    mb_reqresult_t result;
+    MbmReq_t *req;
+    MbmNode_t *node = NULL;
+    MbReqResult_t result;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
@@ -24,7 +23,7 @@ mb_reqresult_t eMBMReqRdCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = xMBMNodeSearch(Mdev,slaveaddr);
+        node = MbmSearchNode(Mdev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         
@@ -34,13 +33,13 @@ mb_reqresult_t eMBMReqRdCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
             return MBR_ENOREG;
     }
     
-    req = xMBM_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    req = MbmReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = req->padu;
     // set header and get head size
-    len = xMBMsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode, pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_COILS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -58,24 +57,22 @@ mb_reqresult_t eMBMReqRdCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = Coilcnt;
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
-    req->cb = cb;
     
-    result = eMBM_Reqsend(Mdev,req);
+    result = MbmSend(Mdev,req);
     
     if(result != MBR_ENOERR)
-        vMBM_ReqBufDelete(req);
+        MbmReqBufDelete(req);
     
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrCoil(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
-                                uint16_t RegAddr, uint16_t val, pReqResultCB cb)
+MbReqResult_t MbmReqWrCoil(MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegAddr, uint16_t val)
 {
     uint8_t *pAdu;
     uint16_t len;
-    mbm_request_t *req;
-    mbm_slavenode_t *node = NULL;
-    mb_reqresult_t result;
+    MbmReq_t *req;
+    MbmNode_t *node = NULL;
+    MbReqResult_t result;
 
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
@@ -83,7 +80,7 @@ mb_reqresult_t eMBMReqWrCoil(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = xMBMNodeSearch(Mdev,slaveaddr);
+        node = MbmSearchNode(Mdev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -92,13 +89,13 @@ mb_reqresult_t eMBMReqWrCoil(Mbm_Device_t *Mdev, uint8_t slaveaddr,
             return MBR_ENOREG;
     }
     
-    req = xMBM_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    req = MbmReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
     
     pAdu = req->padu;
     // set header and get head size
-    len = xMBMsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     val = (val > 0) ? 0xFF00 : 0x0000;
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_SINGLE_COIL;
@@ -117,25 +114,24 @@ mb_reqresult_t eMBMReqWrCoil(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = 1;
     req->scanrate  = 0;
     req->scancnt   = 0;
-    req->cb = cb;
     
-    result = eMBM_Reqsend(Mdev,req);
+    result = MbmSend(Mdev,req);
     
     if(result != MBR_ENOERR)
-        vMBM_ReqBufDelete(req);
+        MbmReqBufDelete(req);
 
     return result;
 }
 /* ok */
-mb_reqresult_t eMBMReqWrMulCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqWrMulCoils(MbmDev_t *Mdev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Coilcnt,
-                                        uint8_t *valbuf, uint16_t valcnt, pReqResultCB cb)
+                                        uint8_t *valbuf, uint16_t valcnt)
 {
     uint8_t *pAdu;
     uint16_t pdulengh,len;
-    mbm_request_t *req;
-    mbm_slavenode_t *node = NULL;
-    mb_reqresult_t result;
+    MbmReq_t *req;
+    MbmNode_t *node = NULL;
+    MbReqResult_t result;
     uint8_t ucByteCount;
     
     /* check slave address valid */
@@ -153,7 +149,7 @@ mb_reqresult_t eMBMReqWrMulCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = xMBMNodeSearch(Mdev,slaveaddr);
+        node = MbmSearchNode(Mdev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -164,13 +160,13 @@ mb_reqresult_t eMBMReqWrMulCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     
     /* slaveaddr +((PDU)funccode + startaddr + coilcnt + bytenum + value_list)  */
     pdulengh =  MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + ucByteCount;
-    req = xMBM_ReqBufNew(Mdev->currentMode, pdulengh);
+    req = MbmReqBufNew(Mdev->currentMode, pdulengh);
     if(req == NULL)
         return MBR_ENOMEM;
     
     pAdu = req->padu;
     // get head size
-    len = xMBMsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);    
+    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, pdulengh);    
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                      = MB_FUNC_WRITE_MULTIPLE_COILS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]          = RegStartAddr >> 8;
@@ -196,23 +192,22 @@ mb_reqresult_t eMBMReqWrMulCoils(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = Coilcnt;
     req->scanrate  = 0;
     req->scancnt   = 0;
-    req->cb = cb;
     
-    result = eMBM_Reqsend(Mdev,req);
+    result = MbmSend(Mdev,req);
     if(result != MBR_ENOERR)
-        vMBM_ReqBufDelete(req);
+        MbmReqBufDelete(req);
 
     return result;
 }
 
-mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr, 
-                                        uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate, pReqResultCB cb)
+MbReqResult_t MbmReqRdDiscreteInputs(MbmDev_t *Mdev, uint8_t slaveaddr, 
+                                        uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate)
 {
     uint8_t *pAdu;
     uint16_t len;
-    mbm_request_t *req;
-    mbm_slavenode_t *node = NULL;
-    mb_reqresult_t result;
+    MbmReq_t *req;
+    MbmNode_t *node = NULL;
+    MbReqResult_t result;
     
     /* check slave address valid */
     if(slaveaddr > MB_ADDRESS_MAX) 
@@ -223,7 +218,7 @@ mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = xMBMNodeSearch(Mdev,slaveaddr);
+        node = MbmSearchNode(Mdev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -231,13 +226,13 @@ mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr,
             || ((RegStartAddr + Discnt) > (node->regs.reg_discrete_addr_start + node->regs.reg_discrete_num)))
             return MBR_ENOREG;
     }
-    req = xMBM_ReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    req = MbmReqBufNew(Mdev->currentMode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
     
     pAdu = req->padu;
     // set header and get head size
-    len = xMBMsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode,pAdu, slaveaddr, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_DISCRETE_INPUTS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -255,11 +250,10 @@ mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr,
     req->regcnt    = Discnt;
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
-    req->cb = cb;
 
-    result = eMBM_Reqsend(Mdev,req);
+    result = MbmSend(Mdev,req);
     if(result != MBR_ENOERR)
-        vMBM_ReqBufDelete(pAdu);
+        MbmReqBufDelete(pAdu);
 
     return result;
 }
@@ -268,19 +262,19 @@ mb_reqresult_t eMBMReqRdDiscreteInputs(Mbm_Device_t *Mdev, uint8_t slaveaddr,
 /* TODO implement modbus master request parse */
 
 /* write local bits register to coils or discrete */
-static void __vMBLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint8_t *pucRegBitsVal, uint16_t usNCoils)
+static void __MbsLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint8_t *pucRegBitsVal, uint16_t usNCoils)
 {
     int16_t iNCoils = ( int16_t )usNCoils;
 
     while( iNCoils > 0 )
     {
-        vMBSetBits(pRegBits, usStartAddress, (uint8_t)(iNCoils > 8 ? 8 : iNCoils), *pucRegBitsVal++);
+        MbSetBits(pRegBits, usStartAddress, (uint8_t)(iNCoils > 8 ? 8 : iNCoils), *pucRegBitsVal++);
         iNCoils -= 8;
         usStartAddress += 8;
     }
 }
 /* ok */
-mb_reqresult_t eMBMParseRspRdCoils(Mb_Reg_t *regs, 
+MbReqResult_t MbmParseRspRdCoils(MbReg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain,uint16_t remainLength)
 {
@@ -292,12 +286,12 @@ mb_reqresult_t eMBMParseRspRdCoils(Mb_Reg_t *regs,
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
       
-    __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
+    __MbsLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start,(uint8_t *)&premain[1],  ReqRegcnt);
 
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspWrCoil(Mb_Reg_t *regs, 
+MbReqResult_t MbmParseRspWrCoil(MbReg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -315,12 +309,12 @@ mb_reqresult_t eMBMParseRspWrCoil(Mb_Reg_t *regs,
     if(premain[2] == 0xFF)
         bitval |= 0x01; 
 
-    __vMBLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
+    __MbsLocalWrRegBits(regs->pRegCoil, ReqRegAddr - regs->reg_coils_addr_start, (uint8_t *)&bitval, 1);
 
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspWrMulCoils(Mb_Reg_t *regs, 
+MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -334,7 +328,7 @@ mb_reqresult_t eMBMParseRspWrMulCoils(Mb_Reg_t *regs,
     return MBR_ENOERR;
 }
 /* ok */
-mb_reqresult_t eMBMParseRspRdDiscreteInputs(Mb_Reg_t *regs, 
+MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *regs, 
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                     uint8_t *premain, uint16_t remainLength)
 {
@@ -346,7 +340,7 @@ mb_reqresult_t eMBMParseRspRdDiscreteInputs(Mb_Reg_t *regs,
     if((remainLength  != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
       
-    __vMBLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
+    __MbsLocalWrRegBits(regs->pRegDisc, ReqRegAddr - regs->reg_discrete_addr_start, (uint8_t *)&premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }

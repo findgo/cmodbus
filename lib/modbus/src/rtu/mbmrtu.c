@@ -6,15 +6,15 @@
 /*************************************************************************************************/
 /* TODO implement modbus rtu master */
 #if MB_RTU_ENABLED > 0 && MB_MASTER_ENABLED > 0
-mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity )
+MbErrorCode_t MbmRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    MbErrorCode_t eStatus = MB_ENOERR;
     uint32_t usTimerT35_50us;
     (void)dev;
     
     ENTER_CRITICAL_SECTION();
     /* Modbus RTU uses 8 Databits. */
-    if( xMBPortSerialInit( ucPort, ulBaudRate, 8, eParity ) != TRUE ){
+    if( MbPortSerialInit( ucPort, ulBaudRate, 8, eParity ) != TRUE ){
         eStatus = MB_EPORTERR;
     }
     else{
@@ -35,7 +35,7 @@ mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
              */
             usTimerT35_50us = ( 7UL * 220000UL ) / ( 2UL * ulBaudRate );
         }
-        if( xMBPortTimersInit(ucPort, (uint16_t)usTimerT35_50us ) != TRUE){
+        if( MbPortTimersInit(ucPort, (uint16_t)usTimerT35_50us ) != TRUE){
             eStatus = MB_EPORTERR;
         }
     }
@@ -44,41 +44,41 @@ mb_ErrorCode_t eMBMRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
     return eStatus;
 }
 
-void vMBMRTUStart(void *dev)
+void MbmRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    ((Mbm_Device_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, TRUE, FALSE);
-    vMBPortTimersDisable(((Mbm_Device_t *)dev)->port);
+    ((MbmDev_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
+    MbPortSerialEnable(((MbmDev_t *)dev)->port, TRUE, FALSE);
+    MbPortTimersDisable(((MbmDev_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
 
 
-void vMBMRTUStop(void *dev)
+void MbmRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    vMBPortSerialEnable(((Mbm_Device_t *)dev)->port, FALSE, FALSE);
-    vMBPortTimersDisable(((Mbm_Device_t *)dev)->port);
+    MbPortSerialEnable(((MbmDev_t *)dev)->port, FALSE, FALSE);
+    MbPortTimersDisable(((MbmDev_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
-void vMBMRTUClose(void *dev)
+void MbmRTUClose(void *dev)
 {
 
 
 
 }
 
-mb_reqresult_t eMBMRTUReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
+MbReqResult_t MbmRTUReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
 {
-    mb_reqresult_t result = MBR_ENOERR;
-    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
+    MbReqResult_t result = MBR_ENOERR;
+    MbmDev_t *pdev = (MbmDev_t *)dev;
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
     if((pdev->rcvAduBufPos >= 5) /* addr+funcode+(other >= 1)+crc(2)  */
-        && (prvxMBCRC16((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
+        && (MbCRC16((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
 
         phead->introute.slaveid = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
@@ -104,10 +104,10 @@ mb_reqresult_t eMBMRTUReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, ui
     return result;
 }
 
-mb_reqresult_t eMBMRTUSend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
+MbReqResult_t MbmRTUSend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
 {
-    mb_reqresult_t result = MBR_ENOERR;
-    Mbm_Device_t *pdev = (Mbm_Device_t *)dev;
+    MbReqResult_t result = MBR_ENOERR;
+    MbmDev_t *pdev = (MbmDev_t *)dev;
     
     ENTER_CRITICAL_SECTION();
     /* Check if the receiver is still in idle state. If not we where to
@@ -123,11 +123,11 @@ mb_reqresult_t eMBMRTUSend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
 		pdev->sndrcvState = STATE_RTU_TX_XMIT;
         
 		/* start the first transmitter then into serial tc interrupt */
-        xMBPortSerialPutByte(pdev->port, pAdu[0]);
+        MbPortSerialPutByte(pdev->port, pAdu[0]);
         pdev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
         pdev->sndAduBufCount--;
      	
-        vMBPortSerialEnable(pdev->port, FALSE, TRUE);
+        MbPortSerialEnable(pdev->port, FALSE, TRUE);
     }
     else{
         result = MBR_BUSY;
@@ -137,12 +137,12 @@ mb_reqresult_t eMBMRTUSend(void *dev,const uint8_t *pAdu, uint16_t usAduLength)
     return result;
 }
 
-void vMBMRTUReceiveFSM(  Mbm_Device_t *dev)
+void MbmRTUReceiveFSM(  MbmDev_t *dev)
 {
     uint8_t ucByte;
 
     /* Always read the character. */
-    ( void )xMBPortSerialGetByte(dev->port, (char *)&ucByte);
+    ( void )MbPortSerialGetByte(dev->port, (char *)&ucByte);
 
     /* In the idle state we wait for a new character. If a character
      * is received the t1.5 and t3.5 timers are started and the
@@ -171,44 +171,44 @@ void vMBMRTUReceiveFSM(  Mbm_Device_t *dev)
     }
     
     /* Enable t3.5 timers. */
-    vMBPortTimersEnable(dev->port);
+    MbPortTimersEnable(dev->port);
 }
 
 
 
 
-void vMBMRTUTransmitFSM(  Mbm_Device_t *dev)
+void MbmRTUTransmitFSM(  MbmDev_t *dev)
 {
     /* We should get a transmitter event in transmitter state.  */
     if(dev->sndrcvState == STATE_RTU_TX_XMIT){
         /* check if we are finished. */
         if( dev->sndAduBufCount != 0 ){
-            xMBPortSerialPutByte(dev->port, (char)dev->AduBuf[dev->sndAduBufPos]);
+            MbPortSerialPutByte(dev->port, (char)dev->AduBuf[dev->sndAduBufPos]);
             dev->sndAduBufPos++;  /* next byte in sendbuffer. */
             dev->sndAduBufCount--;
         }
         else{
             /* Disable transmitter. This prevents another transmit buffer empty interrupt. */             
-            vMBPortSerialEnable(dev->port, TRUE, FALSE);
+            MbPortSerialEnable(dev->port, TRUE, FALSE);
             dev->sndrcvState = STATE_RTU_RX_IDLE;
-            if(dev->Pollstate == MASTER_XMITING)
-                vMBMasterSetPollmode(dev, MASTER_WAITRSP); // 发送完毕，进入等待应答
+            if(dev->Pollstate == MBM_XMITING)
+                MbmSetPollmode(dev, MBM_WAITRSP); // 发送完毕，进入等待应答
         }
     }
     else {
         /* enable receiver/disable transmitter. */
-        vMBPortSerialEnable(dev->port, TRUE, FALSE);
+        MbPortSerialEnable(dev->port, TRUE, FALSE);
     }
 }
 
-void vMBMRTUTimerT35Expired(  Mbm_Device_t *dev)
+void MbmRTUTimerT35Expired(  MbmDev_t *dev)
 {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
-    if(dev->sndrcvState == STATE_RTU_RX_RCV && dev->Pollstate == MASTER_WAITRSP);
-        vMBMasterSetPollmode(dev, MASTER_RSPEXCUTE);
+    if(dev->sndrcvState == STATE_RTU_RX_RCV && dev->Pollstate == MBM_WAITRSP);
+        MbmSetPollmode(dev, MBM_RSPEXCUTE);
 
-    vMBPortTimersDisable(dev->port);
+    MbPortTimersDisable(dev->port);
     dev->sndrcvState = STATE_RTU_RX_IDLE;
 }
 

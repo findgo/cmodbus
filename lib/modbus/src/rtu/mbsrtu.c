@@ -4,16 +4,16 @@
 #include "mbutils.h"
 
 #if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
-mb_ErrorCode_t eMbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Parity_t eParity)
+MbErrorCode_t MbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    MbErrorCode_t eStatus = MB_ENOERR;
     uint32_t usTimerT35_50us;
     
     (void)dev;
     
     ENTER_CRITICAL_SECTION();
     /* Modbus RTU uses 8 Databits. */
-    if(xMBPortSerialInit(ucPort, ulBaudRate, 8, eParity) != TRUE){
+    if(MbPortSerialInit(ucPort, ulBaudRate, 8, eParity) != TRUE){
         eStatus = MB_EPORTERR;
     }
     else{
@@ -34,7 +34,7 @@ mb_ErrorCode_t eMbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
              */
             usTimerT35_50us = (7UL * 220000UL) / (2UL * ulBaudRate);
         }
-        if(xMBPortTimersInit(ucPort, ( uint16_t )usTimerT35_50us) != TRUE){
+        if(MbPortTimersInit(ucPort, ( uint16_t )usTimerT35_50us) != TRUE){
             eStatus = MB_EPORTERR;
         }
     }
@@ -44,39 +44,39 @@ mb_ErrorCode_t eMbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, mb_Pa
     return eStatus;
 }
 
-void vMbsRTUStart(void *dev)
+void MbsRTUStart(void *dev)
 {
     ENTER_CRITICAL_SECTION();
     
-    ((Mbs_Device_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    vMBPortSerialEnable(((Mbs_Device_t *)dev)->port, TRUE, FALSE);
-    vMBPortTimersDisable(((Mbs_Device_t *)dev)->port);
+    ((MbsDevice_t *)dev)->sndrcvState = STATE_RTU_RX_IDLE;
+    MbPortSerialEnable(((MbsDevice_t *)dev)->port, TRUE, FALSE);
+    MbPortTimersDisable(((MbsDevice_t *)dev)->port);
 
     EXIT_CRITICAL_SECTION();
 }
 
-void vMbsRTUStop(void *dev)
+void MbsRTUStop(void *dev)
 {
     ENTER_CRITICAL_SECTION();
-    vMBPortSerialEnable(((Mbs_Device_t *)dev)->port, FALSE, FALSE );
-    vMBPortTimersDisable(((Mbs_Device_t *)dev)->port);
+    MbPortSerialEnable(((MbsDevice_t *)dev)->port, FALSE, FALSE );
+    MbPortTimersDisable(((MbsDevice_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
-void vMbsRTUClose(void *dev)
+void MbsRTUClose(void *dev)
 {
 
 
 
 }
-mb_ErrorCode_t eMbsRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
+MbErrorCode_t MbsRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
-    Mbs_Device_t *dev = (Mbs_Device_t *)pdev;
+    MbErrorCode_t eStatus = MB_ENOERR;
+    MbsDevice_t *dev = (MbsDevice_t *)pdev;
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
     if((dev->rcvAduBufPos >= MB_ADU_RTU_SIZE_MIN)
-        && (prvxMBCRC16( (uint8_t *)dev->AduBuf, dev->rcvAduBufPos) == 0)){
+        && (MbCRC16( (uint8_t *)dev->AduBuf, dev->rcvAduBufPos) == 0)){
         
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
@@ -99,12 +99,12 @@ mb_ErrorCode_t eMbsRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu,
     return eStatus;
 }
 
-mb_ErrorCode_t eMbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength)
+MbErrorCode_t MbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength)
 {
-    mb_ErrorCode_t eStatus = MB_ENOERR;
+    MbErrorCode_t eStatus = MB_ENOERR;
     uint16_t usCRC16;
     uint8_t *pAdu;
-    Mbs_Device_t *dev = (Mbs_Device_t *)pdev;
+    MbsDevice_t *dev = (MbsDevice_t *)pdev;
     
     ENTER_CRITICAL_SECTION();
     /* Check if the receiver is still in idle state. If not we where to
@@ -121,7 +121,7 @@ mb_ErrorCode_t eMbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPd
         dev->sndAduBufCount += usLength;
 
         /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
-        usCRC16 = prvxMBCRC16((uint8_t *)pAdu, dev->sndAduBufCount);
+        usCRC16 = MbCRC16((uint8_t *)pAdu, dev->sndAduBufCount);
         dev->AduBuf[dev->sndAduBufCount++] = ( uint8_t )(usCRC16 & 0xFF);
         dev->AduBuf[dev->sndAduBufCount++] = ( uint8_t )(usCRC16 >> 8);
 
@@ -129,11 +129,11 @@ mb_ErrorCode_t eMbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPd
 		dev->sndrcvState = STATE_RTU_TX_XMIT;
         
 		/* start the first transmitter then into serial tc interrupt */
-        xMBPortSerialPutByte(dev->port, pAdu[0]);
+        MbPortSerialPutByte(dev->port, pAdu[0]);
         dev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
         dev->sndAduBufCount--;
      	
-        vMBPortSerialEnable(dev->port, FALSE, TRUE);
+        MbPortSerialEnable(dev->port, FALSE, TRUE);
     }
     else{
         eStatus = MB_EIO;
@@ -143,12 +143,12 @@ mb_ErrorCode_t eMbsRTUSend(void *pdev,uint8_t ucSlaveAddress, const uint8_t *pPd
     return eStatus;
 }
 
-void vMbsRTUReceiveFSM(  Mbs_Device_t *dev)
+void MbsRTUReceiveFSM(  MbsDevice_t *dev)
 {
     uint8_t ucByte;
 
     /* Always read the character. */
-    ( void )xMBPortSerialGetByte(dev->port, (char *)&ucByte);
+    ( void )MbPortSerialGetByte(dev->port, (char *)&ucByte);
 
     /* In the idle state we wait for a new character. If a character
      * is received the t1.5 and t3.5 timers are started and the
@@ -177,40 +177,40 @@ void vMbsRTUReceiveFSM(  Mbs_Device_t *dev)
     }
     
     /* Enable t3.5 timers. */
-    vMBPortTimersEnable(dev->port);
+    MbPortTimersEnable(dev->port);
 }
 
-void vMbsRTUTransmitFSM(  Mbs_Device_t *dev)
+void MbsRTUTransmitFSM(  MbsDevice_t *dev)
 {
     /* We should get a transmitter event in transmitter state.  */
     if(dev->sndrcvState == STATE_RTU_TX_XMIT){
         /* check if we are finished. */
         if( dev->sndAduBufCount != 0 ){
-            xMBPortSerialPutByte(dev->port, (char)dev->AduBuf[dev->sndAduBufPos]);
+            MbPortSerialPutByte(dev->port, (char)dev->AduBuf[dev->sndAduBufPos]);
             dev->sndAduBufPos++;  /* next byte in sendbuffer. */
             dev->sndAduBufCount--;
         }
         else{
             /* Disable transmitter. This prevents another transmit buffer
              * empty interrupt. */
-            vMBPortSerialEnable(dev->port, TRUE, FALSE);
+            MbPortSerialEnable(dev->port, TRUE, FALSE);
             dev->sndrcvState = STATE_RTU_RX_IDLE;
         }
     }
     else {
         /* enable receiver/disable transmitter. */
-        vMBPortSerialEnable(dev->port, TRUE, FALSE);
+        MbPortSerialEnable(dev->port, TRUE, FALSE);
     }
 }
 
-void vMbsRTUTimerT35Expired(  Mbs_Device_t *dev)
+void MbsRTUTimerT35Expired(  MbsDevice_t *dev)
 {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
     if(dev->sndrcvState == STATE_RTU_RX_RCV)
         xMBSemGive(dev);
 
-    vMBPortTimersDisable(dev->port);
+    MbPortTimersDisable(dev->port);
     dev->sndrcvState = STATE_RTU_RX_IDLE;
 }
 

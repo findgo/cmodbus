@@ -7,7 +7,6 @@ extern "C" {
 #endif
 #include "mbconfig.h"
 #include "mbproto.h"
-#include "mbframe.h"
 
 #include "mbcpu.h"
 #include "mb.h"
@@ -36,31 +35,31 @@ typedef enum
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
-mb_ErrorCode_t eMBMASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
-void vMBMASCIIStart(void *dev);
-void vMBMASCIIStop(void *dev);
-void vMBMASCIIClose(void *dev);
-mb_reqresult_t eMBMASCIIReceive(void *dev,mb_header_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-mb_reqresult_t eMBMASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength);
+MbErrorCode_t MbmASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
+void MbmASCIIStart(void *dev);
+void MbmASCIIStop(void *dev);
+void MbmASCIIClose(void *dev);
+MbReqResult_t MbmASCIIReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+MbReqResult_t MbmASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength);
 
-void vMBMASCIIReceiveFSM(Mbm_Device_t *dev);
-void vMBMASCIITransmitFSM(Mbm_Device_t *dev);
-void vMBMASCIITimerT1SExpired(Mbm_Device_t *dev);
+void MbmASCIIReceiveFSM(MbmDev_t *dev);
+void MbmASCIITransmitFSM(MbmDev_t *dev);
+void MbmASCIITimerT1SExpired(MbmDev_t *dev);
 
 #endif
 
 #if MB_ASCII_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
     
-mb_ErrorCode_t eMbsASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, mb_Parity_t eParity);
-void vMbsASCIIStart(void *dev);
-void vMbsASCIIStop(void *dev);
-void vMbsASCIIClose(void *dev);
-mb_ErrorCode_t eMbsASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
-mb_ErrorCode_t eMbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
+void MbsASCIIStart(void *dev);
+void MbsASCIIStop(void *dev);
+void MbsASCIIClose(void *dev);
+MbErrorCode_t MbsASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
+MbErrorCode_t MbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void vMbsASCIIReceiveFSM(Mbs_Device_t *dev);
-void vMbsASCIITransmitFSM(Mbs_Device_t *dev);
-void vMbsASCIITimerT1SExpired(Mbs_Device_t *dev);
+void MbsASCIIReceiveFSM(MbsDevice_t *dev);
+void MbsASCIITransmitFSM(MbsDevice_t *dev);
+void MbsASCIITimerT1SExpired(MbsDevice_t *dev);
     
 #endif
 

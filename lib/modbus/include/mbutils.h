@@ -7,26 +7,25 @@
 extern "C" {
 #endif
 #include "mbproto.h"
-#include "mbframe.h"
 #include "mbconfig.h"
 #include "mbcpu.h"
 
-#include "mem_mange.h"
+#include "mbmem.h"
 
 #include "mb.h"
 #include "string.h"
 
-void vMBSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );
-uint8_t xMBGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits );
+void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );
+uint8_t MbGetBits( uint8_t * ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits );
 
-uint16_t prvxMBCRC16(uint8_t *pucFrame, uint16_t usLen);
+uint16_t MbCRC16(uint8_t *pucFrame, uint16_t usLen);
 
-uint8_t prvxMBCHAR2BIN(uint8_t ucCharacter);
-uint8_t prvxMBBIN2CHAR(uint8_t ucByte);
-uint8_t prvxMBLRC(uint8_t *pucFrame, uint16_t usLen);
+uint8_t MbChar2Bin(uint8_t ucCharacter);
+uint8_t MbBin2Char(uint8_t ucByte);
+uint8_t MbLRC(uint8_t *pucFrame, uint16_t usLen);
 
-eMBException_t prveMBError2Exception(mb_ErrorCode_t eErrorCode);
-const char *xMBstr2Error(eMBException_t excode);
+MbException_t MbError2Exception(MbErrorCode_t eErrorCode);
+const char *MbError2Str(MbException_t excode);
 
 
 #ifdef __cplusplus

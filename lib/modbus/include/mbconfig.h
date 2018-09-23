@@ -9,14 +9,6 @@ extern "C" {
 #define MB_MASTER_ENABLED        (1)
 #define MB_SLAVE_ENABLED         (0)
 
-/* dynamic memory allocation ENABLE*/
-#define MB_DYNAMIC_MEMORY_ALLOC_ENABLED    (1)
-
-/*! note master must be use dynamic memory allocation */
-#if MB_DYNAMIC_MEMORY_ALLOC_ENABLED > 0 && MB_MASTER_ENABLED > 0
-#define mb_malloc pvPortMalloc
-#define mb_free vPortFree
-#endif
 
 /*! \defgroup modbus_cfg Modbus Configuration
  *
@@ -49,7 +41,7 @@ extern "C" {
 #define MBS_ASCII_TIMEOUT_SEC                    (  1 )
 /*! \brief Timeout to wait in ASCII prior to enabling transmitter.
  *
- * If defined the function calls vMBPortSerialDelay with the argument
+ * If defined the function calls MbPortSerialDelay with the argument
  * MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS to allow for a delay before
  * the serial transmitter is enabled. This is required because some
  * targets are so fast that there is no time between receiving and
@@ -71,7 +63,7 @@ extern "C" {
  *    </em>command.
  *
  * This number limits the maximum size of the additional segment in the
- * report slave id function. See eMbsSetSlaveID(  ) for more information on
+ * report slave id function. See MbsSetSlaveID(  ) for more information on
  * how to set this value. It is only used if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED
  * is set to <code>1</code>.
  */
@@ -121,7 +113,7 @@ extern "C" {
  *    </em>command.
  *
  * This number limits the maximum size of the additional segment in the
- * report slave id function. See eMbsSetSlaveID(  ) for more information on
+ * report slave id function. See MbsSetSlaveID(  ) for more information on
  * how to set this value. It is only used if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED
  * is set to <code>1</code>.
  */

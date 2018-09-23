@@ -10,17 +10,17 @@
 
 uint32_t sysclocktime = 0;
 
-extern Mbs_Device_t *device0;
-extern Mbs_Device_t *device1;
-extern Mbm_Device_t *deviceM0;
-extern Mbm_Device_t *deviceM1;
+extern MbsDevice_t *device0;
+extern MbsDevice_t *device1;
+extern MbmDev_t *deviceM0;
+extern MbmDev_t *deviceM1;
 /* ----------------------- Start implementation -----------------------------*/
 /**
   * @brief  定时器初始化函数
   * @param  None
   * @retval None
   */
-bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
+bool MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -103,11 +103,11 @@ bool xMBPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
 }
 
 
-void vMBPortTimersEnable(uint8_t port)
+void MbPortTimersEnable(uint8_t port)
 {
     switch(port){
     case MBCOM0:
-        /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
+        /* Enable the timer with the timeout passed to MbPortTimersInit( ) */
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
         TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
         //设定定时器4的初始值
@@ -116,7 +116,7 @@ void vMBPortTimersEnable(uint8_t port)
         TIM_Cmd(TIM3, ENABLE);
         break;
     case MBCOM1:
-        /* Enable the timer with the timeout passed to xMBPortTimersInit( ) */
+        /* Enable the timer with the timeout passed to MbPortTimersInit( ) */
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
         TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
         //设定定时器4的初始值
@@ -129,7 +129,7 @@ void vMBPortTimersEnable(uint8_t port)
     }
 }
 
-void vMBPortTimersDisable(uint8_t port)
+void MbPortTimersDisable(uint8_t port)
 {
     switch(port){
     case MBCOM0:
@@ -164,19 +164,19 @@ void TIM3_IRQHandler(void)
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUTimerT35Expired(device0);
+        MbsRTUTimerT35Expired(device0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIITimerT1SExpired(device0);
+        MbsASCIITimerT1SExpired(device0);
 #endif        
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMRTUTimerT35Expired(deviceM0);
+        MbmRTUTimerT35Expired(deviceM0);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMASCIITimerT1SExpired(deviceM0);
+        MbmASCIITimerT1SExpired(deviceM0);
 #endif        
 
 #endif
@@ -195,19 +195,19 @@ void TIM4_IRQHandler(void)
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMbsRTUTimerT35Expired(device1);
+        MbsRTUTimerT35Expired(device1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMbsASCIITimerT1SExpired(device1);
+        MbsASCIITimerT1SExpired(device1);
 #endif        
 #endif
 
 #if MB_MASTER_ENABLED > 0
 #if MB_RTU_ENABLED > 0
-        vMBMRTUTimerT35Expired(deviceM1);
+        MbmRTUTimerT35Expired(deviceM1);
 #endif
 #if MB_ASCII_ENABLED > 0
-        vMBMASCIITimerT1SExpired(deviceM1);
+        MbmASCIITimerT1SExpired(deviceM1);
 #endif        
 
 #endif
@@ -219,7 +219,7 @@ void TIM4_IRQHandler(void)
 
 /*This optional function returns the current time in milliseconds (don't care
   for wraparound, this is only used for time diffs).*/
-uint32_t xMBsys_now(void)
+uint32_t MbSys_now(void)
 {
     return sysclocktime;
 }
