@@ -7,36 +7,29 @@
 
 MbmReq_t *MbmReqBufNew(MbMode_t mode, uint16_t Pdusize)
 {
-    uint16_t size;
+    uint16_t Adusize;
     MbmReq_t *req;
     
-    req = (MbmReq_t *)mb_malloc(sizeof(MbmReq_t));
-    if(req){
-        memset(req,0,sizeof(MbmReq_t));
-        
-        if(mode == MB_RTU)
-            size = MB_SER_ADU_SIZE_ADDR + MB_SER_ADU_SIZE_CRC;
-        else if(mode == MB_ASCII)
-            size = MB_SER_ADU_SIZE_ADDR + MB_SER_ADU_SIZE_LRC;
-        else
-            size = MB_TCP_ADU_SIZE_MBAP;
-        
-        req->padu = (uint8_t *)mb_malloc(size + Pdusize);
-        if(req->padu == NULL){
-            mb_free(req);
-            req = NULL;
-        }
-    }
+    if(mode == MB_RTU)
+        Adusize = MB_SER_ADU_SIZE_ADDR + MB_SER_ADU_SIZE_CRC + Pdusize;
+    else if(mode == MB_ASCII)
+        Adusize = MB_SER_ADU_SIZE_ADDR + MB_SER_ADU_SIZE_LRC + Pdusize;
+    else
+        Adusize = MB_TCP_ADU_SIZE_MBAP + Pdusize;
     
+    req = (MbmReq_t *)mb_malloc(sizeof(MbmReq_t) + Adusize);
+    if(req == NULL){
+        return NULL;
+    }
+        
+    memset(req, 0, sizeof(MbmReq_t) + Adusize);
+
     return req;
 }
 
 void MbmReqBufDelete(void *ptr)
 {
-    if(ptr){
-        mb_free(((MbmReq_t *)ptr)->padu);
-        mb_free(ptr);
-    }
+    mb_free(ptr);
 }
 
 /* set head and return head length */

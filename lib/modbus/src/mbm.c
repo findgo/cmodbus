@@ -388,15 +388,15 @@ MbErrorCode_t MbmClose(MbmDev_t *dev)
     
     if(dev->currentMode == MB_RTU) {
 #if MB_RTU_ENABLED > 0
-        crc_lrc = MbCRC16(req->padu, req->adulength);
-        req->padu[req->adulength++] = crc_lrc & 0xff;
-        req->padu[req->adulength++] = (crc_lrc >> 8) & 0xff;
+        crc_lrc = MbCRC16(req->adu, req->adulength);
+        req->adu[req->adulength++] = crc_lrc & 0xff;
+        req->adu[req->adulength++] = (crc_lrc >> 8) & 0xff;
 #endif
     }
     else if(dev->currentMode == MB_ASCII) {
 #if MB_ASCII_ENABLED > 0
-        crc_lrc = MbLRC(req->padu,req->adulength);
-        req->padu[req->adulength++] = crc_lrc & 0xff;
+        crc_lrc = MbLRC(req->adu,req->adulength);
+        req->adu[req->adulength++] = crc_lrc & 0xff;
 #endif
     }
     else {
@@ -460,7 +460,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
         break;
     case MBM_XMIT: 
         req = __MbmReqReadylistPeek(dev);
-        if(req && (dev->pMbSendCur(dev,req->padu,req->adulength) == MB_ENOERR)){
+        if(req && (dev->pMbSendCur(dev,req->adu,req->adulength) == MB_ENOERR)){
             dev->Pollstate = MBM_XMITING;
         }
         else{ /* nothing want to send or send error, wait a moment to try*/

@@ -170,10 +170,10 @@ typedef struct
     uint16_t regaddr;       /* mark reg address for rsp used */
     uint16_t regcnt;        /* mark reg count for rsp used */
     uint16_t adulength;     /* mark adu length*/
-    uint8_t *padu;          /* mark adu for repeat send */
     uint16_t scancnt;       /* scan time cnt */
     uint16_t scanrate;      /* scan rate  if 0 : once,  other request on scan rate */
     void *next;             /* request list */
+    uint8_t adu[];          /* mark adu for repeat send */
 }MbmReq_t;
 
 typedef struct

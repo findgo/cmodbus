@@ -37,7 +37,7 @@ MbReqResult_t MbmReqRdCoils( MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegStar
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
@@ -93,9 +93,9 @@ MbReqResult_t MbmReqWrCoil(MbmDev_t *Mdev, uint8_t slaveaddr, uint16_t RegAddr, 
     if(req == NULL)
         return MBR_ENOMEM;
     
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     val = (val > 0) ? 0xFF00 : 0x0000;
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_SINGLE_COIL;
@@ -164,7 +164,7 @@ MbReqResult_t MbmReqWrMulCoils(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
     
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);    
 
@@ -230,9 +230,9 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
     
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]               = MB_FUNC_READ_DISCRETE_INPUTS;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]        = RegStartAddr >> 8;
@@ -251,7 +251,7 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
 
-    result = MbmSend(Mdev,req);
+    result = MbmSend(Mdev, req);
     if(result != MBR_ENOERR)
         MbmReqBufDelete(pAdu);
 

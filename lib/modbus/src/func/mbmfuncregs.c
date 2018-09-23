@@ -36,7 +36,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
@@ -58,7 +58,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scancnt   = 0;
     
     result = MbmSend(Mdev, req);
-    if(result != MB_ENOERR)
+    if(result != MBR_ENOERR)
         MbmReqBufDelete(req);
 
     return result;
@@ -92,7 +92,7 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
@@ -155,7 +155,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);
 
@@ -188,7 +188,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scancnt   = 0;
     
     result = MbmSend(Mdev, req);
-    if(result != MB_ENOERR)
+    if(result != MBR_ENOERR)
         MbmReqBufDelete(req);
     
     return result;
@@ -225,7 +225,7 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode,slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
@@ -247,7 +247,7 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scancnt   = 0;
     
     result = MbmSend(Mdev, req);
-    if(result != MB_ENOERR)
+    if(result != MBR_ENOERR)
         MbmReqBufDelete(req);
 
     return result;
@@ -297,7 +297,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     if(req == NULL)
         return MBR_ENOMEM;
 
-    pAdu = req->padu;
+    pAdu = &(req->adu[0]);
     // set header and get head size
     len = MbmsetHead(Mdev->currentMode, slaveaddr, pAdu, pdulengh);
 
@@ -334,7 +334,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scancnt   = 0;
     
     result = MbmSend(Mdev, req);
-    if(result != MB_ENOERR)
+    if(result != MBR_ENOERR)
         MbmReqBufDelete(req);
 
     return result;
