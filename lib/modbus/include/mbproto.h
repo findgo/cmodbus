@@ -112,7 +112,7 @@ typedef enum
  *
  * (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte) 
  * (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
- * (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)
+ * (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)  ( UID + PDU length )
  * (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
  * (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
  *
@@ -137,7 +137,7 @@ typedef enum
 #define MB_TCP_ADU_SIZE_MBAP           7   /*!< Size of MBAP header field in ADU. */
 #define MB_TCP_ADU_TID_OFFSET          0
 #define MB_TCP_ADU_PID_OFFSET          2
-#define MB_TCP_ADU_LEN_OFFSET          4
+#define MB_TCP_ADU_LEN_OFFSET          4   
 #define MB_TCP_ADU_UID_OFFSET          6
 #define MB_TCP_ADU_PDU_OFFSET          7
 

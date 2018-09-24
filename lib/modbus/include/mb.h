@@ -79,8 +79,8 @@ typedef enum
     MB_EIO,                     /*!< I/O error. */
     MB_EILLSTATE,               /*!< protocol stack in illegal state. */
     MB_ETIMEDOUT,               /*!< timeout error occurred. */
-    MB_EDEVEXIST,
-    MB_EILLNODEADDR,
+    MB_EDEVEXIST,               // device exist
+    MB_EILLNODEADDR,            // invalid node address
     MB_ENODEEXIST,             /*!< node exist */
 }MbErrorCode_t;
     
@@ -102,12 +102,12 @@ typedef struct
 
 typedef struct 
 {
-    uint16_t tid;
-    uint16_t pid;
-    uint16_t length;
-    union {
-        uint8_t uid;
-        uint8_t slaveid;
+    uint16_t tid;       //TCP : Transaction Identifier 
+    uint16_t pid;       // TCP : Protocol Identifier default : 0
+    uint16_t length;    // TCP : Number of bytes UID+ PDU length
+    union {              
+        uint8_t uid;    // TCP: same as slave ID
+        uint8_t slaveid; // slave ID
     }introute;
 }MbHeader_t;
 
@@ -141,10 +141,12 @@ typedef enum {
     MBM_RSPEXCUTE,
     MBM_RSPTIMEOUT
 }MbmPollState_t;
-
 typedef MbReqResult_t (*pMbmParseRspHandler)(MbReg_t *regs, 
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                                 uint8_t *premain,uint16_t remainLength);
+//result may only error MBR_ENOERR,MBR_MISSBYTE, MBR_ECHECK, MBR_EINFUNCTION,MBR_EINVAL,MBR_ETIMEOUT,MBR_ERSPEXCEPTOIN
+// eException : when result is MBR_ERSPEXCEPTOIN use is
+// req :　mark request
 typedef void (*pfnReqResultCB)(MbReqResult_t result, MbException_t eException, void *req);
 
 typedef MbReqResult_t (*pActionMasterReceive)(void *pdev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
@@ -155,7 +157,7 @@ typedef struct
     uint8_t slaveaddr;      // slave address 
     uint8_t reserved0;      // reserved
     uint16_t reserved1;     // reserved
-    MbReg_t regs;           // The register list
+    MbReg_t regs;           // The register table
     pfnReqResultCB cb;      // call back function
     void *arg;              // arg for callback function
     void *next;
@@ -169,9 +171,9 @@ typedef struct
     uint8_t funcode;        /* mark function code */
     uint16_t regaddr;       /* mark reg address for rsp used */
     uint16_t regcnt;        /* mark reg count for rsp used */
-    uint16_t adulength;     /* mark adu length*/
     uint16_t scancnt;       /* scan time cnt */
     uint16_t scanrate;      /* scan rate  if 0 : once,  other request on scan rate */
+    uint16_t adulength;     /* mark adu length*/
     void *next;             /* request list */
     uint8_t adu[];          /* mark adu for repeat send */
 }MbmReq_t;

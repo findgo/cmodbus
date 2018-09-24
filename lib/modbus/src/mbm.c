@@ -441,7 +441,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
     uint8_t *pRemainFrame; // remain fram
     uint8_t ucFunctionCode;
     uint16_t usLength;
-    MbException_t eException;
+    MbException_t exception;
     MbReqResult_t result;
     MbHeader_t header;
     MbmReq_t *req;
@@ -486,24 +486,24 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
             }
             
             /* funcoe and slaveid same, this frame for us and then excute it*/
-            if(ucFunctionCode & 0x80){ // 异常码
-                eException = (MbException_t)pRemainFrame[0]; //异常码
+            if(ucFunctionCode & 0x80){ // 异常
+                result = MBR_ERSPEXCEPTOIN;
+                exception = (MbException_t)pRemainFrame[0]; //异常码
             }
             else{
                 result = MBR_EINFUNCTION;
                 handle = MbmSearchCB(ucFunctionCode);
                 if(handle)
-                    result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength); 
-
-                
+                    result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);  
             }
         }
-        if(result != MBR_ENOERR){
+        
+        if(result != MBR_ENOERR || result != MBR_ERSPEXCEPTOIN){
             req->errcnt++;
         }
         
-        if(req->node->cb)
-            req->node->cb(result, eException, req); //执行回调
+        if(req->node->cb)  
+            req->node->cb(result, exception, req); //执行回调
         
         if(result == MBR_EINFUNCTION){ // 无此功能码，// remove from ready list
             __MbmReqReadylistRemovehead(dev); // remove from ready list
@@ -525,10 +525,11 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
         if(req == NULL) { /* some err happen ,then no request in list*/
             dev->Pollstate = MBM_DELYPOLL;
         }
-        else{
+        else{         
+            result = MBR_ETIMEOUT;
             req->errcnt++;
             if(req->node->cb)
-                req->node->cb(result, eException, req); //执行回调
+                req->node->cb(result, exception, req); //执行回调
             __MbmReqReadylistRemovehead(dev);
             if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
                 MbmReqBufDelete(req);

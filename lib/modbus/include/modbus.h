@@ -11,6 +11,15 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
                                uint16_t reg_coils_num,
                                uint16_t reg_discrete_num);
 
+#define MbGetRegsHoldPtr(pReg)       ((uint16_t *)(((MbReg_t *)(pReg))->pReghold))
+#define MbGetRegsInputPtr(pReg)      ((uint16_t *)(((MbReg_t *)(pReg))->pReginput))
+#define MbGetRegsCoilPtr(pReg)       ((uint8_t *)(((MbReg_t *)(pReg))->pRegCoil))
+#define MbGetRegsDiscPtr(pReg)       ((uint8_t *)(((MbReg_t *)(pReg))->pRegDisc))
+
+#define MbGetResgHoldNum(pReg)       (((MbReg_t *)(pReg))->reg_holding_num)
+#define MbGetRegsInputNum(pReg)      (((MbReg_t *)(pReg))->reg_input_num)
+#define MbGetRegsCoilNum(pReg)       (((MbReg_t *)(pReg))->reg_coils_num)
+#define MbGetRegsDiscNum(pReg)       (((MbReg_t *)(pReg))->reg_discrete_num)
 
 #if MB_MASTER_ENABLED
 
@@ -69,21 +78,32 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
                                                 uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                                 uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                                 uint16_t *valbuf, uint16_t valcnt);
+#define MbmGetReqSlaveID(pReq) (((MbmReq_t *)(pReq))->slaveaddr)
+#define MbmGetReqFunCode(pReq) (((MbmReq_t *)(pReq))->funcode)
+#define MbmGetReqErrorCnt(pReq) (((MbmReq_t *)(pReq))->errcnt)
+#define MbmGetReqRegAddr(pReq) (((MbmReq_t *)(pReq))->regaddr)
+#define MbmGetReqRegCnt(pReq) (((MbmReq_t *)(pReq))->regcnt)
+#define MbmGetNodePtr(pReq) (((MbmReq_t *)(pReq))->node)
+#define MbmGetArgPtr(pReq)      (((MbmReq_t *)(pReq))->node->arg)
+
+#define MbmGetSlaveID(pNode) (((MbmNode_t *)(pNode))->slaveaddr)
+#define MbmGetRegsPtr(pNode)  (&(((MbmNode_t *)(pNode))->regs))
 
 #endif
 
 #if MB_SLAVE_ENABLED > 0
 
+#define MbsGetRegsPtr(pdev)  (&(((MbsDev_t *)(pdev))->regs))
 // for slave ,get register start address
-#define MbsRegHoldPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReghold)
-#define MbsRegInputPtr(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.pReginput)
-#define MbsRegCoilPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegCoil)
-#define MbsRegDiscPtr(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.pRegDisc)
+#define MbsGetRegsHoldPtr(pdev)      ((uint16_t *)(((MbsDev_t *)(pdev))->regs.pReghold))
+#define MbsGetRegsInputPtr(pdev)     ((uint16_t *)(((MbsDev_t *)(pdev))->regs.pReginput))
+#define MbsGetRegsCoilPtr(pdev)      ((uint8_t *)(((MbsDev_t *)(pdev))->regs.pRegCoil))
+#define MbsGetRegsDiscPtr(pdev)      ((uint8_t *)(((MbsDev_t *)(pdev))->regs.pRegDisc))
 // for slave ,get register number
-#define MbsRegHoldNum(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.reg_holding_num)
-#define MbsRegInputNum(pdev) ((uint16_t *)((MbsDev_t *)pdev)->regs.reg_input_num)
-#define MbsRegCoilNum(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.reg_coils_num)
-#define MbsRegDiscNum(pdev) ((uint8_t *)((MbsDev_t *)pdev)->regs.reg_discrete_num)
+#define MbsGetRegsHoldNum(pdev)      (((MbsDev_t *)(pdev))->regs.reg_holding_num)
+#define MbsGetRegsInputNum(pdev)     (((MbsDev_t *)(pdev))->regs.reg_input_num)
+#define MbsGetRegsCoilNum(pdev)      (((MbsDev_t *)(pdev))->regs.reg_coils_num)
+#define MbsGetRegsDiscNum(pdev)      (((MbsDev_t *)(pdev))->regs.reg_discrete_num)
 
 
 MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
