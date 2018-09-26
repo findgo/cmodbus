@@ -78,8 +78,10 @@ MbsDev_t *device0;
 MbsDev_t *device1;
 static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
-static __align(2) uint8_t dev1regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
-    {0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0xBB,0x77,0xFF,0xDD,0xEE};
+static __align(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111,0x2222,0x3333};
+static __align(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444,0x5555,0x6666};
+static  uint8_t dev1CoilsBuf[ REG_COILS_SIZE / 8 ] = {0xaa,0x55};
+static  uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55,0xaa,0x77};
 
 int main(void)
 {	
@@ -110,12 +112,14 @@ int main(void)
     device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 9600, MB_PAR_NONE);
 #endif
     if(device1){
-       status = MbsRegAssign(device1,
-                        dev1regbuf,
-                        sizeof(dev1regbuf),
+       status = MbsRegAssignSingle(device1,
+                        dev1HoldingBuf,
                         0,REG_HOLDING_NREGS ,
+                        dev1InputBuf,
                         0,REG_INPUT_NREGS,
+                        dev1CoilsBuf,
                         0,REG_COILS_SIZE,
+                        dev1DiscreteBuf,
                         0,REG_DISCRETE_SIZE);
        if(status == MB_ENOERR)
             (void)MbsStart(device1);

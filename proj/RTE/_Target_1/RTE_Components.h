@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'stm32f1_modbus' 
+ * Project: 'stm32f1_modbusSlave' 
  * Target:  'Target 1' 
  */
 

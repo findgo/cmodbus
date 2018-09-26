@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 /********************* common defined  ************************/
-#define MB_MASTER_ENABLED        ( 1 )
-#define MB_SLAVE_ENABLED         ( 0 )
+#define MB_MASTER_ENABLED        ( 0 )
+#define MB_SLAVE_ENABLED         ( 1 )
 
 /*! \defgroup modbus_cfg Modbus Configuration
  */
@@ -65,7 +65,7 @@ extern "C" {
 
 /********************for slave defined***************************************/
 /*! \brief the number of support multiple slaves  range(1 - 16 )*/
-#define MBS_SUPPORT_MULTIPLE_NUMBER              ( 1 )
+#define MBS_SUPPORT_MULTIPLE_NUMBER              ( 2 )
 
 /*! \brief The character timeout value for Modbus ASCII.
  *
