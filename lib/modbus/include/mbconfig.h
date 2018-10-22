@@ -65,7 +65,7 @@ extern "C" {
 
 /********************for slave defined***************************************/
 /*! \brief the number of support multiple slaves  range(1 - 16 )*/
-#define MBS_SUPPORT_MULTIPLE_NUMBER              ( 2 )
+#define MBS_SUPPORT_MULTIPLE_NUMBER              ( 1 )
 
 /*! \brief The character timeout value for Modbus ASCII.
  *

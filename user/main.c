@@ -90,22 +90,22 @@ int main(void)
 	prvClockInit();
 	prvnvicInit();
 	//Systick_Configuration();
-#if MB_RTU_ENABLED > 0   
-    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 9600, MB_PAR_NONE);
-#elif MB_ASCII_ENABLED > 0
-    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);    
-#endif
-    if(device0){
-       status = MbsRegAssign(device0,
-                        dev0regbuf,
-                        sizeof(dev0regbuf),
-                        0,REG_HOLDING_NREGS ,
-                        0,REG_INPUT_NREGS,
-                        0,REG_COILS_SIZE,
-                        0,REG_DISCRETE_SIZE);
-       if(status == MB_ENOERR)
-            (void)MbsStart(device0);
-    }
+//#if MB_RTU_ENABLED > 0   
+//    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 9600, MB_PAR_NONE);
+//#elif MB_ASCII_ENABLED > 0
+//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);    
+//#endif
+//    if(device0){
+//       status = MbsRegAssign(device0,
+//                        dev0regbuf,
+//                        sizeof(dev0regbuf),
+//                        0,REG_HOLDING_NREGS ,
+//                        0,REG_INPUT_NREGS,
+//                        0,REG_COILS_SIZE,
+//                        0,REG_DISCRETE_SIZE);
+//       if(status == MB_ENOERR)
+//            (void)MbsStart(device0);
+//    }
 #if MB_RTU_ENABLED > 0   
     device1 = MbsNew(MB_RTU, 0x01, MBCOM1, 9600, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
