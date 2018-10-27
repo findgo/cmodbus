@@ -1,6 +1,7 @@
 #include "mbfunc.h"
 #include "port.h"
 #include "mb.h"
+
 #if MB_RTU_ENABLED > 0
 #include "mbrtu.h"
 #endif
@@ -16,26 +17,20 @@
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_MASTER_ENABLED > 0
 #include "mbmem.h"
 #include "mbmbuf.h"
-
 static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff);
-static MbErrorCode_t __MbmReqReadylistAddtail(MbmDev_t *dev, MbmReq_t *req);
-/* peek ready list */
-static MbmReq_t *__MbmReqReadylistPeek(MbmDev_t *dev);
-static void __MbmReqReadylistRemovehead(MbmDev_t *dev);
-static MbErrorCode_t __MbmReqPendinglistAdd(MbmDev_t *dev, MbmReq_t *req);
 static void __MbmReqPendlistScan(MbmDev_t *dev, uint32_t diff);
-static MbErrorCode_t __MbmdevAdd(MbmDev_t *dev);
 static MbmDev_t *__MbmdevSearch(uint8_t port);
 
-static MbmDev_t *mbm_dev_head = NULL;
+static msg_q_t mbm_dev_head = NULL;
+
+//static msgboxstatic_t msgboxHandlebuf = MSGBOX_STATIC_INIT(MSGBOX_UNLIMITED_CAP);
 
 MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
     MbmDev_t *dev;
 
-    dev = (MbmDev_t *)mb_malloc(sizeof(MbmDev_t));
-    if(dev == NULL)
+    if((dev = (MbmDev_t *)msgalloc(sizeof(MbmDev_t))) == NULL)
         return NULL;
     
     memset(dev, 0, sizeof(MbmDev_t));    
@@ -72,20 +67,19 @@ MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t
     }
 
     if(eStatus != MB_ENOERR){
-        mb_free(dev);
+        msgdealloc(dev);
         return NULL;
     }
 
     // init parameter
     dev->port         = ucPort;
-    dev->currentMode  = eMode;
+    dev->mode  = eMode;
     
     dev->devstate     = DEV_STATE_DISABLED;
 
     dev->nodehead     = NULL;
 
     dev->Reqreadyhead = NULL;
-    dev->Reqreadytail = NULL;
     dev->Reqpendinghead  = NULL;
 
     dev->Pollstate    = MBM_IDLE;
@@ -99,48 +93,37 @@ MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t
     dev->Delaypolltimecnt   = 0;
     dev->Broadcastturntime  = MBM_DEFAULT_BROADTURNTIME;
     dev->Broadcastturntimecnt = 0;
+   
+    // check the device on the list ?
+    if(__MbmdevSearch(dev->port)){
+        msgdealloc(dev);
 
-    dev->next = NULL;
-    
-    eStatus = __MbmdevAdd(dev);
-    
-    if(eStatus != MB_ENOERR){
-        mb_free(dev);
         return NULL;
     }
+    msgQputFront(&mbm_dev_head, dev);
     
     return dev;
 }
 
-// must be delet all the request and node
-void MbmRemove(uint8_t ucPort)
+// must be delete all the request and node
+void MbmFree(uint8_t ucPort)
 {
 /*
     MbmDev_t *srh = NULL;
     MbmDev_t *pre = NULL;
-     
-    if(mbm_dev_head == NULL)
-        return;
 
-    srh = mbm_dev_head;
-
-    while(srh)
-    {
+    msgQ_for_each_msg(&mbm_dev_head, srh){
         if(srh->port == ucPort)
             break;
-        
-        pre = srh;
-        srh = srh->next;
-    }
 
+        pre = srh; // save previous msg      
+    }
+    
     if(srh){
-        if(pre == NULL)
-            mbm_dev_head = srh->next;
-        else
-            pre->next = srh->next;
-        
-        mb_free(srh);
-    }*/
+        msgQextract(&mbm_dev_head, srh, pre);
+        msgdealloc(srh);
+    }
+    */
 }
 
 MbErrorCode_t MbmSetPara(MbmDev_t *dev, uint8_t retry,uint32_t replytimeout,
@@ -194,18 +177,17 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
     if(slaveaddr < MB_ADDRESS_MIN || slaveaddr > MB_ADDRESS_MAX)
         return NULL;
     
-    node = (MbmNode_t *)mb_malloc(sizeof(MbmNode_t));
-    if(node == NULL){
+    if((node = (MbmNode_t *)msgalloc(sizeof(MbmNode_t))) == NULL){
         return NULL;
     }
     memset(node, 0, sizeof(MbmNode_t));
+    
     lens = MbRegBufSizeCal(reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num);
-
-    regbuf = (uint8_t *)mb_malloc(lens);
+    regbuf = (uint8_t *)mo_malloc(lens);
     if(regbuf == NULL){
-        mb_free(node);
+        msgdealloc(node);
         return NULL;
-    }   
+    }
     memset(regbuf, 0, lens);
     
     reg = (MbReg_t *)&node->regs;
@@ -234,11 +216,10 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
     reg->pRegDisc = (uint8_t *)&regbuf[lens];
     
     node->slaveaddr = slaveaddr;
-    node->next = NULL;
 
     return node;
 }
-// 向节点安排一个回调函数    
+// 给节点安排一个回调函数    
 void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg)
 {
     if(node){
@@ -252,8 +233,8 @@ void MbmNodeFree(MbmNode_t *node)
 {
     if(node){
         if(node->regs.pReghold)
-            mb_free(node->regs.pReghold);
-        mb_free(node);
+            mo_free(node->regs.pReghold);
+        msgdealloc(node);
     }
 }
 
@@ -270,51 +251,37 @@ MbErrorCode_t MbmAddNode(MbmDev_t *dev, MbmNode_t *node)
         return MB_EILLNODEADDR;
 
     // check node on the list?
-    srhnode = MbmSearchNode(dev,node->slaveaddr);
+    srhnode = MbmSearchNode(dev, node->slaveaddr);
     if(srhnode)
         return MB_ENODEEXIST;
-    
-    if(dev->nodehead == NULL){
-        dev->nodehead = node;
-    }
-    else{
-        node->next = dev->nodehead;
-        dev->nodehead = node;
-    }
+
+    msgQputFront(&(dev->nodehead), node);
 
     return MB_ENOERR;
 }
+
 /* 将节点从主机删除 */
 MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr)
 {
     MbmNode_t *srchnode;
-    MbmNode_t *prenode;
+    MbmNode_t *prenode = NULL;
     
     if( dev == NULL )
         return MB_EINVAL;
 
-    prenode = NULL;
-    srchnode = dev->nodehead;
-    /* search node on the host nodelist*/
-    while(srchnode)
-    {
+    msgQ_for_each_msg(&(dev->nodehead), srchnode){
         if(srchnode->slaveaddr == slaveaddr) // find it
             break;
-        
+    
         prenode = srchnode;
-        srchnode = srchnode->next;
     }
 
     if(srchnode){
         //first remove from node list
-        if(prenode == NULL)
-            dev->nodehead = srchnode->next;
-        else
-            prenode->next = srchnode->next;
+        msgQextract(&(dev->nodehead), srchnode, prenode);
     }
-    // init to NULL
+    // init
     srchnode->slaveaddr = 0;
-    srchnode->next = NULL;
     
     return MB_ENOERR;
 }
@@ -327,14 +294,9 @@ MbmNode_t *MbmSearchNode(MbmDev_t *dev, uint8_t slaveaddr)
     if(dev == NULL)
         return NULL;
 
-    srh = dev->nodehead;
-
-    while(srh)
-    {
+    msgQ_for_each_msg(&(dev->nodehead), srh){
         if(srh->slaveaddr == slaveaddr)
             break;
-
-        srh = srh->next;
     }
 
     return srh;
@@ -386,14 +348,14 @@ MbErrorCode_t MbmClose(MbmDev_t *dev)
 {   
     uint16_t crc_lrc;
     
-    if(dev->currentMode == MB_RTU) {
+    if(dev->mode == MB_RTU) {
 #if MB_RTU_ENABLED > 0
         crc_lrc = MbCRC16(req->adu, req->adulength);
         req->adu[req->adulength++] = crc_lrc & 0xff;
         req->adu[req->adulength++] = (crc_lrc >> 8) & 0xff;
 #endif
     }
-    else if(dev->currentMode == MB_ASCII) {
+    else if(dev->mode == MB_ASCII) {
 #if MB_ASCII_ENABLED > 0
         crc_lrc = MbLRC(req->adu,req->adulength);
         req->adu[req->adulength++] = crc_lrc & 0xff;
@@ -404,17 +366,17 @@ MbErrorCode_t MbmClose(MbmDev_t *dev)
     }
     
     if(req->scanrate){ 
-        __MbmReqPendinglistAdd(dev, req);
+        msgQput(&(dev->Reqpendinghead) , req);
     }
     else {
         // if zero add ready list immediately but only once
-        __MbmReqReadylistAddtail(dev, req); 
+        msgQput(&(dev->Reqreadyhead) , req);
     }
     
     return MBR_ENOERR;
 }
 
-
+// TODO:  retry cnt 
 void MbmPoll(void)
 {
     static uint32_t HistimerCounter = 0;
@@ -428,15 +390,13 @@ void MbmPoll(void)
         diff = (uint32_t)( ( MbSys_now() - HistimerCounter ) & 0xffffffffu );
         HistimerCounter = tms;
     }
-    
-    curdev = mbm_dev_head;
-     while(curdev){
+
+    msgQ_for_each_msg(&mbm_dev_head, curdev){
         __MbmHandle( curdev, diff );
-        curdev = curdev->next;
     }
 }
 
-static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
+static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff)
 {
     uint8_t *pRemainFrame; // remain fram
     uint8_t ucFunctionCode;
@@ -459,7 +419,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
         dev->Pollstate = MBM_DELYPOLL;
         break;
     case MBM_XMIT: 
-        req = __MbmReqReadylistPeek(dev);
+        req = msgQpeek(&(dev->Reqreadyhead)); // peek ready list ,any request on the list?
         if(req && (dev->pMbSendCur(dev,req->adu,req->adulength) == MB_ENOERR)){
             dev->Pollstate = MBM_XMITING;
         }
@@ -468,8 +428,8 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
         }
         break;
 
-    case MBM_RSPEXCUTE:        
-        req = __MbmReqReadylistPeek(dev);
+    case MBM_RSPEXCUTE:  // response excute      
+        req = msgQpop(&(dev->Reqreadyhead));// pop from ready list
         if(req == NULL) { /* some err happen ,then no request in list*/
             dev->Pollstate = MBM_DELYPOLL;
             break;
@@ -477,51 +437,49 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
     
         /* parser a adu fram */
         result = dev->pMbReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
-        if(result == MBR_ENOERR){
-            
+        if(result == MBR_ENOERR){            
             /* not for us ,continue to wait response */
             if((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveaddr != header.introute.slaveid)){
                 dev->Pollstate = MBM_WAITRSP;
                 break;
             }
             
-            /* funcoe and slaveid same, this frame for us and then excute it*/
+            /* funcode and slaveid same, this frame for us and then excute it*/
             if(ucFunctionCode & 0x80){ // 异常
                 result = MBR_ERSPEXCEPTOIN;
                 exception = (MbException_t)pRemainFrame[0]; //异常码
             }
             else{
                 result = MBR_EINFUNCTION;
-                handle = MbmSearchCB(ucFunctionCode);
+                handle = MbmFuncHandleSearch(ucFunctionCode);
                 if(handle)
                     result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);  
             }
         }
-        
-        if(result != MBR_ENOERR || result != MBR_ERSPEXCEPTOIN){
+
+        // response exception is not a error
+        if(result != MBR_ENOERR && result != MBR_ERSPEXCEPTOIN){
             req->errcnt++;
         }
         
         if(req->node->cb)  
             req->node->cb(result, exception, req); //执行回调
         
-        if(result == MBR_EINFUNCTION){ // 无此功能码，// remove from ready list
-            __MbmReqReadylistRemovehead(dev); // remove from ready list
-            MbmReqBufDelete(req); // delete request
+        if(result == MBR_EINFUNCTION){ // 无此功能码
+            MbmReqMsgDelete(req); // delete request
         }
         else {
-            __MbmReqReadylistRemovehead(dev); // remove from ready list
             if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0)){// only once
-                MbmReqBufDelete(req); 
+                MbmReqMsgDelete(req); 
             }
-            else{
-                __MbmReqPendinglistAdd(dev, req);// move to pend list
+            else{ // move to pend list
+                msgQput(&(dev->Reqpendinghead), req);
             }                
         } 
         dev->Pollstate = MBM_DELYPOLL;   
         break;
     case MBM_RSPTIMEOUT:
-        req = __MbmReqReadylistPeek(dev);
+        req = msgQpop(&(dev->Reqreadyhead));
         if(req == NULL) { /* some err happen ,then no request in list*/
             dev->Pollstate = MBM_DELYPOLL;
         }
@@ -529,12 +487,12 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
             result = MBR_ETIMEOUT;
             req->errcnt++;
             if(req->node->cb)
-                req->node->cb(result, exception, req); //执行回调
-            __MbmReqReadylistRemovehead(dev);
+                req->node->cb(result, MB_EX_NONE, req); //执行回调
+            
             if((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
-                MbmReqBufDelete(req);
+                MbmReqMsgDelete(req);
             else{// move to pend list
-                __MbmReqPendinglistAdd(dev, req);
+                msgQput(&(dev->Reqpendinghead), req);
             }
             dev->Pollstate = MBM_XMIT;
         }
@@ -543,14 +501,14 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
     case MBM_DELYPOLL:
     case MBM_XMITING:
         break;
-    case MBM_WAITRSP:
-        req = __MbmReqReadylistPeek(dev);
+    case MBM_WAITRSP:  // send ok ? wait for server response
+        req = msgQpeek(&(dev->Reqreadyhead));
         if(req == NULL) { /* some err happen ,then no request in list*/
             dev->Pollstate = MBM_DELYPOLL;
         }
-        else if(req->slaveaddr == MB_ADDRESS_BROADCAST){           
-            __MbmReqReadylistRemovehead(dev);
-            MbmReqBufDelete(req);
+        else if(req->slaveaddr == MB_ADDRESS_BROADCAST){ // broadcast ,remove from pend list soon  
+            msgQpop(&(dev->Reqreadyhead));
+            MbmReqMsgDelete(req);
             dev->Pollstate = MBM_BROADCASTTURN;
         }
         else{
@@ -564,8 +522,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
     if(timediff){
         
         switch (dev->Pollstate){
-        case MBM_BROADCASTTURN:
-            /* 广播转换延迟时间 ,发出广播后给节点处理的时间*/
+        case MBM_BROADCASTTURN: /* 广播转换延迟时间 ,发出广播后给节点处理的时间*/
             dev->Broadcastturntimecnt += timediff;
             if(dev->Broadcastturntimecnt >= dev->Broadcastturntime){
                 dev->Broadcastturntimecnt = 0;                
@@ -573,8 +530,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
             }
             break;
             
-        case MBM_DELYPOLL:
-            /* 两个请求之间的延迟时间 */
+        case MBM_DELYPOLL: /* 两个请求之间的延迟时间, 请求失败或重试时的延迟*/
             dev->Delaypolltimecnt += timediff;
             if(dev->Delaypolltimecnt >= dev->Delaypolltime){
                 dev->Delaypolltimecnt = 0;                
@@ -582,7 +538,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
             }
             break;
             
-        case MBM_WAITRSP:
+        case MBM_WAITRSP: /* 等待应答超时时间 */
             dev->Replytimeoutcnt += timediff;
             if(dev->Replytimeoutcnt >= dev->Replytimeout){
                 dev->Replytimeoutcnt = 0;
@@ -594,114 +550,33 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev,uint32_t timediff)
             break;
         }
 
-        __MbmReqPendlistScan(dev,timediff);// scan pend list 
+        __MbmReqPendlistScan(dev, timediff);// scan pend list 
     }
     
     return MB_ENOERR;
 }
 
-/*将请求加入 就绪列表*/
-static MbErrorCode_t __MbmReqReadylistAddtail(MbmDev_t *dev, MbmReq_t *req)
-{
-    req->next = NULL; /* make sure next is NULL , may be link previous list*/
-    if(dev->Reqreadyhead == NULL){
-        dev->Reqreadyhead = req;
-    }
-    else{
-        dev->Reqreadytail->next = req;
-    }
-    
-    dev->Reqreadytail = req;
-    
-    return MB_ENOERR;
-}
 
-/* peek ready list head*/
-static MbmReq_t *__MbmReqReadylistPeek(MbmDev_t *dev)
-{
-    return dev->Reqreadyhead;
-}
-
-static void __MbmReqReadylistRemovehead(MbmDev_t *dev)
-{
-    if(dev == NULL || dev->Reqreadyhead == NULL) /* nothing to remove */ 
-        return;
-    
-    dev->Reqreadyhead = dev->Reqreadyhead->next;
-    if(dev->Reqreadyhead == NULL) /* it is reach tail and noting in the list */
-        dev->Reqreadytail = NULL;
-}
-
-
-/* 将请求加入 挂起列表*/
-static MbErrorCode_t __MbmReqPendinglistAdd(MbmDev_t *dev, MbmReq_t *req)
-{
-    req->scancnt = 0;  // clear sacn count
-    if(dev->Reqpendinghead == NULL){
-        req->next = NULL; // make sure next is NULL
-    }
-    else{
-        req->next = dev->Reqpendinghead;
-    }
-    // add it to the head
-    dev->Reqpendinghead = req;
-    
-    return MB_ENOERR;
-}
-
-/*扫描 挂起列表         发现有准备的请求将期移入准备列表      */
+/*扫描挂起列表         发现有准备好的请求 移入就绪列表      */
 static void __MbmReqPendlistScan(MbmDev_t *dev, uint32_t diff)
 {
-    MbmReq_t *prevReq;
+    MbmReq_t *prevReq = NULL;
     MbmReq_t *srchReq;
-    MbmReq_t *tempReq;
-    
-    srchReq = dev->Reqpendinghead;
-    prevReq = NULL;
-    while(srchReq)
-    {
+
+    msgQ_for_each_msg(&(dev->Reqpendinghead), srchReq){
         srchReq->scancnt += diff;
         if(srchReq->scancnt >= srchReq->scanrate){// scan timeout move to ready list
-            
-            //first remove from pend list
-            if(prevReq == NULL)
-                dev->Reqpendinghead = srchReq->next;
-            else
-                prevReq->next = srchReq->next;
 
-            tempReq = srchReq;  /* set up to add ready list later */
-            srchReq = srchReq->next; /* get next */
-            
-            // then add to read list
-            __MbmReqReadylistAddtail(dev,tempReq);
+            srchReq->scancnt = 0; // clear scan count
+            //first remove from pend list
+            msgQextract(&(dev->Reqpendinghead), srchReq, prevReq);
+            // then add to read list tail
+            msgQput(&(dev->Reqreadyhead) , srchReq);
         }
         else{
-            /* get next */
             prevReq = srchReq;
-            srchReq = srchReq->next;
-        }
-    }
-}
-
-
-/* ok */
-static MbErrorCode_t __MbmdevAdd(MbmDev_t *dev)
-{
-    // check the device on the list 
-    if(__MbmdevSearch(dev->port))
-        return MB_EDEVEXIST;
-
-    if(mbm_dev_head == NULL){
-        dev->next = NULL; // make sure next is NULL
-        mbm_dev_head = dev;
-    }
-    else{
-        // add head
-        dev->next = mbm_dev_head;
-        mbm_dev_head = dev;
-    }
-    
-    return MB_ENOERR;
+        }        
+    } 
 }
 
 /*ok */
@@ -709,19 +584,11 @@ static MbmDev_t *__MbmdevSearch(uint8_t port)
 {
     MbmDev_t *srh = NULL;
     
-    if(mbm_dev_head == NULL)
-        return NULL;
-
-    srh = mbm_dev_head;
-
-    while(srh)
-    {
+    msgQ_for_each_msg(&mbm_dev_head, srh){
         if(srh->port == port)
             break;
-
-        srh = srh->next;
     }
-
+    
     return srh;
 }
 

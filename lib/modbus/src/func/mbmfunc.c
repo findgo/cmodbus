@@ -42,23 +42,22 @@ static MbmParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
     {MB_FUNC_READ_DISCRETE_INPUTS, MbmParseRspRdDiscreteInputs},
 #endif
 };
-pMbmParseRspHandler MbmSearchCB(uint8_t ucFunctionCode)
+// search function code handle
+pMbmParseRspHandler MbmFuncHandleSearch(uint8_t ucFunctionCode)
 {
-    int i;
-    pMbmParseRspHandler srch = NULL;
+    uint8_t i;
 
     for( i = 0; i < MBM_PARSE_RSP_HANDLERS_MAX; i++ ){
         /* No more function handlers registered. Abort. */
         if( xParseRspHandlers[i].ucFunctionCode == 0 ){
-            break;
+            return NULL;
         }
         else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
-            srch = xParseRspHandlers[i].pxHandler;
-            break;
+            return (xParseRspHandlers[i].pxHandler);
         }                
     }
 
-    return srch;
+    return NULL;
 }
 
 #endif

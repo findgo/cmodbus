@@ -9,7 +9,7 @@
  *
  * @return  pointer the memory
  */
-void *mb_malloc(size_t size)
+void *mo_malloc(size_t size)
 {
     return pvPortMalloc(size);
     //return malloc(size);
@@ -22,7 +22,7 @@ void *mb_malloc(size_t size)
  *
  * @return  
  */
-void mb_free(void *ptr)
+void mo_free(void *ptr)
 {
     vPortFree(ptr);
     //free(ptr);
@@ -35,7 +35,7 @@ void mb_free(void *ptr)
  *
  * @return  
  */
-void *mb_calloc(size_t nmemb, size_t size)
+void *mo_calloc(size_t nmemb, size_t size)
 {
     void * addr=NULL;
 
@@ -53,7 +53,7 @@ void *mb_calloc(size_t nmemb, size_t size)
  *
  * @return  pointer the memory
  */
-void *mb_realloc(void *ptr, size_t size)
+void *mo_realloc(void *ptr, size_t size)
 {
     void * addr=NULL;
         

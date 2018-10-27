@@ -128,6 +128,9 @@ extern "C" {
 /*! \brief If the <em>Read Discrete Inputs</em> function should be enabled. */
 #define MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED    (  1 )
 
+#include "log.h"
+
+#define mblogln(fmt, ...) mo_logln(DEBUG, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }

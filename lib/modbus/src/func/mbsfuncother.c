@@ -4,7 +4,6 @@
 
 #include "mbfunc.h"
 
-#if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
 
 static uint8_t    ucMBSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t   usMBSlaveIDLen;
@@ -45,4 +44,3 @@ MbException_t MbsFuncReportSlaveID(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen
     return MB_EX_NONE;
 }
 
-#endif

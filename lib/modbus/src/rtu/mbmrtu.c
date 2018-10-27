@@ -67,7 +67,6 @@ void MbmRTUClose(void *dev)
 {
 
 
-
 }
 
 MbReqResult_t MbmRTUReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength)
@@ -77,7 +76,7 @@ MbReqResult_t MbmRTUReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8
 
     ENTER_CRITICAL_SECTION();
     /* Length and CRC check */
-    if((pdev->rcvAduBufPos >= 5) /* addr+funcode+(other >= 1)+crc(2)  */
+    if( pdev->rcvAduBufPos >= (MB_ADU_RTU_SIZE_MIN + 1) /* addr+funcode+(other >= 1)+crc(2)  */
         && (MbCRC16((uint8_t *)pdev->AduBuf, pdev->rcvAduBufPos) == 0)){
 
         phead->introute.slaveid = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
@@ -94,7 +93,7 @@ MbReqResult_t MbmRTUReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8
         /* Return the start of the Modbus PDU to the caller. */
         *premain = (uint8_t *) & pdev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_DATA_OFF];
     }
-    else if(pdev->rcvAduBufPos < 5){
+    else if(pdev->rcvAduBufPos < (MB_ADU_RTU_SIZE_MIN + 1)){
         result = MBR_MISSBYTE;
     }else{
         result = MBR_ECHECK;

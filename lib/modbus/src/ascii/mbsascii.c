@@ -188,7 +188,7 @@ void MbsASCIIReceiveFSM(  MbsDev_t *dev)
             dev->sndrcvState = STATE_ASCII_RX_IDLE;
 
             /* Notify the caller of MbsASCIIReceive that a new frame was received. */
-            xMBSemGive(dev);
+            MbsSemGive(dev);
         }
         else if( ucByte == ':' ){
             /* Empty receive buffer and back to receive state. */

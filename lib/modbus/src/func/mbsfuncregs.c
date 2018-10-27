@@ -84,8 +84,6 @@ static MbErrorCode_t __MbsRegInputCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint1
     return MB_ENOREG;
 }
 
-
-#if MBS_FUNC_READ_HOLDING_ENABLED > 0
 MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
@@ -140,9 +138,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t *
     }
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_WRITE_HOLDING_ENABLED > 0
 MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
@@ -170,9 +166,7 @@ MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *u
     
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
 MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
@@ -223,9 +217,7 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t * pPdu, uint16_
     
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
 MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegReadAddress;
@@ -297,9 +289,6 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16
     return eStatus;
 }
 
-#endif
-
-#if MBS_FUNC_READ_INPUT_ENABLED > 0
 MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
@@ -357,8 +346,6 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t * pPdu, uint16_t * u
     
     return eStatus;
 }
-
-#endif
 
 #endif
 

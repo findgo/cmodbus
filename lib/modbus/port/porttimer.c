@@ -4,7 +4,7 @@
 #include "modbus.h"
 
 #if MB_RTU_ENABLED > 0 ||  MB_ASCII_ENABLED > 0
-//STM32Ïà¹ØÍ·ÎÄ¼þ
+//STM32ç›¸å…³å¤´æ–‡ä»¶
 #include "stm32f10x.h"
 #include "stm32f10x_it.h"
 
@@ -16,7 +16,7 @@ extern MbmDev_t *deviceM0;
 extern MbmDev_t *deviceM1;
 /* ----------------------- Start implementation -----------------------------*/
 /**
-  * @brief  ¶¨Ê±Æ÷³õÊ¼»¯º¯Êý
+  * @brief  å®šæ—¶å™¨åˆå§‹åŒ–å‡½æ•°
   * @param  None
   * @retval None
   */
@@ -28,71 +28,71 @@ uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us)
 
     switch(port){
     case MBCOM0:
-        //Ê¹ÄÜ¶¨Ê±Æ÷3Ê±ÖÓ
+        //ä½¿èƒ½å®šæ—¶å™¨3æ—¶é’Ÿ
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
 
-        //¶¨Ê±Æ÷Ê±¼ä»ùÅäÖÃËµÃ÷
-        //HCLKÎª72MHz£¬APB1¾­¹ý2·ÖÆµÎª36MHz
-        //TIM4µÄÊ±ÖÓ±¶ÆµºóÎª72MHz£¨Ó²¼þ×Ô¶¯±¶Æµ,´ïµ½×î´ó£©
-        //TIM4µÄ·ÖÆµÏµÊýÎª3599£¬Ê±¼ä»ùÆµÂÊÎª72 / (1 + Prescaler) = 20KHz,»ù×¼Îª50us
-        //TIM×î´ó¼ÆÊýÖµÎªusTim1Timerout50u
+        //å®šæ—¶å™¨æ—¶é—´åŸºé…ç½®è¯´æ˜Ž
+        //HCLKä¸º72MHzï¼ŒAPB1ç»è¿‡2åˆ†é¢‘ä¸º36MHz
+        //TIM4çš„æ—¶é’Ÿå€é¢‘åŽä¸º72MHzï¼ˆç¡¬ä»¶è‡ªåŠ¨å€é¢‘,è¾¾åˆ°æœ€å¤§ï¼‰
+        //TIM4çš„åˆ†é¢‘ç³»æ•°ä¸º3599ï¼Œæ—¶é—´åŸºé¢‘çŽ‡ä¸º72 / (1 + Prescaler) = 20KHz,åŸºå‡†ä¸º50us
+        //TIMæœ€å¤§è®¡æ•°å€¼ä¸ºusTim1Timerout50u
         PrescalerValue = (uint16_t) (SystemCoreClock / 20000) - 1; 
-        //¶¨Ê±Æ÷1³õÊ¼»¯
+        //å®šæ—¶å™¨1åˆå§‹åŒ–
         TIM_TimeBaseStructure.TIM_Period = (uint16_t) usTim1Timerout50us;
         TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
         TIM_TimeBaseStructure.TIM_ClockDivision = 0;
         TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
         TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
-        //Ô¤×°ÔØÊ¹ÄÜ
+        //é¢„è£…è½½ä½¿èƒ½
         TIM_ARRPreloadConfig(TIM3, ENABLE);
 
-        //¶¨Ê±Æ÷4ÖÐ¶ÏÓÅÏÈ¼¶
+        //å®šæ—¶å™¨4ä¸­æ–­ä¼˜å…ˆçº§
         NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
 
-        //Çå³ýÒç³öÖÐ¶Ï±êÖ¾Î»
+        //æ¸…é™¤æº¢å‡ºä¸­æ–­æ ‡å¿—ä½
         TIM_ClearITPendingBit(TIM3,TIM_IT_Update);
-        //¶¨Ê±Æ÷3Òç³öÖÐ¶Ï¹Ø±Õ
+        //å®šæ—¶å™¨3æº¢å‡ºä¸­æ–­å…³é—­
         TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
-        //¶¨Ê±Æ÷3½ûÄÜ
+        //å®šæ—¶å™¨3ç¦èƒ½
         TIM_Cmd(TIM3,  DISABLE);
         break;
     case MBCOM1:
-        //Ê¹ÄÜ¶¨Ê±Æ÷4Ê±ÖÓ
+        //ä½¿èƒ½å®šæ—¶å™¨4æ—¶é’Ÿ
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
 
-        //¶¨Ê±Æ÷Ê±¼ä»ùÅäÖÃËµÃ÷
-        //HCLKÎª72MHz£¬APB1¾­¹ý2·ÖÆµÎª36MHz
-        //TIM4µÄÊ±ÖÓ±¶ÆµºóÎª72MHz£¨Ó²¼þ×Ô¶¯±¶Æµ,´ïµ½×î´ó£©
-        //TIM4µÄ·ÖÆµÏµÊýÎª3599£¬Ê±¼ä»ùÆµÂÊÎª72 / (1 + Prescaler) = 20KHz,»ù×¼Îª50us
-        //TIM×î´ó¼ÆÊýÖµÎªusTim1Timerout50u
+        //å®šæ—¶å™¨æ—¶é—´åŸºé…ç½®è¯´æ˜Ž
+        //HCLKä¸º72MHzï¼ŒAPB1ç»è¿‡2åˆ†é¢‘ä¸º36MHz
+        //TIM4çš„æ—¶é’Ÿå€é¢‘åŽä¸º72MHzï¼ˆç¡¬ä»¶è‡ªåŠ¨å€é¢‘,è¾¾åˆ°æœ€å¤§ï¼‰
+        //TIM4çš„åˆ†é¢‘ç³»æ•°ä¸º3599ï¼Œæ—¶é—´åŸºé¢‘çŽ‡ä¸º72 / (1 + Prescaler) = 20KHz,åŸºå‡†ä¸º50us
+        //TIMæœ€å¤§è®¡æ•°å€¼ä¸ºusTim1Timerout50u
         PrescalerValue = (uint16_t) (SystemCoreClock / 20000) - 1; 
-        //¶¨Ê±Æ÷1³õÊ¼»¯
+        //å®šæ—¶å™¨1åˆå§‹åŒ–
         TIM_TimeBaseStructure.TIM_Period = (uint16_t) usTim1Timerout50us;
         TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
         TIM_TimeBaseStructure.TIM_ClockDivision = 0;
         TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
         TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
-        //Ô¤×°ÔØÊ¹ÄÜ
+        //é¢„è£…è½½ä½¿èƒ½
         TIM_ARRPreloadConfig(TIM4, ENABLE);
 
         //
         NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-        //¶¨Ê±Æ÷4ÖÐ¶ÏÓÅÏÈ¼¶
+        //å®šæ—¶å™¨4ä¸­æ–­ä¼˜å…ˆçº§
         NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = 3;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
 
-        //Çå³ýÒç³öÖÐ¶Ï±êÖ¾Î»
+        //æ¸…é™¤æº¢å‡ºä¸­æ–­æ ‡å¿—ä½
         TIM_ClearITPendingBit(TIM4,TIM_IT_Update);
-        //¶¨Ê±Æ÷4Òç³öÖÐ¶Ï¹Ø±Õ
+        //å®šæ—¶å™¨4æº¢å‡ºä¸­æ–­å…³é—­
         TIM_ITConfig(TIM4, TIM_IT_Update, DISABLE);
-        //¶¨Ê±Æ÷4½ûÄÜ
+        //å®šæ—¶å™¨4ç¦èƒ½
         TIM_Cmd(TIM4,  DISABLE);
         break;
     default:
@@ -110,18 +110,18 @@ void MbPortTimersEnable(uint8_t port)
         /* Enable the timer with the timeout passed to MbPortTimersInit( ) */
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
         TIM_ITConfig(TIM3, TIM_IT_Update, ENABLE);
-        //Éè¶¨¶¨Ê±Æ÷4µÄ³õÊ¼Öµ
+        //è®¾å®šå®šæ—¶å™¨4çš„åˆå§‹å€¼
         TIM_SetCounter(TIM3,0x0000); 
-        //¶¨Ê±Æ÷4Æô¶¯
+        //å®šæ—¶å™¨4å¯åŠ¨
         TIM_Cmd(TIM3, ENABLE);
         break;
     case MBCOM1:
         /* Enable the timer with the timeout passed to MbPortTimersInit( ) */
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
         TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
-        //Éè¶¨¶¨Ê±Æ÷4µÄ³õÊ¼Öµ
+        //è®¾å®šå®šæ—¶å™¨4çš„åˆå§‹å€¼
         TIM_SetCounter(TIM4,0x0000); 
-        //¶¨Ê±Æ÷4Æô¶¯
+        //å®šæ—¶å™¨4å¯åŠ¨
         TIM_Cmd(TIM4, ENABLE);
         break;
     default:
@@ -137,7 +137,7 @@ void MbPortTimersDisable(uint8_t port)
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
         TIM_ITConfig(TIM3, TIM_IT_Update, DISABLE);
         TIM_SetCounter(TIM3,0x0000); 
-        //¹Ø±Õ¶¨Ê±Æ÷4
+        //å…³é—­å®šæ—¶å™¨4
         TIM_Cmd(TIM3, DISABLE);
         break;
     case MBCOM1:
@@ -145,7 +145,7 @@ void MbPortTimersDisable(uint8_t port)
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
         TIM_ITConfig(TIM4, TIM_IT_Update, DISABLE);
         TIM_SetCounter(TIM4,0x0000); 
-        //¹Ø±Õ¶¨Ê±Æ÷4
+        //å…³é—­å®šæ—¶å™¨4
         TIM_Cmd(TIM4, DISABLE);
         break;
     default:
@@ -153,14 +153,14 @@ void MbPortTimersDisable(uint8_t port)
     }
 }
 /**
-  * @brief  ¶¨Ê±Æ÷3ÖÐ¶Ï·þÎñº¯Êý
+  * @brief  å®šæ—¶å™¨3ä¸­æ–­æœåŠ¡å‡½æ•°
   * @param  None
   * @retval None
   */
 void TIM3_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET){
-        //Çå³ý¶¨Ê±Æ÷T4Òç³öÖÐ¶Ï±êÖ¾Î»
+        //æ¸…é™¤å®šæ—¶å™¨T4æº¢å‡ºä¸­æ–­æ ‡å¿—ä½
         TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0
@@ -184,14 +184,14 @@ void TIM3_IRQHandler(void)
 }
 
 /**
-  * @brief  ¶¨Ê±Æ÷4ÖÐ¶Ï·þÎñº¯Êý
+  * @brief  å®šæ—¶å™¨4ä¸­æ–­æœåŠ¡å‡½æ•°
   * @param  None
   * @retval None
   */
 void TIM4_IRQHandler(void)
 {
     if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET){
-        //Çå³ý¶¨Ê±Æ÷T4Òç³öÖÐ¶Ï±êÖ¾Î»
+        //æ¸…é™¤å®šæ—¶å™¨T4æº¢å‡ºä¸­æ–­æ ‡å¿—ä½
         TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 #if MB_SLAVE_ENABLED > 0
 #if MB_RTU_ENABLED > 0

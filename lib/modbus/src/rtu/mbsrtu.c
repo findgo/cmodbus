@@ -62,12 +62,12 @@ void MbsRTUStop(void *dev)
     MbPortTimersDisable(((MbsDev_t *)dev)->port);
     EXIT_CRITICAL_SECTION();
 }
+
 void MbsRTUClose(void *dev)
 {
 
-
-
 }
+
 MbErrorCode_t MbsRTUReceive(void *pdev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
@@ -208,7 +208,7 @@ void MbsRTUTimerT35Expired(  MbsDev_t *dev)
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
     if(dev->sndrcvState == STATE_RTU_RX_RCV)
-        xMBSemGive(dev);
+        MbsSemGive(dev);
 
     MbPortTimersDisable(dev->port);
     dev->sndrcvState = STATE_RTU_RX_IDLE;

@@ -284,7 +284,7 @@ const char *MbError2Str(MbException_t excode)
  * @param       reg_coils_num - 线圈个数
  * @param       reg_discrete_num - 离散输入个数
  *
- * @return      0 if OK
+ * @return      if OK
  */
 uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
                                uint16_t reg_input_num,
@@ -300,23 +300,3 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
     return size;
 }
                                
-#if  MB_MASTER_ENABLED > 0
-
-uint8_t *MbRegBufNew(uint32_t size)
-{
-    uint8_t *pregbuf;
-    
-    pregbuf = (uint8_t *)mb_malloc(size);
-    if(pregbuf){   
-        memset( pregbuf, 0, size );
-    }
-    
-    return pregbuf;    
-}
-
-void MbRegBufFree(void *ptr)
-{
-    mb_free(ptr);
-}
-
-#endif

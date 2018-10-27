@@ -4,9 +4,11 @@
 //for driver
 #include "modbus.h"
 
+#include "logdrv.h"
+#include <stdio.h>
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
-#define REG_HOLDING_NREGS     ( 3 )
+#define REG_HOLDING_NREGS     ( 20 )
 #define REG_INPUT_NREGS       ( 3 )
 #define REG_COILS_SIZE        (8 * 2)
 #define REG_DISCRETE_SIZE     (8 * 3)
@@ -18,6 +20,12 @@ static void prvnvicInit(void);
 MbmDev_t* deviceM0;
 MbmDev_t* deviceM1;
 
+static  void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void *req)
+{
+    mo_logln(DEBUG,"error count: %d, result: %d" ,result,((MbmReq_t *)req)->errcnt) ;
+    //printf("error count: %d, result: %d\r\n" ,result,((MbmReq_t *)req)->errcnt);
+}
+
 int main(void)
 {	
     MbmNode_t *node;
@@ -27,42 +35,48 @@ int main(void)
     prvnvicInit();
     Systick_Configuration();
     SystemCoreClockUpdate();
-    
+    logInit();
 	//Systick_Configuration();
+//#if MB_RTU_ENABLED > 0   
+//    deviceM0= MbmNew(MB_RTU, MBCOM0, 115200, MB_PAR_NONE);
+//#elif MB_ASCII_ENABLED > 0
+//    deviceM0= MbmNew(MB_ASCII, MBCOM0, 115200, MB_PAR_NONE);
+//#endif
+//    if(deviceM0){
+//       node = MbmNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
+//                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+//       status = MbmAddNode(deviceM0, node);
+//        if(status == MB_ENOERR){
+//           (void)MbmReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
+//           (void)MbmReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);        
+//           (void)MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
+//           (void)MbmReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+//        }
+//        (void)MbmStart(deviceM0);  
+//    }
 #if MB_RTU_ENABLED > 0   
-    deviceM0= MbmNew(MB_RTU, MBCOM0, 9600, MB_PAR_NONE);
+    deviceM1= MbmNew(MB_RTU, MBCOM1, 115200, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
-    deviceM0= MbmNew(MB_ASCII, MBCOM0, 9600, MB_PAR_NONE);
-#endif
-    if(deviceM0){
-       node = MbmNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
-       status = MbmAddNode(deviceM0, node);
-        if(status == MB_ENOERR){
-           (void)MbmReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
-           (void)MbmReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);        
-           (void)MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
-           (void)MbmReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
-        }
-        (void)MbmStart(deviceM0);  
-    }
-#if MB_RTU_ENABLED > 0   
-    deviceM1= MbmNew(MB_RTU, MBCOM1, 9600, MB_PAR_NONE);
-#elif MB_ASCII_ENABLED > 0
-    deviceM1= MbmNew(MB_ASCII, MBCOM1, 9600, MB_PAR_NONE);
+    deviceM1= MbmNew(MB_ASCII, MBCOM1, 115200, MB_PAR_NONE);
 #endif
     if(deviceM1){
        node = MbmNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
                                         0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
+       if(node == NULL)
+            return 0;
+       
+       MbmNodeCallBackAssign(node, nodeReqResultCB, NULL);
        status = MbmAddNode(deviceM1, node);
         if(status == MB_ENOERR){
            (void)MbmReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
-           (void)MbmReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
-           (void)MbmReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
-           (void)MbmReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+//           (void)MbmReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
+//           (void)MbmReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
+//           (void)MbmReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
         }
         (void)MbmStart(deviceM1);  
     }    
+
+    mblogln("modbus master start!");
 	while(1)
 	{
 	    MbmPoll();
@@ -89,11 +103,11 @@ int main(void)
 
 	prvClockInit();
 	prvnvicInit();
-	//Systick_Configuration();
+	Systick_Configuration();
 //#if MB_RTU_ENABLED > 0   
-//    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 9600, MB_PAR_NONE);
+//    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 115200, MB_PAR_NONE);
 //#elif MB_ASCII_ENABLED > 0
-//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 9600, MB_PAR_NONE);    
+//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 115200, MB_PAR_NONE);    
 //#endif
 //    if(device0){
 //       status = MbsRegAssign(device0,
@@ -107,9 +121,9 @@ int main(void)
 //            (void)MbsStart(device0);
 //    }
 #if MB_RTU_ENABLED > 0   
-    device1 = MbsNew(MB_RTU, 0x01, MBCOM1, 9600, MB_PAR_NONE);
+    device1 = MbsNew(MB_RTU, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
-    device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 9600, MB_PAR_NONE);
+    device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #endif
     if(device1){
        status = MbsRegAssignSingle(device1,
@@ -213,7 +227,5 @@ static void prvnvicInit(void)
 {
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 }
-
-
 
 

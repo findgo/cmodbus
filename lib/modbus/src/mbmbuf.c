@@ -3,9 +3,9 @@
 #include "mbmbuf.h"
 
 #if MB_MASTER_ENABLED > 0
-#include "mbmem.h"
+#include "msglink.h"
 
-MbmReq_t *MbmReqBufNew(MbMode_t mode, uint16_t Pdusize)
+MbmReq_t *MbmReqMsgNew(MbMode_t mode, uint16_t Pdusize)
 {
     uint16_t Adusize;
     MbmReq_t *req;
@@ -17,7 +17,7 @@ MbmReq_t *MbmReqBufNew(MbMode_t mode, uint16_t Pdusize)
     else
         Adusize = MB_TCP_ADU_SIZE_MBAP + Pdusize;
     
-    req = (MbmReq_t *)mb_malloc(sizeof(MbmReq_t) + Adusize);
+    req = (MbmReq_t *)msgalloc(sizeof(MbmReq_t) + Adusize);
     if(req == NULL){
         return NULL;
     }
@@ -27,13 +27,13 @@ MbmReq_t *MbmReqBufNew(MbMode_t mode, uint16_t Pdusize)
     return req;
 }
 
-void MbmReqBufDelete(void *ptr)
+void MbmReqMsgDelete(void *msg_ptr)
 {
-    mb_free(ptr);
+    msgdealloc(msg_ptr);
 }
 
 /* set head and return head length */
-uint8_t MbmsetHead(MbMode_t mode, uint8_t slaveaddr, uint8_t *pAdu, uint16_t pdulength)
+uint8_t MbmBuildHead(MbMode_t mode, uint16_t tid, uint8_t slaveaddr, uint8_t *pAdu, uint16_t pdulength)
 {
     if(mode == MB_RTU || mode == MB_ASCII){
         pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
@@ -42,8 +42,10 @@ uint8_t MbmsetHead(MbMode_t mode, uint8_t slaveaddr, uint8_t *pAdu, uint16_t pdu
         return MB_SER_ADU_SIZE_ADDR;
     }
     else{
+        pAdu[MB_TCP_ADU_TID_OFFSET]     = tid >> 8;
+        pAdu[MB_TCP_ADU_TID_OFFSET + 1] = tid;
         pAdu[MB_TCP_ADU_PID_OFFSET]     = MB_TCP_PROTOCOL_ID >> 8;
-        pAdu[MB_TCP_ADU_PID_OFFSET + 1] = MB_TCP_PROTOCOL_ID;
+        pAdu[MB_TCP_ADU_PID_OFFSET + 1] = MB_TCP_PROTOCOL_ID ;
         pAdu[MB_TCP_ADU_LEN_OFFSET]     = (pdulength + 1) >> 8;
         pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = (pdulength + 1) & 0xff;
         pAdu[MB_TCP_ADU_UID_OFFSET]     = slaveaddr;

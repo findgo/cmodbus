@@ -23,12 +23,9 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num,
 
 #if MB_MASTER_ENABLED
 
-uint8_t *MbRegBufNew(uint32_t size);
-void MbRegBufFree(void *ptr);
-
 /* TODO implement modbus master */
 MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
-void MbmRemove(uint8_t ucPort);
+void MbmFree(uint8_t ucPort);
 MbErrorCode_t MbmSetPara(MbmDev_t *dev, 
                                     uint8_t retry,uint32_t replytimeout,
                                     uint32_t delaypolltime, uint32_t broadcastturntime);
@@ -42,6 +39,7 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
                                 uint16_t reg_discrete_addr_start,
                                 uint16_t reg_discrete_num);
 void MbmNodeFree(MbmNode_t *node);
+void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg);
 MbErrorCode_t MbmAddNode(MbmDev_t *dev, MbmNode_t *node);
 MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr);
 MbmNode_t *MbmSearchNode(MbmDev_t *dev,uint8_t slaveaddr);

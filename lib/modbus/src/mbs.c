@@ -92,9 +92,9 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
     dev->inuse = 1;             // mark it in use!
     dev->port = ucPort;
     dev->slaveaddr = ucSlaveAddress;  /* set slave address */
-    dev->currentMode = eMode;
+    dev->mode = eMode;
     dev->devstate = DEV_STATE_DISABLED;    
-    dev->xEventInFlag = FALSE;
+    dev->eventInFlag = FALSE;
 
     return dev;
 }
@@ -274,8 +274,8 @@ static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
 
     /* Check if there is a event available. If not return control to caller.
      * Otherwise we will handle the event. */
-    if(dev->xEventInFlag){
-        dev->xEventInFlag = FALSE;
+    if(dev->eventInFlag){
+        dev->eventInFlag = FALSE;
         /* parser a adu fram */
         eStatus = dev->pMbReceivedCur(dev, &ucRcvAddress, &pPduFrame, &usLength );
         if( eStatus != MB_ENOERR )
@@ -300,7 +300,7 @@ static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
                 pPduFrame[usLength++] = eException;
             }
             
-            if((dev->currentMode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
+            if((dev->mode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
                 MbPortTimersDelay(dev->port, MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
             }        
             /* send a reply */

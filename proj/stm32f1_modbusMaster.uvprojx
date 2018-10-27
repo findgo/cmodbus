@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>stm32f1_modbus</OutputName>
+          <OutputName>stm32f1_modbusMaster</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -311,7 +311,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>3</Optim>
+            <Optim>0</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -381,6 +381,11 @@
         <Group>
           <GroupName>driver</GroupName>
           <Files>
+            <File>
+              <FileName>logdrv.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\dirver\logdrv.c</FilePath>
+            </File>
             <File>
               <FileName>systick.c</FileName>
               <FileType>1</FileType>
@@ -479,6 +484,16 @@
               <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\module\memmange\heap_4.c</FilePath>
+            </File>
+            <File>
+              <FileName>log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\log.c</FilePath>
+            </File>
+            <File>
+              <FileName>msglink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\module\msglink.c</FilePath>
             </File>
           </Files>
         </Group>

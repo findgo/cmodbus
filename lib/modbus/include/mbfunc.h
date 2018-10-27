@@ -41,17 +41,6 @@ extern "C" {
 #define MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF  ( MB_PDU_DATA_OFF + 9 )
 #define MB_PDU_FUNC_READWRITE_SIZE_MIN          ( 9 )
 
-/*! \ingroup modbus
- * \brief If register should be written or read.
- *
- * This value is passed to the callback functions which support either
- * reading or writing register values. Writing means that the application
- * registers should be updated and reading means that the modbus protocol
- * stack needs to know the current register values.
- *
- * \see eMBRegHoldingCB( ), eMBRegCoilsCB( ), eMBRegDiscreteCB( ) and 
- *   eMBRegInputCB( ).
- */
 typedef enum
 {
     MB_REG_READ,                /*!< Read register values and pass to protocol stack. */
@@ -60,7 +49,7 @@ typedef enum
 
 #if MB_MASTER_ENABLED > 0
 
-pMbmParseRspHandler MbmSearchCB(uint8_t ucFunctionCode);
+pMbmParseRspHandler MbmFuncHandleSearch(uint8_t ucFunctionCode);
 
 /****************************** for parse response *************************/
 /****************************** for bits *******************************/                                    
@@ -97,48 +86,23 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
 
 
 #if MB_SLAVE_ENABLED > 0
-
-#if MBS_FUNC_OTHER_REP_SLAVEID_BUF > 0
-MbException_t MbsFuncReportSlaveID(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
-#endif
-
-#if MBS_FUNC_READ_INPUT_ENABLED > 0
-MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
-#endif
-
-#if MBS_FUNC_READ_HOLDING_ENABLED > 0
-MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
-#endif
-
-#if MBS_FUNC_WRITE_HOLDING_ENABLED > 0
-MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
-#endif
-
-#if MBS_FUNC_WRITE_MULTIPLE_HOLDING_ENABLED > 0
-MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
-#endif
-
-#if MBS_FUNC_READ_COILS_ENABLED > 0
-MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen );
-#endif
-
-#if MBS_FUNC_WRITE_COIL_ENABLED > 0
-MbException_t MbsFuncWrCoil(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
-#endif
-
-#if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
-MbException_t MbsFuncWrMulCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
-#endif
-
-#if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
-MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
-#endif
-
-#if MBS_FUNC_READWRITE_HOLDING_ENABLED > 0
-MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
-#endif
 // search function handle with function code
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t ucFunctionCode);
+
+/****************************** for parse host request *************************/
+MbException_t MbsFuncReportSlaveID(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+/****************************** for bits *******************************/                                    
+MbException_t MbsFuncRdHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+MbException_t MbsFuncWrHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncRdInputRegister(MbReg_t *regs, uint8_t *pPdu, uint16_t * usLen);
+
+/****************************** for register *******************************/                                    
+MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen );
+MbException_t MbsFuncWrCoil(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncWrMulCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
 
 #endif
 

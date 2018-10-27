@@ -13,10 +13,10 @@
 extern "C" {
 #endif
 
-void *mb_malloc(size_t size);
-void mb_free(void *ptr);
-void *mb_calloc(size_t nmemb, size_t size);
-void *mb_realloc(void *ptr, size_t size);
+void *mo_malloc(size_t size);
+void mo_free(void *ptr);
+void *mo_calloc(size_t nmemb, size_t size);
+void *mo_realloc(void *ptr, size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */

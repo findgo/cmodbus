@@ -78,7 +78,6 @@ static MbErrorCode_t __MbsRegDiscreteCB(MbReg_t *regs, uint8_t * pucRegBuffer, u
     return MB_ENOREG;
 }
 
-#if MBS_FUNC_READ_COILS_ENABLED > 0
 MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
@@ -142,9 +141,7 @@ MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
     
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_WRITE_COIL_ENABLED > 0
 MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
@@ -189,9 +186,7 @@ MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
     
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_WRITE_MULTIPLE_COILS_ENABLED > 0
 MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
@@ -245,9 +240,7 @@ MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
     
     return eStatus;
 }
-#endif
 
-#if MBS_FUNC_READ_DISCRETE_INPUTS_ENABLED > 0
 MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
@@ -312,7 +305,6 @@ MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t * pPdu, uint16_t *u
     
     return eStatus;
 }
-#endif
 
 #endif
 
