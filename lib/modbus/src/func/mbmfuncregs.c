@@ -5,7 +5,7 @@
 #if MB_MASTER_ENABLED > 0
 #include "mbmbuf.h"
 /* ok */
-MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate)
 {
     uint8_t *pAdu;
@@ -23,7 +23,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(dev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -32,13 +32,13 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
             return MBR_ENOREG;
     }
     
-    req = MbmReqMsgNew(Mdev->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    req = MbmReqMsgNew((( MbmDev_t *)dev)->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(Mdev->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmBuildHead((( MbmDev_t *)dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_HOLDING_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -57,14 +57,14 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
     
-    result = MbmSend(Mdev, req);
+    result = MbmSend(dev, req);
     if(result != MBR_ENOERR)
         MbmReqMsgDelete(req);
 
     return result;
 }
 /* ok */
-MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr, 
                                         uint16_t RegAddr, uint16_t val)
 {
     uint8_t *pAdu;
@@ -79,7 +79,7 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(dev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -88,13 +88,13 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
             return MBR_ENOREG;   
     }
     
-    req = MbmReqMsgNew(Mdev->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    req = MbmReqMsgNew((( MbmDev_t *)dev)->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(Mdev->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmBuildHead((( MbmDev_t *)dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_WRITE_REGISTER;
     pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF]      = RegAddr >> 8;
@@ -113,14 +113,14 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = 0;
     req->scancnt   = 0;
 
-    result = MbmSend(Mdev, req);
+    result = MbmSend(dev, req);
     if(result != MBR_ENOERR)
         MbmReqMsgDelete(req);
 
     return result;
 }
 /* ok */
-MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt,
                                         uint16_t *valbuf, uint16_t valcnt)
 {
@@ -141,7 +141,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(dev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -151,13 +151,13 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     }    
     /* slaveaddr +((PDU)funcode + startaddr + regcnt + bytenum + regvalue_list)  */
     pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + valcnt * 2;
-    req = MbmReqMsgNew(Mdev->mode, pdulengh);
+    req = MbmReqMsgNew((( MbmDev_t *)dev)->mode, pdulengh);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(Mdev->mode, 0, slaveaddr, pAdu, pdulengh);
+    len = MbmBuildHead((( MbmDev_t *)dev)->mode, 0, slaveaddr, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                    = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF]        = RegStartAddr >> 8;
@@ -187,14 +187,14 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = 0;
     req->scancnt   = 0;
     
-    result = MbmSend(Mdev, req);
+    result = MbmSend(dev, req);
     if(result != MBR_ENOERR)
         MbmReqMsgDelete(req);
     
     return result;
 }
 /* ok */
-MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqRdInputRegister( Mbmhandle_t dev, uint8_t slaveaddr, 
                                         uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate )
 {
     uint8_t *pAdu;
@@ -212,7 +212,7 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(dev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
@@ -221,13 +221,13 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
             return MBR_ENOREG;
     }
 
-    req = MbmReqMsgNew(Mdev->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    req = MbmReqMsgNew((( MbmDev_t *)dev)->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(Mdev->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmBuildHead((( MbmDev_t *)dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]              = MB_FUNC_READ_INPUT_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF]       = RegStartAddr >> 8;
@@ -246,14 +246,14 @@ MbReqResult_t MbmReqRdInputRegister( MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = ((scanrate < MBM_SCANRATE_MAX) ? scanrate : MBM_SCANRATE_MAX);
     req->scancnt   = 0;
     
-    result = MbmSend(Mdev, req);
+    result = MbmSend(dev, req);
     if(result != MBR_ENOERR)
         MbmReqMsgDelete(req);
 
     return result;
 }
 /* ok */
-MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr, 
+MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr, 
                                                     uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                                     uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                                     uint16_t *valbuf, uint16_t valcnt)
@@ -276,7 +276,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     /* if slave address not a broadcast address, search in the host?*/
     if(slaveaddr != MB_ADDRESS_BROADCAST){
         /* check node in host list */
-        node = MbmSearchNode(Mdev,slaveaddr);
+        node = MbmSearchNode(dev,slaveaddr);
         if(node == NULL)
             return MBR_ENODENOSETUP;
 
@@ -293,13 +293,13 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     /* slaveaddr +((PDU) funcode + Readstartaddr + Readregcnt 
      *    + Writestartaddr + Writeregcnt + bytenum + Writeregvalue_list)  */
     pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READWRITE_SIZE_MIN + valcnt * 2;
-    req = MbmReqMsgNew(Mdev->mode, pdulengh);
+    req = MbmReqMsgNew((( MbmDev_t *)dev)->mode, pdulengh);
     if(req == NULL)
         return MBR_ENOMEM;
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(Mdev->mode, 0, slaveaddr, pAdu, pdulengh);
+    len = MbmBuildHead((( MbmDev_t *)dev)->mode, 0, slaveaddr, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF]                         = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF]        = RegReadStartAddr >> 8;
@@ -333,7 +333,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmDev_t *Mdev, uint8_t slaveaddr,
     req->scanrate  = 0;
     req->scancnt   = 0;
     
-    result = MbmSend(Mdev, req);
+    result = MbmSend(dev, req);
     if(result != MBR_ENOERR)
         MbmReqMsgDelete(req);
 

@@ -10,10 +10,10 @@
 
 uint32_t sysclocktime = 0;
 
-extern MbsDev_t *device0;
-extern MbsDev_t *device1;
-extern MbmDev_t *deviceM0;
-extern MbmDev_t *deviceM1;
+extern Mbmhandle_t deviceM0;
+extern Mbmhandle_t deviceM1;
+extern Mbshandle_t device0;
+extern Mbshandle_t device1;
 /* ----------------------- Start implementation -----------------------------*/
 /**
   * @brief  定时器初始化函数

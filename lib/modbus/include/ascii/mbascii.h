@@ -35,31 +35,31 @@ typedef enum
 #if MB_ASCII_ENABLED > 0 
 #if MB_MASTER_ENABLED > 0 
 
-MbErrorCode_t MbmASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
-void MbmASCIIStart(void *dev);
-void MbmASCIIStop(void *dev);
-void MbmASCIIClose(void *dev);
-MbReqResult_t MbmASCIIReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-MbReqResult_t MbmASCIISend(void *dev,const uint8_t *pAdu, uint16_t usAduLength);
+MbErrorCode_t MbmASCIIInit(Mbshandle_t dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
+void MbmASCIIStart(Mbshandle_t dev);
+void MbmASCIIStop(Mbshandle_t dev);
+void MbmASCIIClose(Mbshandle_t dev);
+MbReqResult_t MbmASCIIReceive(Mbshandle_t dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+MbReqResult_t MbmASCIISend(Mbshandle_t dev,const uint8_t *pAdu, uint16_t usAduLength);
 
-void MbmASCIIReceiveFSM(MbmDev_t *dev);
-void MbmASCIITransmitFSM(MbmDev_t *dev);
-void MbmASCIITimerT1SExpired(MbmDev_t *dev);
+void MbmASCIIReceiveFSM(Mbshandle_t dev);
+void MbmASCIITransmitFSM(Mbshandle_t dev);
+void MbmASCIITimerT1SExpired(Mbshandle_t dev);
 
 #endif
 
 #if MB_SLAVE_ENABLED > 0
     
-MbErrorCode_t MbsASCIIInit(void *dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
-void MbsASCIIStart(void *dev);
-void MbsASCIIStop(void *dev);
-void MbsASCIIClose(void *dev);
-MbErrorCode_t MbsASCIIReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
-MbErrorCode_t MbsASCIISend(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsASCIIInit(Mbshandle_t dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
+void MbsASCIIStart(Mbshandle_t dev);
+void MbsASCIIStop(Mbshandle_t dev);
+void MbsASCIIClose(Mbshandle_t dev);
+MbErrorCode_t MbsASCIIReceive(Mbshandle_t dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
+MbErrorCode_t MbsASCIISend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void MbsASCIIReceiveFSM(MbsDev_t *dev);
-void MbsASCIITransmitFSM(MbsDev_t *dev);
-void MbsASCIITimerT1SExpired(MbsDev_t *dev);
+void MbsASCIIReceiveFSM(Mbshandle_t dev);
+void MbsASCIITransmitFSM(Mbshandle_t dev);
+void MbsASCIITimerT1SExpired(Mbshandle_t dev);
     
 #endif
 #endif

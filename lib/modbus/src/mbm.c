@@ -25,7 +25,7 @@ static msg_q_t mbm_dev_head = NULL;
 
 //static msgboxstatic_t msgboxHandlebuf = MSGBOX_STATIC_INIT(MSGBOX_UNLIMITED_CAP);
 
-MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity)
+Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
     MbmDev_t *dev;
@@ -102,10 +102,11 @@ MbmDev_t *MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t
     }
     msgQputFront(&mbm_dev_head, dev);
     
-    return dev;
+    return ( Mbmhandle_t )dev;
 }
 
 // must be delete all the request and node
+//不实现
 void MbmFree(uint8_t ucPort)
 {
 /*
@@ -126,47 +127,45 @@ void MbmFree(uint8_t ucPort)
     */
 }
 
-MbErrorCode_t MbmSetPara(MbmDev_t *dev, uint8_t retry,uint32_t replytimeout,
+MbErrorCode_t MbmSetPara(Mbmhandle_t dev, uint8_t retry,uint32_t replytimeout,
                                     uint32_t delaypolltime, uint32_t broadcastturntime)
 {
-    if(dev == NULL)
+    MbmDev_t *pdev = ( MbmDev_t * )dev;
+    
+    if(pdev == NULL)
         return MB_EINVAL;
     
-    dev->retry = (retry > MBM_RETRY_COUNT_MAX) ? MBM_RETRY_COUNT_MAX : retry;
+    pdev->retry = (retry > MBM_RETRY_COUNT_MAX) ? MBM_RETRY_COUNT_MAX : retry;
     
     if(replytimeout < MBM_REPLYTIMEOUT_MIN)
-        dev->Replytimeout = MBM_REPLYTIMEOUT_MIN;
+        pdev->Replytimeout = MBM_REPLYTIMEOUT_MIN;
     else if(replytimeout > MBM_REPLYTIMEOUT_MAX)
-        dev->Replytimeout = MBM_REPLYTIMEOUT_MAX;
+        pdev->Replytimeout = MBM_REPLYTIMEOUT_MAX;
     else
-        dev->Replytimeout = replytimeout;
+        pdev->Replytimeout = replytimeout;
 
     if(delaypolltime < MBM_DELAYPOLLTIME_MIN)
-        dev->Delaypolltime = MBM_DELAYPOLLTIME_MIN;
+        pdev->Delaypolltime = MBM_DELAYPOLLTIME_MIN;
     else if(delaypolltime > MBM_DELAYPOLLTIME_MAX)
-        dev->Delaypolltime = MBM_DELAYPOLLTIME_MAX;
+        pdev->Delaypolltime = MBM_DELAYPOLLTIME_MAX;
     else
-        dev->Delaypolltime = delaypolltime;
+        pdev->Delaypolltime = delaypolltime;
 
     if(broadcastturntime < MBM_DELAYPOLLTIME_MIN)
-        dev->Broadcastturntime = MBM_BROADTURNTIME_MIN;
+        pdev->Broadcastturntime = MBM_BROADTURNTIME_MIN;
     else if(broadcastturntime > MBM_BROADTURNTIME_MAX)
-        dev->Broadcastturntime = MBM_BROADTURNTIME_MAX;
+        pdev->Broadcastturntime = MBM_BROADTURNTIME_MAX;
     else
-        dev->Broadcastturntime = broadcastturntime;
+        pdev->Broadcastturntime = broadcastturntime;
 
     return MB_ENOERR;
 }
 /* 创建一个独立节点和寄存器列表 */
 MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
-                                uint16_t reg_holding_addr_start,
-                                uint16_t reg_holding_num,
-                                uint16_t reg_input_addr_start,
-                                uint16_t reg_input_num,
-                                uint16_t reg_coils_addr_start,
-                                uint16_t reg_coils_num,
-                                uint16_t reg_discrete_addr_start,
-                                uint16_t reg_discrete_num)
+                                uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
+                                uint16_t reg_input_addr_start, uint16_t reg_input_num,
+                                uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
+                                uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num)
 {
     uint32_t lens;
     uint8_t *regbuf;
@@ -239,7 +238,7 @@ void MbmNodeFree(MbmNode_t *node)
 }
 
 /* 将节点加入到主机，由MbmNodeNew创建的节点 */
-MbErrorCode_t MbmAddNode(MbmDev_t *dev, MbmNode_t *node)
+MbErrorCode_t MbmAddNode(Mbmhandle_t dev, MbmNode_t *node)
 {
     MbmNode_t *srhnode;
     
@@ -255,13 +254,13 @@ MbErrorCode_t MbmAddNode(MbmDev_t *dev, MbmNode_t *node)
     if(srhnode)
         return MB_ENODEEXIST;
 
-    msgQputFront(&(dev->nodehead), node);
+    msgQputFront(&(((MbmDev_t *)dev)->nodehead), node);
 
     return MB_ENOERR;
 }
 
 /* 将节点从主机删除 */
-MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr)
+MbErrorCode_t MbmRemoveNode(Mbmhandle_t dev, uint8_t slaveaddr)
 {
     MbmNode_t *srchnode;
     MbmNode_t *prenode = NULL;
@@ -269,7 +268,7 @@ MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr)
     if( dev == NULL )
         return MB_EINVAL;
 
-    msgQ_for_each_msg(&(dev->nodehead), srchnode){
+    msgQ_for_each_msg(&(((MbmDev_t *)dev)->nodehead), srchnode){
         if(srchnode->slaveaddr == slaveaddr) // find it
             break;
     
@@ -278,7 +277,7 @@ MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr)
 
     if(srchnode){
         //first remove from node list
-        msgQextract(&(dev->nodehead), srchnode, prenode);
+        msgQextract(&(((MbmDev_t *)dev)->nodehead), srchnode, prenode);
     }
     // init
     srchnode->slaveaddr = 0;
@@ -287,14 +286,14 @@ MbErrorCode_t MbmRemoveNode(MbmDev_t *dev, uint8_t slaveaddr)
 }
 
 /* search node on the host list ? */
-MbmNode_t *MbmSearchNode(MbmDev_t *dev, uint8_t slaveaddr)
+MbmNode_t *MbmSearchNode(Mbmhandle_t dev, uint8_t slaveaddr)
 {
     MbmNode_t *srh;
 
     if(dev == NULL)
         return NULL;
 
-    msgQ_for_each_msg(&(dev->nodehead), srh){
+    msgQ_for_each_msg(&(((MbmDev_t *)dev)->nodehead), srh){
         if(srh->slaveaddr == slaveaddr)
             break;
     }
@@ -303,39 +302,45 @@ MbmNode_t *MbmSearchNode(MbmDev_t *dev, uint8_t slaveaddr)
 }
 
 
-MbErrorCode_t MbmStart(MbmDev_t *dev)
+MbErrorCode_t MbmStart(Mbmhandle_t dev)
 {
-    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+    MbmDev_t *pdev = (MbmDev_t *)dev;
+
+    if( pdev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
-    if( dev->devstate == DEV_STATE_DISABLED ){
+    if( pdev->devstate == DEV_STATE_DISABLED ){
         /* Activate the protocol stack. */
-        dev->pMbStartCur(dev);
-        dev->devstate = DEV_STATE_ENABLED;
+        pdev->pMbStartCur(dev);
+        pdev->devstate = DEV_STATE_ENABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmStop(MbmDev_t *dev)
+MbErrorCode_t MbmStop(Mbmhandle_t dev)
 {
-    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+    MbmDev_t *pdev = (MbmDev_t *)dev;
+
+    if( pdev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
-    if( dev->devstate == DEV_STATE_ENABLED ){
-        dev->pMbStopCur(dev);
-        dev->devstate = DEV_STATE_DISABLED;
+    if( pdev->devstate == DEV_STATE_ENABLED ){
+        pdev->pMbStopCur(dev);
+        pdev->devstate = DEV_STATE_DISABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmClose(MbmDev_t *dev)
-{
+MbErrorCode_t MbmClose(Mbmhandle_t dev)
+{    
+    MbmDev_t *pdev = (MbmDev_t *)dev;
+    
     // must be stop first then it can close
-    if( dev->devstate == DEV_STATE_DISABLED ){
-        if( dev->pMbCloseCur != NULL ){
-            dev->pMbCloseCur(dev);
+    if( pdev->devstate == DEV_STATE_DISABLED ){
+        if( pdev->pMbCloseCur != NULL ){
+            pdev->pMbCloseCur(dev);
         }
 
         return MB_ENOERR;
@@ -344,18 +349,19 @@ MbErrorCode_t MbmClose(MbmDev_t *dev)
     return MB_EILLSTATE;
 }
 
- MbReqResult_t MbmSend(MbmDev_t *dev, MbmReq_t *req)
-{   
+ MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req)
+{
     uint16_t crc_lrc;
+    MbmDev_t *pdev = (MbmDev_t *)dev;
     
-    if(dev->mode == MB_RTU) {
+    if(pdev->mode == MB_RTU) {
 #if MB_RTU_ENABLED > 0
         crc_lrc = MbCRC16(req->adu, req->adulength);
         req->adu[req->adulength++] = crc_lrc & 0xff;
         req->adu[req->adulength++] = (crc_lrc >> 8) & 0xff;
 #endif
     }
-    else if(dev->mode == MB_ASCII) {
+    else if(pdev->mode == MB_ASCII) {
 #if MB_ASCII_ENABLED > 0
         crc_lrc = MbLRC(req->adu,req->adulength);
         req->adu[req->adulength++] = crc_lrc & 0xff;
@@ -366,11 +372,11 @@ MbErrorCode_t MbmClose(MbmDev_t *dev)
     }
     
     if(req->scanrate){ 
-        msgQput(&(dev->Reqpendinghead) , req);
+        msgQput(&(pdev->Reqpendinghead) , req);
     }
     else {
         // if zero add ready list immediately but only once
-        msgQput(&(dev->Reqreadyhead) , req);
+        msgQput(&(pdev->Reqreadyhead) , req);
     }
     
     return MBR_ENOERR;

@@ -103,8 +103,10 @@ typedef struct
         uint8_t slaveid; // slave ID
     }introute;
 }MbHeader_t;
+// 主机设备句柄
+typedef void *Mbmhandle_t;
 
-typedef void (*pActionHandle)(void *dev);
+typedef void (*pActionHandle)(Mbmhandle_t dev);
 
 /************************************** define for master ******************************************/
 // 定义请求错误枚举
@@ -140,8 +142,8 @@ typedef MbReqResult_t (*pMbmParseRspHandler)(MbReg_t *regs,
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt, 
                                                 uint8_t *premain,uint16_t remainLength);
 
-typedef MbReqResult_t (*pActionMasterReceive)(void *pdev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-typedef MbReqResult_t (*pActionMasterSend)(void *pdev,const uint8_t *pAdu, uint16_t usAduLength);
+typedef MbReqResult_t (*pActionMasterReceive)(Mbmhandle_t dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+typedef MbReqResult_t (*pActionMasterSend)(Mbmhandle_t dev,const uint8_t *pAdu, uint16_t usAduLength);
 
 //result may only error MBR_ENOERR,MBR_MISSBYTE, MBR_ECHECK, MBR_EINFUNCTION,MBR_EINVAL,MBR_ETIMEOUT,MBR_ERSPEXCEPTOIN
 // eException : when result is MBR_ERSPEXCEPTOIN use is
@@ -212,14 +214,16 @@ typedef struct
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }MbmDev_t;
 
-#define MbmSetPollmode(dev,state) do {dev->Replytimeoutcnt = 0;dev->Pollstate = state;}while(0)
-MbReqResult_t MbmSend(MbmDev_t *dev, MbmReq_t *req);
+#define MbmSetPollmode(pdev, state) do {pdev->Replytimeoutcnt = 0;pdev->Pollstate = state;}while(0)
+MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req);
 
 /************************************** define for slave ******************************************/
+//从机设备句柄
+typedef void *Mbshandle_t;
 typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef MbErrorCode_t (*pActionSlaveReceive)(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
-typedef MbErrorCode_t (*pActionSlaveSend)(void *dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+typedef MbErrorCode_t (*pActionSlaveReceive)(Mbshandle_t dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+typedef MbErrorCode_t (*pActionSlaveSend)(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 // 从机设备描述
 typedef struct
 {
@@ -249,7 +253,7 @@ typedef struct
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }MbsDev_t;
 
-#define MbsSemGive(dev) do { ((MbsDev_t *)dev)->eventInFlag = TRUE;}while(0)
+#define MbsSemGive(pdev) do { pdev->eventInFlag = TRUE;}while(0)
 
 
 #endif

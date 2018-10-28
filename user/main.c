@@ -17,8 +17,8 @@ static void prvClockInit(void);
 static void prvnvicInit(void);
 
 #if MB_MASTER_ENABLED > 0
-MbmDev_t* deviceM0;
-MbmDev_t* deviceM1;
+Mbmhandle_t deviceM0;
+Mbmhandle_t deviceM1;
 
 static  void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void *req)
 {
@@ -88,8 +88,8 @@ int main(void)
 
 #if MB_SLAVE_ENABLED > 0
 
-MbsDev_t *device0;
-MbsDev_t *device1;
+Mbshandle_t device0;
+Mbshandle_t device1;
 static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
 static __align(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111,0x2222,0x3333};

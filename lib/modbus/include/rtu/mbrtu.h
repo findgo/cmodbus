@@ -22,33 +22,33 @@ typedef enum
 #if MB_RTU_ENABLED > 0 
 #if MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
-void MbmRTUStart(void *dev);
-void MbmRTUStop(void *dev);
-void MbmRTUClose(void *dev);
-MbReqResult_t MbmRTUReceive(void *dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-MbReqResult_t MbmRTUSend(void *dev,const uint8_t *pAdu, uint16_t usLength);
+MbErrorCode_t MbmRTUInit( Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+void MbmRTUStart(Mbmhandle_t dev);
+void MbmRTUStop(Mbmhandle_t dev);
+void MbmRTUClose( Mbmhandle_t dev);
+MbReqResult_t MbmRTUReceive(Mbmhandle_t dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+MbReqResult_t MbmRTUSend(Mbmhandle_t dev,const uint8_t *pAdu, uint16_t usLength);
 
-void MbmRTUReceiveFSM(  MbmDev_t *dev);
-void MbmRTUTransmitFSM(  MbmDev_t *dev);
-void MbmRTUTimerT15Expired(  MbmDev_t *dev);
-void MbmRTUTimerT35Expired(  MbmDev_t *dev);
+void MbmRTUReceiveFSM(  Mbmhandle_t dev);
+void MbmRTUTransmitFSM(  Mbmhandle_t dev);
+void MbmRTUTimerT15Expired(Mbmhandle_t dev);
+void MbmRTUTimerT35Expired(  Mbmhandle_t dev);
 
 #endif
 
 #if MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsRTUInit(void *dev, uint8_t ucPort, uint32_t ulBaudRate,MbParity_t eParity);
-void MbsRTUStart(void *dev);
-void MbsRTUStop(void *dev);
-void MbsRTUClose(void *dev);
-MbErrorCode_t MbsRTUReceive(void *dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
-MbErrorCode_t MbsRTUSend(void *dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,MbParity_t eParity);
+void MbsRTUStart(Mbshandle_t dev);
+void MbsRTUStop(Mbshandle_t dev);
+void MbsRTUClose(Mbshandle_t dev);
+MbErrorCode_t MbsRTUReceive(Mbshandle_t dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+MbErrorCode_t MbsRTUSend(Mbshandle_t dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void MbsRTUReceiveFSM(  MbsDev_t *dev);
-void MbsRTUTransmitFSM(  MbsDev_t *dev);
-void MbsRTUTimerT15Expired(  MbsDev_t *dev);
-void MbsRTUTimerT35Expired(  MbsDev_t *dev);
+void MbsRTUReceiveFSM(  Mbshandle_t dev);
+void MbsRTUTransmitFSM(Mbshandle_t dev);
+void MbsRTUTimerT15Expired(  Mbshandle_t dev);
+void MbsRTUTimerT35Expired(Mbshandle_t dev);
 
 #endif
 #endif

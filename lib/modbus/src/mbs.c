@@ -24,7 +24,7 @@ static MbsDev_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev);
 
 
-MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
+Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity )
 {
     MbsDev_t *dev = NULL;
     MbErrorCode_t eStatus;
@@ -96,7 +96,7 @@ MbsDev_t *MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_
     dev->devstate = DEV_STATE_DISABLED;    
     dev->eventInFlag = FALSE;
 
-    return dev;
+    return (Mbshandle_t)dev;
 }
 
 void MbsFree(uint8_t ucPort)
@@ -113,28 +113,23 @@ void MbsFree(uint8_t ucPort)
 
 //__align(2)  
 //static uint8_t regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
-                                uint8_t *regstoragebuf,  
-                                uint32_t regstoragesize, 
-                                uint16_t reg_holding_addr_start,
-                                uint16_t reg_holding_num,
-                                uint16_t reg_input_addr_start,
-                                uint16_t reg_input_num,
-                                uint16_t reg_coils_addr_start,
-                                uint16_t reg_coils_num,
-                                uint16_t reg_discrete_addr_start,
-                                uint16_t reg_discrete_num)
+MbErrorCode_t MbsRegAssign(Mbshandle_t dev,
+                                uint8_t *regstoragebuf,  uint32_t regstoragesize, 
+                                uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
+                                uint16_t reg_input_addr_start, uint16_t reg_input_num,
+                                uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
+                                uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num)
 {
     uint32_t offset;
     MbReg_t *regs;
-
+    
     if(dev == NULL || regstoragebuf == NULL)
         return MB_EINVAL;
 
     if( regstoragesize < MbRegBufSizeCal( reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num ) )
         return MB_EINVAL;
 
-    regs = (MbReg_t *)&(dev->regs);
+    regs = (MbReg_t *)&((( MbsDev_t *)dev)->regs);
 
     regs->reg_holding_addr_start = reg_holding_addr_start;
     regs->reg_holding_num = reg_holding_num;
@@ -164,26 +159,18 @@ MbErrorCode_t MbsRegAssign(MbsDev_t *dev,
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsRegAssignSingle(MbsDev_t *dev,
-                                uint16_t *reg_holdingbuf,  
-                                uint16_t reg_holding_addr_start,
-                                uint16_t reg_holding_num,
-                                uint16_t *reg_inputbuf,  
-                                uint16_t reg_input_addr_start,
-                                uint16_t reg_input_num,
-                                uint8_t *reg_coilsbuf,  
-                                uint16_t reg_coils_addr_start,
-                                uint16_t reg_coils_num,
-                                uint8_t *reg_discretebuf,  
-                                uint16_t reg_discrete_addr_start,
-                                uint16_t reg_discrete_num)
+MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
+                                uint16_t *reg_holdingbuf, uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
+                                uint16_t *reg_inputbuf, uint16_t reg_input_addr_start,uint16_t reg_input_num,
+                                uint8_t *reg_coilsbuf, uint16_t reg_coils_addr_start,uint16_t reg_coils_num,
+                                uint8_t *reg_discretebuf, uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num)
 {
     MbReg_t *regs;
 
     if( dev == NULL )
         return MB_EINVAL;
 
-    regs = (MbReg_t *)&(dev->regs);
+    regs = (MbReg_t *)&((( MbsDev_t *)dev)->regs);
 
     regs->reg_holding_addr_start = reg_holding_addr_start;
     regs->reg_holding_num = reg_holding_num;
@@ -204,39 +191,45 @@ MbErrorCode_t MbsRegAssignSingle(MbsDev_t *dev,
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStart(MbsDev_t *dev)
+MbErrorCode_t MbsStart(Mbshandle_t dev)
 {
-    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+    MbsDev_t *pdev = (MbsDev_t *)dev;
+    
+    if( pdev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
-    if( dev->devstate == DEV_STATE_DISABLED ){
+    if( pdev->devstate == DEV_STATE_DISABLED ){
         /* Activate the protocol stack. */
-        dev->pMbStartCur(dev);
-        dev->devstate = DEV_STATE_ENABLED;
+        pdev->pMbStartCur(dev);
+        pdev->devstate = DEV_STATE_ENABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStop(MbsDev_t *dev)
+MbErrorCode_t MbsStop(Mbshandle_t dev)
 {
-    if( dev->devstate == DEV_STATE_NOT_INITIALIZED )
+    MbsDev_t *pdev = (MbsDev_t *)dev;
+    
+    if( pdev->devstate == DEV_STATE_NOT_INITIALIZED )
         return MB_EILLSTATE;
 
-    if( dev->devstate == DEV_STATE_ENABLED ){
-        dev->pMbStopCur(dev);
-        dev->devstate = DEV_STATE_DISABLED;
+    if( pdev->devstate == DEV_STATE_ENABLED ){
+        pdev->pMbStopCur(dev);
+        pdev->devstate = DEV_STATE_DISABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsClose(MbsDev_t *dev)
+MbErrorCode_t MbsClose(Mbshandle_t dev)
 {
+    MbsDev_t *pdev = (MbsDev_t *)dev;
+
     // must be stop first then it can close
-    if( dev->devstate == DEV_STATE_DISABLED ){
-        if( dev->pMbCloseCur != NULL ){
-            dev->pMbCloseCur(dev);
+    if( pdev->devstate == DEV_STATE_DISABLED ){
+        if( pdev->pMbCloseCur != NULL ){
+            pdev->pMbCloseCur(dev);
         }
 
         return MB_ENOERR;
