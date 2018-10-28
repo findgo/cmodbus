@@ -61,7 +61,7 @@ static MbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
  *
  * @return  
  */
-MbErrorCode_t MbsRegisterCB( uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler )
+MbErrorCode_t MbsRegisterHandleCB( uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler )
 {
     int i;
     MbErrorCode_t eStatus = MB_ENORES;

@@ -20,6 +20,7 @@ uint32_t MbRegBufSizeCal(     uint16_t reg_holding_num, uint16_t reg_input_num, 
 #define MbGetRegsDiscNum(pReg)       (((MbReg_t *)(pReg))->reg_discrete_num)
 
 #if MB_MASTER_ENABLED
+MbErrorCode_t MbmRegisterParseHandleCB( uint8_t ucFunctionCode, pMbmParseRspHandler pxHandler );
 
 /* TODO implement modbus master */
 Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
@@ -100,7 +101,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
                                         uint8_t const *pucAdditional, uint16_t usAdditionalLen );
 
-MbErrorCode_t MbsRegisterCB(uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler);
+MbErrorCode_t MbsRegisterHandleCB(uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler);
 
 Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 void MbsFree(uint8_t ucPort);

@@ -26,7 +26,7 @@ extern "C" {
  * the sum of all enabled functions in this file and custom function
  * handlers. If set to small adding more functions will fail.
  */
-#define MBM_PARSE_RSP_HANDLERS_MAX               ( 16 )
+#define MBM_PARSE_RSP_HANDLERS_MAX               ( 10 )
 
 /*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
  *    </em>command.
@@ -93,7 +93,7 @@ extern "C" {
  * the sum of all enabled functions in this file and custom function
  * handlers. If set to small adding more functions will fail.
  */
-#define MBS_FUNC_HANDLERS_MAX                    ( 16 )
+#define MBS_FUNC_HANDLERS_MAX                    ( 10 )
 /*! \brief Number of bytes which should be allocated for the <em>Report Slave ID
  *    </em>command.
  *

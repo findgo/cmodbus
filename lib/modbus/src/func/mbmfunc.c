@@ -10,7 +10,7 @@ typedef struct
 } MbmParseRspHandler;
 
 
-static MbmParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
+static MbmParseRspHandler parseRspHandlers[MBM_PARSE_RSP_HANDLERS_MAX] = {
 #if MBM_PARSE_RSP_OTHER_REP_SLAVEID_ENABLED > 0
     {MB_FUNC_OTHER_REPORT_SLAVEID, NULL},
 #endif
@@ -42,6 +42,41 @@ static MbmParseRspHandler xParseRspHandlers[MBS_FUNC_HANDLERS_MAX] = {
     {MB_FUNC_READ_DISCRETE_INPUTS, MbmParseRspRdDiscreteInputs},
 #endif
 };
+
+/*********************************************************************
+ * @brief 注册功能码回调函数  
+ *
+ * @param   ucFunctionCode - 功能码
+ * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ *
+ * @return  
+ */
+MbErrorCode_t MbmRegisterParseHandleCB( uint8_t ucFunctionCode, pMbmParseRspHandler pxHandler )
+{
+    int i;
+    MbErrorCode_t eStatus = MB_ENORES;
+
+    if((ucFunctionCode < MB_FUNC_MIN) || (ucFunctionCode > MB_FUNC_MAX))
+        return MB_EINVAL;
+
+    for( i = 0; i < MBS_FUNC_HANDLERS_MAX; i++ ){
+        if((parseRspHandlers[i].ucFunctionCode == 0) || (parseRspHandlers[i].ucFunctionCode == ucFunctionCode)){ 
+            // pxHandler != NULL register,  NULL is unregister
+            parseRspHandlers[i].ucFunctionCode = pxHandler ? ucFunctionCode : 0;
+            parseRspHandlers[i].pxHandler = pxHandler;
+            
+            eStatus = MB_ENOERR;
+            break;
+        }
+    }
+    if(!pxHandler) // remove can't failed!
+        eStatus = MB_ENOERR;
+    
+    return eStatus;
+}
+
+
+
 // search function code handle
 pMbmParseRspHandler MbmFuncHandleSearch(uint8_t ucFunctionCode)
 {
@@ -49,11 +84,11 @@ pMbmParseRspHandler MbmFuncHandleSearch(uint8_t ucFunctionCode)
 
     for( i = 0; i < MBM_PARSE_RSP_HANDLERS_MAX; i++ ){
         /* No more function handlers registered. Abort. */
-        if( xParseRspHandlers[i].ucFunctionCode == 0 ){
+        if( parseRspHandlers[i].ucFunctionCode == 0 ){
             return NULL;
         }
-        else if(xParseRspHandlers[i].ucFunctionCode == ucFunctionCode){
-            return (xParseRspHandlers[i].pxHandler);
+        else if(parseRspHandlers[i].ucFunctionCode == ucFunctionCode){
+            return (parseRspHandlers[i].pxHandler);
         }                
     }
 
