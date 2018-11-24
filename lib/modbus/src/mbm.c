@@ -73,7 +73,8 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
 
     // init parameter
     dev->port         = ucPort;
-    dev->mode  = eMode;
+    dev->mode         = eMode;        
+    dev->T50PerCharater = (ulBaudRate > 19200) ? 10 : (220000 / ulBaudRate);
     
     dev->devstate     = DEV_STATE_DISABLED;
 
@@ -87,6 +88,7 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
     dev->retry        = MBM_DEFAULT_RETRY_COUNT;
     dev->retrycnt     = 0;
 
+    dev->XmitingTime        = 0;
     dev->Replytimeout       = MBM_DEFAULT_REPLYTIMEOUT;
     dev->Replytimeoutcnt    = 0;
     dev->Delaypolltime      = MBM_DEFAULT_DELAYPOLLTIME;
@@ -427,14 +429,21 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff)
     case MBM_XMIT: 
         req = msgQpeek(&(dev->Reqreadyhead)); // peek ready list ,any request on the list?
         if(req && (dev->pMbSendCur(dev,req->adu,req->adulength) == MB_ENOERR)){
-            dev->Pollstate = MBM_XMITING;
+            if(dev->mode == MB_RTU){
+                dev->XmitingTime = dev->T50PerCharater * 50 * req->adulength / 1000 + 1;
+            }
+            else {
+                dev->XmitingTime = dev->T50PerCharater * 50 * (req->adulength + 1) * 2 / 1000 ;
+            }
+            dev->Replytimeoutcnt = 0;
+            dev->Pollstate = MBM_WAITRSP;
         }
         else{ /* nothing want to send or send error, wait a moment to try*/
             dev->Pollstate = MBM_DELYPOLL;
         }
         break;
 
-    case MBM_RSPEXCUTE:  // response excute      
+    case MBM_RSPEXCUTE:  // response excute  
         req = msgQpop(&(dev->Reqreadyhead));// pop from ready list
         if(req == NULL) { /* some err happen ,then no request in list*/
             dev->Pollstate = MBM_DELYPOLL;
@@ -505,7 +514,6 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff)
         break;
     case MBM_BROADCASTTURN:
     case MBM_DELYPOLL:
-    case MBM_XMITING:
         break;
     case MBM_WAITRSP:  // send ok ? wait for server response
         req = msgQpeek(&(dev->Reqreadyhead));
@@ -546,7 +554,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff)
             
         case MBM_WAITRSP: /* 等待应答超时时间 */
             dev->Replytimeoutcnt += timediff;
-            if(dev->Replytimeoutcnt >= dev->Replytimeout){
+            if(dev->Replytimeoutcnt >= (dev->Replytimeout + dev->XmitingTime)){
                 dev->Replytimeoutcnt = 0;
                 dev->Pollstate = MBM_RSPTIMEOUT;
             }

@@ -193,8 +193,6 @@ void MbmRTUTransmitFSM(  Mbmhandle_t dev)
             /* Disable transmitter. This prevents another transmit buffer empty interrupt. */             
             MbPortSerialEnable(pdev->port, TRUE, FALSE);
             pdev->sndrcvState = STATE_RTU_RX_IDLE;
-            if(pdev->Pollstate == MBM_XMITING)
-                MbmSetPollmode(pdev, MBM_WAITRSP); // 发送完毕，进入等待应答
         }
     }
     else {

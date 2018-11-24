@@ -271,8 +271,6 @@ void MbmASCIITransmitFSM(Mbmhandle_t dev)
         MbPortSerialEnable(pdev->port, TRUE, FALSE);
         pdev->sndrcvState = STATE_ASCII_RX_IDLE;
 
-         if(pdev->Pollstate == MBM_XMITING)
-            MbmSetPollmode(pdev, MBM_WAITRSP); // 发送完毕，进入等待应答
         break;
     }
 }

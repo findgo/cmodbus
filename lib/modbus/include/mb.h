@@ -132,7 +132,6 @@ typedef enum {
     MBM_DELYPOLL,  // 轮询延时
     MBM_BROADCASTTURN, // 广播
     MBM_XMIT,           // 发送
-    MBM_XMITING,        // 发送ing
     MBM_WAITRSP,        // 等待应答
     MBM_RSPEXCUTE,      // 应答帧处理
     MBM_RSPTIMEOUT     // 应答超时
@@ -178,20 +177,21 @@ typedef struct
 {
     uint8_t port;               
     MbDevState_t devstate;      // device current state
-    uint16_t reserved0;         //reserved
+    MbMode_t mode;       // work mode as RTU ASCII TCP 
+    uint8_t Pollstate;          // poll state
     
+    uint32_t T50PerCharater;  //发送一个字符所需时间 timevalueT50us = Ticks_per_1s / ( Baudrate / 11 ) = 220000 / Baudrate
+
     msg_q_t nodehead;           /* slave node list on this host */
 
     msg_q_t Reqreadyhead;        /* 就绪表 request ready list head*/
     msg_q_t Reqpendinghead;      /* 挂起表 request suspend list */
 
-    MbMode_t mode;       // work mode as RTU ASCII TCP 
-
-    uint8_t Pollstate;          // poll state
-
     uint8_t retry;              // retry MAX count
     uint8_t retrycnt;           // retry count
 
+    uint16_t XmitingTime;
+    
     uint16_t Replytimeout;              /* response timeout */
     uint16_t Replytimeoutcnt;           /* response timeout count*/   
     uint16_t Delaypolltime;             /* delay time between polls */
@@ -214,7 +214,7 @@ typedef struct
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }MbmDev_t;
 
-#define MbmSetPollmode(pdev, state) do {pdev->Replytimeoutcnt = 0;pdev->Pollstate = state;}while(0)
+#define MbmSetPollmode(pdev, state)     do {pdev->Pollstate = state;}while(0)
 MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req);
 
 /************************************** define for slave ******************************************/
