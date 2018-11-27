@@ -54,11 +54,9 @@ static MbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #endif
 };
 /*********************************************************************
- * @brief 注册功能码回调函数  
- *
+ * @brief   register funcction code handle   
  * @param   ucFunctionCode - 功能码
  * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
- *
  * @return  
  */
 MbErrorCode_t MbsRegisterHandleCB( uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler )
@@ -85,7 +83,12 @@ MbErrorCode_t MbsRegisterHandleCB( uint8_t ucFunctionCode, pMbsFunctionHandler p
     return eStatus;
 }
 
-// search function handle with function code
+/*
+* @brief search function handle with function code  
+* @param   ucFunctionCode - 功能码
+* @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+* @return  function handle point, if not exist return NULL
+*/
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t ucFunctionCode)
 {
     int i;

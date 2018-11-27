@@ -7,11 +7,11 @@
 /**
   * @brief  线圈寄存器处理函数，线圈寄存器可读，可读可写
   * @param  regs          操作寄存器指针
-  *         pucRegBuffer  读操作---返回数据指针，写操作--返回数据指针
-  *         usAddress     寄存器起始地址
-  *         usNRegs       寄存器长度
-  *         eMode         操作方式，读或者写
-  * @retval eStatus       寄存器状态
+  * @param  pucRegBuffer  读操作---返回数据指针，写操作--返回数据指针
+  * @param  usAddress     寄存器起始地址
+  * @param  usNRegs       寄存器长度
+  * @param  eMode         操作方式，读或者写
+  * @return               错误状态
   */
 static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, MbRegisterMode_t eMode )
 {
@@ -50,12 +50,11 @@ static MbErrorCode_t __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint1
 /**
   * @brief  离散输入寄存器处理函数，只可读
   * @param  regs          操作寄存器指针
-  *         pucRegBuffer  返回数据指针
-  *         usAddress     寄存器起始地址
-  *         usNRegs       寄存器长度
-  * @retval eStatus       寄存器状态
+  * @param  pucRegBuffer  返回数据指针
+  * @param  usAddress     寄存器起始地址
+  * @param  usNDiscrete       寄存器长度
+  * @return               错误状态
   */
-
 static MbErrorCode_t __MbsRegDiscreteCB(MbReg_t *regs, uint8_t * pucRegBuffer, uint16_t usAddress, uint16_t usNDiscrete )
 {
   int16_t iNDiscrete = (int16_t)usNDiscrete;
@@ -77,7 +76,13 @@ static MbErrorCode_t __MbsRegDiscreteCB(MbReg_t *regs, uint8_t * pucRegBuffer, u
 
     return MB_ENOREG;
 }
-
+ /**
+* @brief   function handlers:  read coils register 
+* @param   regs - real slave register pointer
+* @param   pPdu - pdu frame pointer 
+* @param   usLen - usLen pdu frame length pointer
+* @return  exception code , see mbproto.h
+*/
 MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;
@@ -140,7 +145,13 @@ MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
     
     return eStatus;
 }
-
+ /**
+* @brief   function handlers:  write coils register 
+* @param   regs - real slave register pointer
+* @param   pPdu - pdu frame pointer 
+* @param   usLen - usLen pdu frame length pointer
+* @return  exception code , see mbproto.h
+*/
 MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
 {
     uint16_t usRegAddress;
@@ -184,7 +195,13 @@ MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
     
     return eStatus;
 }
-
+ /**
+* @brief   function handlers:  write multi coils register 
+* @param   regs - real slave register pointer
+* @param   pPdu - pdu frame pointer 
+* @param   usLen - usLen pdu frame length pointer
+* @return  exception code , see mbproto.h
+*/
 MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
 {
     uint16_t usRegAddress;
@@ -237,7 +254,13 @@ MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
     
     return eStatus;
 }
-
+ /**
+* @brief   function handlers:  read discrete imput register 
+* @param   regs - real slave register pointer
+* @param   pPdu - pdu frame pointer 
+* @param   usLen - usLen pdu frame length pointer
+* @return  exception code , see mbproto.h
+*/
 MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t * pPdu, uint16_t *usLen )
 {
     uint16_t usRegAddress;

@@ -100,11 +100,34 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
 MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
                                         uint8_t const *pucAdditional, uint16_t usAdditionalLen );
-
+/*********************************************************************
+ * @brief   register funcction code handle   
+ * @param   ucFunctionCode - 功能码
+ * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ * @return  
+ */
 MbErrorCode_t MbsRegisterHandleCB(uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler);
-
+/*********************************************************************
+ * @brief   create new slave modbus device  
+ * @param   eMode - MB_RTU or MB_ASCII
+ * @param   ucSlaveAddress - slave id
+ * @param   ucPort - use which usart port 
+ * @param   ulBaudRate - bandrate
+ * @param   eParity - Parity used for characters in serial mode
+ * @param   Mbshandle_t - slave device handle ,if failed return NULL 句柄
+ * @return  
+ */
 Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+/*********************************************************************
+ * @brief   free the slave modbus device with port
+ * @param   ucPort - use which usart port 
+ * @return  
+ */
 void MbsFree(uint8_t ucPort);
+/*********************************************************************
+ * @brief   assign buffer for register
+ * @return  
+ */
 MbErrorCode_t MbsRegAssign(Mbshandle_t dev,
                                 uint8_t *regstoragebuf,  uint32_t regstoragesize, 
                                 uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
@@ -116,9 +139,25 @@ MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
                                 uint16_t *reg_inputbuf, uint16_t reg_input_addr_start,uint16_t reg_input_num,
                                 uint8_t *reg_coilsbuf, uint16_t reg_coils_addr_start,uint16_t reg_coils_num,
                                 uint8_t *reg_discretebuf, uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num);
+/*********************************************************************
+ * @brief   start the slave device
+ * @param   dev - the handle of the slave device
+ * @return  
+ */
 MbErrorCode_t MbsStart(Mbshandle_t dev);
+/*********************************************************************
+ * @brief   stop the slave device
+ * @param   dev - the handle of the slave device
+ * @return  
+ */
 MbErrorCode_t MbsStop(Mbshandle_t dev);
+/*********************************************************************
+ * @brief   close the slave device, before it,muse be use MbsStop first
+ * @param   dev - the handle of the slave device
+ * @return  
+ */
 MbErrorCode_t MbsClose(Mbshandle_t dev);
+// 
 void MbsPoll(void);
 
 #endif
