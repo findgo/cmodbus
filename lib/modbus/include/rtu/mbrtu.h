@@ -42,7 +42,7 @@ MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,Mb
 void MbsRTUStart(Mbshandle_t dev);
 void MbsRTUStop(Mbshandle_t dev);
 void MbsRTUClose(Mbshandle_t dev);
-MbErrorCode_t MbsRTUReceive(Mbshandle_t dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+MbErrorCode_t MbsRTUReceiveParse(Mbshandle_t dev, MbsAduFrame_t *aduFrame);
 MbErrorCode_t MbsRTUSend(Mbshandle_t dev,uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
 void MbsRTUReceiveFSM(  Mbshandle_t dev);

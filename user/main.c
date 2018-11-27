@@ -100,7 +100,6 @@ int main(void)
 {	
     MbErrorCode_t status;
 
-	prvClockInit();
 	prvnvicInit();
 	Systick_Configuration();
 //#if MB_RTU_ENABLED > 0   

@@ -115,8 +115,7 @@ MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen )
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
 
-            eRegStatus =
-                __MbsRegCoilsCB(regs, pucFrameCur, usRegAddress, usCoilCount, MB_REG_READ );
+            eRegStatus = __MbsRegCoilsCB(regs, pucFrameCur, usRegAddress, usCoilCount, MB_REG_READ );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
@@ -166,8 +165,7 @@ MbException_t MbsFuncWrCoil(MbReg_t *regs,uint8_t *pPdu, uint16_t * usLen)
             else{
                 ucBuf[0] = 0;
             }
-            eRegStatus =
-                __MbsRegCoilsCB(regs,&ucBuf[0], usRegAddress, 1, MB_REG_WRITE );
+            eRegStatus = __MbsRegCoilsCB(regs,&ucBuf[0], usRegAddress, 1, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
@@ -214,8 +212,7 @@ MbException_t MbsFuncWrMulCoils(MbReg_t *regs,uint8_t * pPdu, uint16_t * usLen )
             && (usCoilCnt <= MB_WRITEBITS_CNT_MAX ) \
              && (ucByteCountVerify == ucByteCount ) ){
              
-            eRegStatus =
-                __MbsRegCoilsCB(regs,&pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF], usRegAddress, usCoilCnt, MB_REG_WRITE );
+            eRegStatus = __MbsRegCoilsCB(regs,&pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF], usRegAddress, usCoilCnt, MB_REG_WRITE );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){
@@ -279,8 +276,7 @@ MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t * pPdu, uint16_t *u
             *pucFrameCur++ = ucNBytes;
             *usLen += 1;
 
-            eRegStatus =
-                __MbsRegDiscreteCB(regs, pucFrameCur, usRegAddress, usDiscreteCnt );
+            eRegStatus = __MbsRegDiscreteCB(regs, pucFrameCur, usRegAddress, usDiscreteCnt );
 
             /* If an error occured convert it into a Modbus exception. */
             if( eRegStatus != MB_ENOERR ){

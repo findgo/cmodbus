@@ -12,8 +12,6 @@ extern "C" {
 #include "mbconfig.h"
 #include "mbcpu.h"
 
-#include "mbmem.h"
-
 #include "mb.h"
 
 void MbSetBits( uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue );

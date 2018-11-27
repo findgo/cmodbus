@@ -68,7 +68,7 @@ void MbsRTUClose(Mbshandle_t dev)
 
 }
 
-MbErrorCode_t MbsRTUReceive(Mbshandle_t dev,uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength)
+MbErrorCode_t MbsRTUReceiveParse(Mbshandle_t dev, MbsAduFrame_t *aduFrame)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
     MbsDev_t *pdev = (MbsDev_t *)dev;
@@ -81,15 +81,15 @@ MbErrorCode_t MbsRTUReceive(Mbshandle_t dev,uint8_t *pucRcvAddress, uint8_t **pP
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
-        *pucRcvAddress = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
-
+        aduFrame->hdr.introute.slaveid = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        aduFrame->FunctionCode = pdev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */
-        *pusLength = (uint16_t)(pdev->rcvAduBufPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_CRC);
+        aduFrame->pduFrameLength = (uint16_t)(pdev->rcvAduBufPos - MB_SER_ADU_SIZE_ADDR - MB_SER_ADU_SIZE_CRC);
 
         /* Return the start of the Modbus PDU to the caller. */
-        *pPdu = (uint8_t *) & pdev->AduBuf[MB_SER_ADU_PDU_OFFSET];
+        aduFrame->pPduFrame = (uint8_t *) & pdev->AduBuf[MB_SER_ADU_PDU_OFFSET];
     }
     else{
         eStatus = MB_EIO;
@@ -206,7 +206,7 @@ void MbsRTUTransmitFSM(Mbshandle_t dev)
     }
 }
 
-void MbsRTUTimerT35Expired  (Mbshandle_t        dev)
+void MbsRTUTimerT35Expired  (Mbshandle_t         dev)
 {
     MbsDev_t *pdev = (MbsDev_t *)dev;
 

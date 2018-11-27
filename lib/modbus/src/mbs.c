@@ -17,6 +17,7 @@
 
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
+
 // local variate 
 static MbsDev_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 
@@ -61,7 +62,7 @@ Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint3
         dev->pMbStopCur = MbsRTUStop;
         dev->pMbCloseCur = MbsRTUClose;
         dev->pMbSendCur = MbsRTUSend;
-        dev->pMbReceivedCur = MbsRTUReceive;
+        dev->pMbReceiveParseCur = MbsRTUReceiveParse;
 
         eStatus = MbsRTUInit(dev, ucPort, ulBaudRate, eParity);
         break;
@@ -73,7 +74,7 @@ Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint3
         dev->pMbStopCur = MbsASCIIStop;
         dev->pMbCloseCur = MbsASCIIClose;
         dev->pMbSendCur = MbsASCIISend;
-        dev->pMbReceivedCur = MbsASCIIReceive;
+        dev->pMbReceiveParseCur = MbsASCIIReceiveParse;
         
         eStatus = MbsASCIIInit(dev, ucPort, ulBaudRate, eParity);
         break;
@@ -251,12 +252,9 @@ void MbsPoll(void)
 
 static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
 {
-    uint8_t *pPduFrame; // pdu fram
-    uint8_t ucRcvAddress;
-    uint8_t ucFunctionCode;
-    uint16_t usLength;
+    MbsAduFrame_t aduFramePkt;
     MbException_t eException;
-
+    uint8_t RcvAddress;
     pMbsFunctionHandler handle;
     MbErrorCode_t eStatus = MB_ENOERR;
 
@@ -269,35 +267,37 @@ static MbErrorCode_t __MbsAduFramehandle(MbsDev_t *dev)
      * Otherwise we will handle the event. */
     if(dev->eventInFlag){
         dev->eventInFlag = FALSE;
-        /* parser a adu fram */
-        eStatus = dev->pMbReceivedCur(dev, &ucRcvAddress, &pPduFrame, &usLength );
+        /* parser a reaceive adu fram */
+        eStatus = dev->pMbReceiveParseCur(dev, &aduFramePkt);
         if( eStatus != MB_ENOERR )
             return eStatus;
+
+        RcvAddress = aduFramePkt.hdr.introute.slaveid;
         
         /* Check if the frame is for us. If not ignore the frame. */
-        if((ucRcvAddress == dev->slaveaddr) || (ucRcvAddress == MB_ADDRESS_BROADCAST) ){
-            ucFunctionCode = pPduFrame[MB_PDU_FUNCODE_OFF];
+        if((RcvAddress == dev->slaveaddr) || (RcvAddress == MB_ADDRESS_BROADCAST) ){
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = MbsFuncHandleSearch(ucFunctionCode);
+            handle = MbsFuncHandleSearch(aduFramePkt.FunctionCode);
             if(handle)
-                eException = handle(&dev->regs, pPduFrame, &usLength);
+                eException = handle(&dev->regs, aduFramePkt.pPduFrame, &aduFramePkt.pduFrameLength);
             
             /* If the request was not sent to the broadcast address and then we return a reply. */
-            if(ucRcvAddress == MB_ADDRESS_BROADCAST)
+            if(RcvAddress == MB_ADDRESS_BROADCAST)
                 return MB_ENOERR;
 
             if(eException != MB_EX_NONE){
                 /* An exception occured. Build an error frame. */
-                usLength = 0;
-                pPduFrame[usLength++] = (uint8_t)(ucFunctionCode | MB_FUNC_ERROR);
-                pPduFrame[usLength++] = eException;
+                aduFramePkt.pPduFrame = 0;
+                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = (uint8_t)(aduFramePkt.FunctionCode | MB_FUNC_ERROR);
+                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = eException;
             }
             
             if((dev->mode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS){
                 MbPortTimersDelay(dev->port, MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
-            }        
+            }
+            
             /* send a reply */
-            (void)dev->pMbSendCur(dev,dev->slaveaddr, pPduFrame, usLength);
+            (void)dev->pMbSendCur(dev, dev->slaveaddr, aduFramePkt.pPduFrame, aduFramePkt.pduFrameLength);
         }
     }
     

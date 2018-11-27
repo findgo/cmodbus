@@ -4,7 +4,7 @@
 
 #include "mbfunc.h"
 
-
+// TODO 功能未知,暂未实现
 static uint8_t    ucMBSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t   usMBSlaveIDLen;
 

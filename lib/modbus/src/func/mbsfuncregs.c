@@ -3,7 +3,6 @@
 
 #if MB_SLAVE_ENABLED > 0
 
-
 /**
   * @brief  保持寄存器处理函数，保持寄存器可读，可读可写
   * @param  regs          操作寄存器指针

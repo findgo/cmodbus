@@ -218,12 +218,22 @@ typedef struct
 MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req);
 
 /************************************** define for slave ******************************************/
+// 定义adu帧 解析
+typedef struct {
+    MbHeader_t hdr;
+    uint8_t FunctionCode;       // pdu function
+    uint16_t pduFrameLength;    // pdu frame length
+    uint8_t *pPduFrame;         // pdu frame
+}MbsAduFrame_t;
+
 //从机设备句柄
 typedef void *Mbshandle_t;
+
 typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef MbErrorCode_t (*pActionSlaveReceive)(Mbshandle_t dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength);
+typedef MbErrorCode_t (*pActionSlaveReceiveParse)(Mbshandle_t dev, MbsAduFrame_t *pAduFramePkt);
 typedef MbErrorCode_t (*pActionSlaveSend)(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+
 // 从机设备描述
 typedef struct
 {
@@ -241,7 +251,7 @@ typedef struct
     pActionHandle pMbStartCur;
     pActionHandle pMbStopCur;
     pActionHandle pMbCloseCur;
-    pActionSlaveReceive pMbReceivedCur;
+    pActionSlaveReceiveParse pMbReceiveParseCur;
     pActionSlaveSend pMbSendCur;
 
     /* low layer use */
@@ -253,7 +263,7 @@ typedef struct
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 }MbsDev_t;
 
+// 发送个信号
 #define MbsSemGive(pdev) do { pdev->eventInFlag = TRUE;}while(0)
-
 
 #endif

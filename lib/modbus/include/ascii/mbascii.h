@@ -54,7 +54,7 @@ MbErrorCode_t MbsASCIIInit(Mbshandle_t dev, uint8_t ucPort,uint32_t ulBaudRate, 
 void MbsASCIIStart(Mbshandle_t dev);
 void MbsASCIIStop(Mbshandle_t dev);
 void MbsASCIIClose(Mbshandle_t dev);
-MbErrorCode_t MbsASCIIReceive(Mbshandle_t dev, uint8_t *pucRcvAddress, uint8_t **pPdu,uint16_t *pusLength);
+MbErrorCode_t MbsASCIIReceiveParse(Mbshandle_t dev,MbsAduFrame_t *aduFrame);
 MbErrorCode_t MbsASCIISend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
 void MbsASCIIReceiveFSM(Mbshandle_t dev);
