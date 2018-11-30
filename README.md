@@ -1,41 +1,20 @@
 # README #
+æœªè¯´æ˜,multiplemodbuså°†å‘å¸ƒæµ‹è¯•è¿‡åçš„æ­£å¸¸ç‰ˆæœ¬
+åˆ†æ”¯multiplemodbus_BETAä¸ºå¼€å‘å‡çº§ç”¨
 
-This README would normally document whatever steps are necessary to get your application up and running.
+æœ¬å·¥ç¨‹å®ç°multiple modbus demo
 
-### What is this repository for? ###
+æœ¬å·¥ç¨‹å®ç°å¤šä¸»æˆ–å¤šä»modbus rtu or ascii 
+å¯ä»¥é€šè¿‡mbconfig.hçš„å®è¿›è¡Œæ§åˆ¶åˆ‡æ¢
+å¯åŒæ—¶æ”¯æŒä¸»ä»æœº,ä½†æœªæµ‹è¯•
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-±¾¹¤³ÌÊµÏÖmultiple modbus demo
-
-±¾¹¤³ÌÊµÏÖË«Ö÷»òË«´Ómodbus rtu or ascii 
-¿ÉÒÔÍ¨¹ımbconfig.hµÄºê½øĞĞ¿ØÖÆÇĞ»»
-
-Ó²¼ş½Ó¿Ú
+ç¡¬ä»¶æ¥å£
 MBCOM0
 PA8  --- TX
 PA9  --- RX
-¶¨Ê±Æ÷ TIM3
+å®šæ—¶å™¨ TIM3
 MBCOM1
 PA2 --- TX
 PA3 --- RX
-¶¨Ê±Æ÷ TIM4
+å®šæ—¶å™¨ TIM4
