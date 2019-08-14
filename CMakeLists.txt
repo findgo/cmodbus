@@ -1,27 +1,21 @@
 cmake_minimum_required(VERSION 3.14)
-project(cmodbus C)
+project(cmodbus C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 
-enable_language(ASM)
-add_definitions(
-        -D__weak=__attribute__\(\(weak\)\)
-        -D__packed=__attribute__\(\(__packed__\)\))
-
-
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F103C8Tx_FLASH.ld)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINKER_SCRIPT}")
-
-add_definitions(-DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER)
-
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS_INIT} ${LINKER_SCRIPT}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Og -g3 -DDEBUG")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} -Og -g3 -DDEBUG")
     add_definitions(-DDEBUG_MSG)
-else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
+else ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} -O3")
 endif ()
 
+# 增加宏配置
+add_definitions(-DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER)
 
+# 相关头文件
 include_directories(common)
 include_directories(dirver)
 include_directories(module)
@@ -39,6 +33,7 @@ include_directories(lib/CMSIS/RTOS)
 include_directories(proj/RTE/_Target_1)
 include_directories(proj/RTE/Device/STM32F103C8)
 
+# 文件源
 file(GLOB_RECURSE SOURCES
         lib/STM32F10x_StdPeriph_Driver/Include/*.h
         lib/STM32F10x_StdPeriph_Driver/inc/*.h
@@ -60,6 +55,8 @@ file(GLOB_RECURSE SOURCES
         user/*.*
         )
 
+
+# build execute file
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map")
