@@ -4,9 +4,9 @@
   * @author  
   * @version 
   * @date    
-  * @brief  ÖÐ¶ÏºêÓë»¥³âËøºê¶¨Òå
+  * @brief  ï¿½Ð¶Ïºï¿½ï¿½ë»¥ï¿½ï¿½ï¿½ï¿½ï¿½ê¶¨ï¿½ï¿½
   ******************************************************************************
-  * @attention 	20151110     v1.1   	jgb		ÖØ¹¹
+  * @attention 	20151110     v1.1   	jgb		ï¿½Ø¹ï¿½
   ******************************************************************************
   */
 
@@ -17,18 +17,18 @@
 
 typedef uint8_t halIntState_t;
 
-#define OS_Enter_Criticial() 	st( __set_PRIMASK(1); )
-#define OS_Exit_Criticial()		st( __set_PRIMASK(0); )
+#define OS_Enter_Criticial()    st( __set_PRIMASK(1); )
+#define OS_Exit_Criticial()        st( __set_PRIMASK(0); )
 
 #define OSAL_ENABLE_INTERRUPTS()         st( __set_PRIMASK(0); )
 #define OSAL_DISABLE_INTERRUPTS()        st( __set_PRIMASK(1); )
 
-#define GLOABLE_INTERRUPT_ENABLED()     ((0 ==  __get_PRIMASK()) ? TRUE : FALSE)
+#define GLOBAL_INTERRUPT_ENABLED()     ((0 ==  __get_PRIMASK()) ? TRUE : FALSE)
 
 //! \brief The safe ATOM code section macro
 #define SAFE_ATOM_CODE(__CODE)     \
     {\
-        halIntState_t bintstate = GLOABLE_INTERRUPT_ENABLED();\
+        halIntState_t bintstate = GLOBAL_INTERRUPT_ENABLED();\
         OS_Enter_Criticial();\
         __CODE;\
         if (bintstate)\
@@ -37,7 +37,7 @@ typedef uint8_t halIntState_t;
         }\
     }
 #define ENTER_SAFE_ATOM_CODE(bintstate)  \
-            bintstate = GLOABLE_INTERRUPT_ENABLED();\
+            bintstate = GLOBAL_INTERRUPT_ENABLED();\
             OS_Enter_Criticial();
 
 //! \brief Exit from the safe atom operations
@@ -55,10 +55,8 @@ typedef uint8_t halIntState_t;
                 OS_Exit_Criticial();\
             }
 
-#define ENTER_ATOM_CODE()  OS_Enter_Criticial();             
+#define ENTER_ATOM_CODE()  OS_Enter_Criticial();
 //! \brief Exit from the atom operations
 #define EXIT_ATOM_CODE()   OS_Exit_Criticial();
-
-
 
 #endif

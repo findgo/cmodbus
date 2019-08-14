@@ -20,11 +20,10 @@
   * @note   
   * @retval None
   */
-void Systick_Configuration(void)
-{
-	SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
-	if(SysTick_Config(SystemCoreClock/1000)){
-		while(1);
-	}
+void Systick_Configuration(void) {
+    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK);
+    if (SysTick_Config(SystemCoreClock / 1000)) {
+        while (1);
+    }
 }
 

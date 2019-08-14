@@ -3,7 +3,7 @@
 #include "mbrtu.h"
 #include "mbutils.h"
 
-#if MB_RTU_ENABLED > 0 &&  MB_SLAVE_ENABLED > 0
+#if MB_RTU_ENABLED > 0 && MB_SLAVE_ENABLED > 0
 MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity)
 {
     MbErrorCode_t eStatus = MB_ENOERR;
@@ -126,13 +126,13 @@ MbErrorCode_t MbsRTUSend(Mbshandle_t dev,uint8_t ucSlaveAddress, const uint8_t *
         pdev->AduBuf[pdev->sndAduBufCount++] = ( uint8_t )(usCRC16 >> 8);
 
         /* Activate the transmitter. */
-		pdev->sndrcvState = STATE_RTU_TX_XMIT;
-        
-		/* start the first transmitter then into serial tc interrupt */
+        pdev->sndrcvState = STATE_RTU_TX_XMIT;
+
+        /* start the first transmitter then into serial tc interrupt */
         MbPortSerialPutByte(pdev->port, pAdu[0]);
         pdev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
         pdev->sndAduBufCount--;
-     	
+
         MbPortSerialEnable(pdev->port, FALSE, TRUE);
     }
     else{

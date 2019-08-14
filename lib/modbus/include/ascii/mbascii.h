@@ -5,6 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include "mbconfig.h"
 #include "mbproto.h"
 
@@ -15,24 +16,22 @@ extern "C" {
 #define MB_ASCII_DEFAULT_CR     '\r'    /*!< Default CR character for Modbus ASCII. */
 #define MB_ASCII_DEFAULT_LF     '\n'    /*!< Default LF character for Modbus ASCII. */
 
-typedef enum
-{
+typedef enum {
     STATE_ASCII_RX_IDLE,              /*!< ASCII Receiver is in idle state. */
     STATE_ASCII_RX_RCV,               /*!< ASCII Frame is beeing received. */
-    STATE_ASCII_RX_WAIT_EOF,          /*!< ASCII Wait for End of Frame. */    
+    STATE_ASCII_RX_WAIT_EOF,          /*!< ASCII Wait for End of Frame. */
     STATE_ASCII_TX_START,             /*!< ASCII Starting transmission (':' sent). */
     STATE_ASCII_TX_DATA,              /*!< ASCII Sending of data (Address, Data, LRC). */
     STATE_ASCII_TX_END,               /*!< ASCII End of transmission. */
     STATE_ASCII_TX_NOTIFY,            /*!< ASCII Notify sender that the frame has been sent. */
 } MbASCIISndRcvState;
 
-typedef enum
-{
+typedef enum {
     BYTE_HIGH_NIBBLE,           /*!< Character for high nibble of byte. */
     BYTE_LOW_NIBBLE             /*!< Character for low nibble of byte. */
 } MbBytePos;
 
-#if MB_ASCII_ENABLED > 0 
+#if MB_ASCII_ENABLED > 0
 #if MB_MASTER_ENABLED > 0 
 
 MbErrorCode_t MbmASCIIInit(Mbshandle_t dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);

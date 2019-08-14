@@ -25,6 +25,7 @@ enum {
 };
 
 typedef void (*log_FuncpfnCB_t)(void *ctx, int level, const char *format, ...);
+
 typedef struct logger_s {
     int level;
 
@@ -37,15 +38,15 @@ extern logger_t default_logger;
 // for user 
 #define MO_LOG_DEFAULTLOG_CB  ( log_FuncpfnCB_t )1
 
-#define mo_log(LEVEL,format,args...)	\
+#define mo_log(LEVEL, format, args...)    \
         do {                                    \
             const int level = LOG_LEVEL_##LEVEL;   \
             if(default_logger.level >= level ){ \
                 void *ctx = default_logger.context; \
-	            default_logger.log(ctx, (level),format,##args);  \
+                default_logger.log(ctx, (level),format,##args);  \
           }}while(0)
 
- #define mo_logln(LEVEL,format,args...) \
+#define mo_logln(LEVEL, format, args...) \
          do {                                    \
              const int level = LOG_LEVEL_##LEVEL;   \
              if(default_logger.level >= level ){ \

@@ -18,7 +18,7 @@
 #define TRUE   1
 #endif
 
-#define assert(expr) 
+#define assert(expr)
 
 #define ENTER_CRITICAL_SECTION()     __set_PRIMASK(1)
 #define EXIT_CRITICAL_SECTION()      __set_PRIMASK(0)

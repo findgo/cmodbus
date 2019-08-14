@@ -8,7 +8,7 @@ extern "C" {
 
 /* ----------------------- Defines ------------------------------------------*/
 /*brief Use the default Modbus TCP port (502)*/
-#define MB_TCP_PORT_USE_DEFAULT	(502)   
+#define MB_TCP_PORT_USE_DEFAULT    (502)
 
 #define MB_ADDRESS_BROADCAST    ( 0 )   /*! Modbus broadcast address. */
 #define MB_ADDRESS_MIN          ( 1 )   /*! Smallest possible slave address. */
@@ -19,7 +19,7 @@ extern "C" {
  */
 #define MB_TCP_PSEUDO_ADDRESS   ( 255 )
 /* modbus tcp MBAP TID */
-#define MB_TCP_PROTOCOL_ID  	 ( 0 )   /* 0 = Modbus Protocol */
+#define MB_TCP_PROTOCOL_ID     ( 0 )   /* 0 = Modbus Protocol */
 
 /* modbus function code */
 #define MB_FUNC_MIN                           ( 1 )
@@ -57,18 +57,17 @@ extern "C" {
 #define MB_READWRITE_WRITEREG_CNT_MAX   ( 0x0079 )
 
 /* ----------------------- Type definitions ---------------------------------*/
-typedef enum
-{
-    MB_EX_NONE 					= 0x00,
-    MB_EX_ILLEGAL_FUNCTION 		= 0x01,
-    MB_EX_ILLEGAL_DATA_ADDRESS 	= 0x02,
-    MB_EX_ILLEGAL_DATA_VALUE 	= 0x03,
-    MB_EX_SLAVE_DEVICE_FAILURE  = 0x04,
-    MB_EX_ACKNOWLEDGE 			= 0x05,
-    MB_EX_SLAVE_BUSY 			= 0x06,
-    MB_EX_MEMORY_PARITY_ERROR 	= 0x08,
-    MB_EX_GATEWAY_PATH_FAILED 	= 0x0A,
-    MB_EX_GATEWAY_TGT_FAILED 	= 0x0B
+typedef enum {
+    MB_EX_NONE = 0x00,
+    MB_EX_ILLEGAL_FUNCTION = 0x01,
+    MB_EX_ILLEGAL_DATA_ADDRESS = 0x02,
+    MB_EX_ILLEGAL_DATA_VALUE = 0x03,
+    MB_EX_SLAVE_DEVICE_FAILURE = 0x04,
+    MB_EX_ACKNOWLEDGE = 0x05,
+    MB_EX_SLAVE_BUSY = 0x06,
+    MB_EX_MEMORY_PARITY_ERROR = 0x08,
+    MB_EX_GATEWAY_PATH_FAILED = 0x0A,
+    MB_EX_GATEWAY_TGT_FAILED = 0x0B
 } MbException_t;
 
 /*************************modbus fram defined************************************/
@@ -98,25 +97,25 @@ typedef enum
  * (3') ... MB_PDU_DATA_OFFSET     = 1
  * </code>
  */
- 
- /*!
- * <------------------------ MODBUS TCP/IP ADU(1) ------------------------->
- *                              <----------- MODBUS PDU (1') -------------->
- *  +-----------+---------------+------------------------------------------+
- *  | TID | PID | Length | UID  | Function Code  | Data                    |
- *  +-----------+---------------+------------------------------------------+
- *  |     |     |        |      |                                           
- * (2)   (3)   (4)      (5)    (6)                                          
- *
- * (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte) 
- * (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
- * (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)  ( UID + PDU length )
- * (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
- * (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
- *
- * (1)  ... Modbus TCP/IP Application Data Unit
- * (1') ... Modbus Protocol Data Unit
- */
+
+/*!
+* <------------------------ MODBUS TCP/IP ADU(1) ------------------------->
+*                              <----------- MODBUS PDU (1') -------------->
+*  +-----------+---------------+------------------------------------------+
+*  | TID | PID | Length | UID  | Function Code  | Data                    |
+*  +-----------+---------------+------------------------------------------+
+*  |     |     |        |      |
+* (2)   (3)   (4)      (5)    (6)
+*
+* (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte)
+* (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
+* (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)  ( UID + PDU length )
+* (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
+* (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
+*
+* (1)  ... Modbus TCP/IP Application Data Unit
+* (1') ... Modbus Protocol Data Unit
+*/
 
 /* RS232 / RS485 ADU -- TCP MODBUS ADU */
 #define MB_ADU_SIZE_MAX           256
@@ -135,7 +134,7 @@ typedef enum
 #define MB_TCP_ADU_SIZE_MBAP           7   /*!< Size of MBAP header field in ADU. */
 #define MB_TCP_ADU_TID_OFFSET          0
 #define MB_TCP_ADU_PID_OFFSET          2
-#define MB_TCP_ADU_LEN_OFFSET          4   
+#define MB_TCP_ADU_LEN_OFFSET          4
 #define MB_TCP_ADU_UID_OFFSET          6
 #define MB_TCP_ADU_PDU_OFFSET          7
 

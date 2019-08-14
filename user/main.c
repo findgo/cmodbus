@@ -33,23 +33,23 @@ int main(void) {
     Systick_Configuration();
     SystemCoreClockUpdate();
     logInit();
-    //Systick_Configuration();
-//#if MB_RTU_ENABLED > 0   
-//    deviceM0= MbmNew(MB_RTU, MBCOM0, 115200, MB_PAR_NONE);
+//    Systick_Configuration();
+//#if MB_RTU_ENABLED > 0
+//    deviceM0 = MbmNew(MB_RTU, MBCOM0, 115200, MB_PAR_NONE);
 //#elif MB_ASCII_ENABLED > 0
 //    deviceM0= MbmNew(MB_ASCII, MBCOM0, 115200, MB_PAR_NONE);
 //#endif
-//    if(deviceM0){
-//       node = MbmNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-//                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
-//       status = MbmAddNode(deviceM0, node);
-//        if(status == MB_ENOERR){
-//           (void)MbmReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
-//           (void)MbmReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);        
-//           (void)MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);        
-//           (void)MbmReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
+//    if (deviceM0) {
+//        node = MbmNodeNew(0x01, 0, REG_HOLDING_NREGS, 0, REG_INPUT_NREGS,
+//                          0, REG_COILS_SIZE, 0, REG_DISCRETE_SIZE);
+//        status = MbmAddNode(deviceM0, node);
+//        if (status == MB_ENOERR) {
+//            (void) MbmReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
+//            (void) MbmReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);
+//            (void) MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);
+//            (void) MbmReqRdDiscreteInputs(deviceM0, 0x01, 0, REG_DISCRETE_SIZE, 1000);
 //        }
-//        (void)MbmStart(deviceM0);  
+//        (void) MbmStart(deviceM0);
 //    }
 #if MB_RTU_ENABLED > 0
     deviceM1 = MbmNew(MB_RTU, MBCOM1, 115200, MB_PAR_NONE);

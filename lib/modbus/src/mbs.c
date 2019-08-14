@@ -4,7 +4,9 @@
 #include "mbutils.h"
 
 #if MB_RTU_ENABLED > 0
+
 #include "mbrtu.h"
+
 #endif
 
 #if MB_ASCII_ENABLED > 0
@@ -18,7 +20,7 @@
 #if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_SLAVE_ENABLED > 0
 
 
-// local variate 
+// local variate
 static MbsDev_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
 
 //local function

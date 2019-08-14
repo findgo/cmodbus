@@ -5,6 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include "mbconfig.h"
 #include "mbproto.h"
 
@@ -12,27 +13,35 @@ extern "C" {
 #include "mb.h"
 
 /* ----------------------- Type definitions ---------------------------------*/
-typedef enum
-{
+typedef enum {
     STATE_RTU_RX_IDLE,              /*!< RTU Receiver is in idle state. */
     STATE_RTU_RX_RCV,               /*!< RTU Frame is beeing received. */
     STATE_RTU_TX_XMIT               /*!< RTU Transmitter is in transfer state. */
-} MbRTUSndRcvState;    
+} MbRTUSndRcvState;
 
-#if MB_RTU_ENABLED > 0 
+#if MB_RTU_ENABLED > 0
 #if MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmRTUInit( Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
-void MbmRTUStart(Mbmhandle_t dev);
-void MbmRTUStop(Mbmhandle_t dev);
-void MbmRTUClose( Mbmhandle_t dev);
-MbReqResult_t MbmRTUReceive(Mbmhandle_t dev,MbHeader_t *phead,uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
-MbReqResult_t MbmRTUSend(Mbmhandle_t dev,const uint8_t *pAdu, uint16_t usLength);
+MbErrorCode_t MbmRTUInit(Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
-void MbmRTUReceiveFSM(  Mbmhandle_t dev);
-void MbmRTUTransmitFSM(  Mbmhandle_t dev);
+void MbmRTUStart(Mbmhandle_t dev);
+
+void MbmRTUStop(Mbmhandle_t dev);
+
+void MbmRTUClose(Mbmhandle_t dev);
+
+MbReqResult_t
+MbmRTUReceive(Mbmhandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+
+MbReqResult_t MbmRTUSend(Mbmhandle_t dev, const uint8_t *pAdu, uint16_t usLength);
+
+void MbmRTUReceiveFSM(Mbmhandle_t dev);
+
+void MbmRTUTransmitFSM(Mbmhandle_t dev);
+
 void MbmRTUTimerT15Expired(Mbmhandle_t dev);
-void MbmRTUTimerT35Expired(  Mbmhandle_t dev);
+
+void MbmRTUTimerT35Expired(Mbmhandle_t dev);
 
 #endif
 
