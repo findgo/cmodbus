@@ -28,11 +28,10 @@ void *MsgAlloc(const uint16_t msgLen) {
     msgHdr_t *hdr;
 
     if (msgLen == 0)
-        return (void *) (NULL);
+        return (void *) NULL;
 
     hdr = (msgHdr_t *) mo_malloc((size_t) (sizeof(msgHdr_t) + msgLen));
     if (hdr) {
-        //init it
         hdr->next = NULL;
         hdr->len = msgLen;
         hdr->mark = FALSE; // not on qbox list

@@ -1,7 +1,7 @@
 
 
-#ifndef __HEAP_MANGE_H_
-#define __HEAP_MANGE_H_
+#ifndef __HEAP_H_
+#define __HEAP_H_
 
 #include "heap_def.h"
 
