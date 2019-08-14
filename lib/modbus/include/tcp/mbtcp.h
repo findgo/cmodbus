@@ -8,7 +8,6 @@ extern "C" {
 
 #include "mbconfig.h"
 #include "mbproto.h"
-#include "mbframe.h"
 #include "mbcpu.h"
 
 #include "mb.h"

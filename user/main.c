@@ -1,5 +1,5 @@
 
-#include "stm32F10x.h"
+#include "stm32f10x.h"
 #include "systick.h"
 //for driver
 #include "modbus.h"
@@ -19,23 +19,21 @@ static void prvnvicInit(void);
 Mbmhandle_t deviceM0;
 Mbmhandle_t deviceM1;
 
-static  void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void *req)
-{
-    mo_logln(DEBUG,"error count: %d, result: %d" ,result,((MbmReq_t *)req)->errcnt) ;
+static void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void *req) {
+    mo_logln(DEBUG, "error count: %d, result: %d", result, ((MbmReq_t *) req)->errcnt);
     //printf("error count: %d, result: %d\r\n" ,result,((MbmReq_t *)req)->errcnt);
 }
 
-int main(void)
-{	
+int main(void) {
     MbmNode_t *node;
     MbErrorCode_t status;
-    
+
 //	prvClockInit();
     prvnvicInit();
     Systick_Configuration();
     SystemCoreClockUpdate();
     logInit();
-	//Systick_Configuration();
+    //Systick_Configuration();
 //#if MB_RTU_ENABLED > 0   
 //    deviceM0= MbmNew(MB_RTU, MBCOM0, 115200, MB_PAR_NONE);
 //#elif MB_ASCII_ENABLED > 0
@@ -53,35 +51,35 @@ int main(void)
 //        }
 //        (void)MbmStart(deviceM0);  
 //    }
-#if MB_RTU_ENABLED > 0   
-    deviceM1= MbmNew(MB_RTU, MBCOM1, 115200, MB_PAR_NONE);
+#if MB_RTU_ENABLED > 0
+    deviceM1 = MbmNew(MB_RTU, MBCOM1, 115200, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
     deviceM1= MbmNew(MB_ASCII, MBCOM1, 115200, MB_PAR_NONE);
 #endif
-    if(deviceM1){
-       node = MbmNodeNew(0x01,0,REG_HOLDING_NREGS ,0,REG_INPUT_NREGS,
-                                        0,REG_COILS_SIZE,0,REG_DISCRETE_SIZE);
-       if(node == NULL)
+    if (deviceM1) {
+        node = MbmNodeNew(0x01, 0, REG_HOLDING_NREGS, 0, REG_INPUT_NREGS,
+                          0, REG_COILS_SIZE, 0, REG_DISCRETE_SIZE);
+        if (node == NULL)
             return 0;
-       
-       MbmNodeCallBackAssign(node, nodeReqResultCB, NULL);
-       status = MbmAddNode(deviceM1, node);
-        if(status == MB_ENOERR){
-           (void)MbmReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
+
+        MbmNodeCallBackAssign(node, nodeReqResultCB, NULL);
+        status = MbmAddNode(deviceM1, node);
+        if (status == MB_ENOERR) {
+            (void) MbmReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
 //           (void)MbmReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
 //           (void)MbmReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
 //           (void)MbmReqRdDiscreteInputs(deviceM1, 0x01, 0, REG_DISCRETE_SIZE, 1000);        
         }
-        (void)MbmStart(deviceM1);  
-    }    
+        (void) MbmStart(deviceM1);
+    }
 
     mblogln("modbus master start!");
-	while(1)
-	{
-	    MbmPoll();
-	}
-	//Should never reach this point!
+    while (1) {
+        MbmPoll();
+    }
+    //Should never reach this point!
 }
+
 #endif
 
 
@@ -100,12 +98,12 @@ int main(void)
 {	
     MbErrorCode_t status;
 
-	prvnvicInit();
-	Systick_Configuration();
-//#if MB_RTU_ENABLED > 0   
+    prvnvicInit();
+    Systick_Configuration();
+//#if MB_RTU_ENABLED > 0
 //    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 115200, MB_PAR_NONE);
 //#elif MB_ASCII_ENABLED > 0
-//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 115200, MB_PAR_NONE);    
+//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 115200, MB_PAR_NONE);
 //#endif
 //    if(device0){
 //       status = MbsRegAssign(device0,
@@ -118,7 +116,7 @@ int main(void)
 //       if(status == MB_ENOERR)
 //            (void)MbsStart(device0);
 //    }
-#if MB_RTU_ENABLED > 0   
+#if MB_RTU_ENABLED > 0
     device1 = MbsNew(MB_RTU, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
     device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 115200, MB_PAR_NONE);
@@ -136,18 +134,17 @@ int main(void)
        if(status == MB_ENOERR)
             (void)MbsStart(device1);
     }
-	while(1)
-	{
+    while(1)
+    {
         MbsPoll();
-	}
-	//Should never reach this point!
+    }
+    //Should never reach this point!
 }
 #endif
 
 //nvic configuration
-static void prvnvicInit(void)
-{
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
+static void prvnvicInit(void) {
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 }
 
 

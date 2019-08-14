@@ -97,8 +97,7 @@ MbErrorCode_t MbmTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu,ui
 MbErrorCode_t MbmTCPSend(void *pdev,const uint8_t *pAdu, uint16_t usLength)
 {
 }
-
-
 #endif
 
 #endif
+
