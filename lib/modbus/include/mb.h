@@ -175,10 +175,10 @@ typedef struct {
 
     uint32_t T50PerCharater;  //发送一个字符所需时间 timevalueT50us = Ticks_per_1s / ( Baudrate / 11 ) = 220000 / Baudrate
 
-    msg_q_t nodehead;           /* slave node list on this host */
+    MsgQ_t nodehead;           /* slave node list on this host */
 
-    msg_q_t Reqreadyhead;        /* 就绪表 request ready list head*/
-    msg_q_t Reqpendinghead;      /* 挂起表 request suspend list */
+    MsgQ_t Reqreadyhead;        /* 就绪表 request ready list head*/
+    MsgQ_t Reqpendinghead;      /* 挂起表 request suspend list */
 
     uint8_t retry;              // retry MAX count
     uint8_t retrycnt;           // retry count

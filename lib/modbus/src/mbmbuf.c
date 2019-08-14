@@ -17,7 +17,7 @@ MbmReq_t *MbmReqMsgNew(MbMode_t mode, uint16_t Pdusize) {
     else
         Adusize = MB_TCP_ADU_SIZE_MBAP + Pdusize;
 
-    req = (MbmReq_t *) msgalloc(sizeof(MbmReq_t) + Adusize);
+    req = (MbmReq_t *) MsgAlloc(sizeof(MbmReq_t) + Adusize);
     if (req == NULL) {
         return NULL;
     }
@@ -28,7 +28,7 @@ MbmReq_t *MbmReqMsgNew(MbMode_t mode, uint16_t Pdusize) {
 }
 
 void MbmReqMsgDelete(void *msg_ptr) {
-    msgdealloc(msg_ptr);
+    MsgDealloc(msg_ptr);
 }
 
 /* set head and return head length */
