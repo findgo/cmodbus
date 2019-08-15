@@ -5,17 +5,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/********************* common defined  ************************/
-#define MB_MASTER_ENABLED        ( 0 )
+/********************* modbus type defined  ************************/
+//#define MB_MASTER_ENABLED        ( 0 )
 #define MB_SLAVE_ENABLED         ( 1 )
 
 /*! \defgroup modbus_cfg Modbus Configuration
  */
-/*! \brief If Modbus RTU support is enabled. */
+/*! \brief If modbus RTU support is enabled. */
 #define MB_RTU_ENABLED                          (  1 )
-/*! \brief If Modbus ASCII support is enabled. */
+/*! \brief If modbus ASCII support is enabled. */
 #define MB_ASCII_ENABLED                        (  0 )
-/*! \brief If Modbus TCP support is enabled. */
+/*! \brief If modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )
 
 /********************for master defined***************************************/
@@ -131,6 +131,12 @@ extern "C" {
 #include "log.h"
 
 #define mblogln(fmt, ...) mo_logln(DEBUG, fmt, ##__VA_ARGS__)
+
+
+// check must be defined
+#if (!MB_MASTER_ENABLED) && (!MB_SLAVE_ENABLED)
+    #error no modbus type defined,select MB_MASTER_ENABLED or MB_MASTER_ENABLED or both!
+#endif
 
 #ifdef __cplusplus
 }

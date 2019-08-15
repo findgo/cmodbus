@@ -87,15 +87,15 @@ int main(void) {
 
 Mbshandle_t device0;
 Mbshandle_t device1;
-static __aligned(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] =
-    {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
-static __aligned(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111,0x2222,0x3333};
-static __aligned(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444,0x5555,0x6666};
-static  uint8_t dev1CoilsBuf[ REG_COILS_SIZE / 8 ] = {0xaa,0x55};
-static  uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55,0xaa,0x77};
+static __aligned(2) uint8_t dev0regbuf[
+        REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] =
+        {0xaa, 0xaa, 0xbb, 0xbb, 0xcc, 0xcc, 0xdd, 0xdd, 0xee, 0xee, 0xff, 0xff, 0xaa, 0x55, 0xaa, 0xcc, 0xff};
+static __aligned(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111, 0x2222, 0x3333};
+static __aligned(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444, 0x5555, 0x6666};
+static uint8_t dev1CoilsBuf[REG_COILS_SIZE / 8] = {0xaa, 0x55};
+static uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55, 0xaa, 0x77};
 
-int main(void)
-{	
+int main(void) {
     MbErrorCode_t status;
 
     prvnvicInit();
@@ -121,25 +121,25 @@ int main(void)
 #elif MB_ASCII_ENABLED > 0
     device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #endif
-    if(device1){
-       status = MbsRegAssignSingle(device1,
-                        dev1HoldingBuf,
-                        0,REG_HOLDING_NREGS ,
-                        dev1InputBuf,
-                        0,REG_INPUT_NREGS,
-                        dev1CoilsBuf,
-                        0,REG_COILS_SIZE,
-                        dev1DiscreteBuf,
-                        0,REG_DISCRETE_SIZE);
-       if(status == MB_ENOERR)
-            (void)MbsStart(device1);
+    if (device1) {
+        status = MbsRegAssignSingle(device1,
+                                    dev1HoldingBuf,
+                                    0, REG_HOLDING_NREGS,
+                                    dev1InputBuf,
+                                    0, REG_INPUT_NREGS,
+                                    dev1CoilsBuf,
+                                    0, REG_COILS_SIZE,
+                                    dev1DiscreteBuf,
+                                    0, REG_DISCRETE_SIZE);
+        if (status == MB_ENOERR)
+            (void) MbsStart(device1);
     }
-    while(1)
-    {
+    while (1) {
         MbsPoll();
     }
     //Should never reach this point!
 }
+
 #endif
 
 //nvic configuration

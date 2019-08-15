@@ -4,6 +4,7 @@
  在使用中,包含头文件modbus.h即可使用
 
 // example
+```
 Mbshandle_t device0;
 Mbshandle_t device1;
 static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
@@ -60,3 +61,4 @@ int main(void)
 	}
 	//Should never reach this point!
 }
+```
