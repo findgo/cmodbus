@@ -6,8 +6,8 @@
 extern "C" {
 #endif
 /********************* common defined  ************************/
-#define MB_MASTER_ENABLED        ( 1 )
-#define MB_SLAVE_ENABLED         ( 0 )
+#define MB_MASTER_ENABLED        ( 0 )
+#define MB_SLAVE_ENABLED         ( 1 )
 
 /*! \defgroup modbus_cfg Modbus Configuration
  */

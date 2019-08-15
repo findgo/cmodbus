@@ -9,8 +9,8 @@
 
 /* Private define for reg modify by user ------------------------------------------------------------*/
 #define REG_HOLDING_NREGS     ( 20 )
-#define REG_INPUT_NREGS       ( 3 )
-#define REG_COILS_SIZE        (8 * 2)
+#define REG_INPUT_NREGS       ( 20 )
+#define REG_COILS_SIZE        (8 * 3)
 #define REG_DISCRETE_SIZE     (8 * 3)
 
 static void prvnvicInit(void);
@@ -87,10 +87,10 @@ int main(void) {
 
 Mbshandle_t device0;
 Mbshandle_t device1;
-static __align(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] = 
+static __aligned(2) uint8_t dev0regbuf[REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] =
     {0xaa,0xaa,0xbb,0xbb,0xcc,0xcc,0xdd,0xdd,0xee,0xee,0xff,0xff,0xaa,0x55,0xaa,0xcc,0xff};
-static __align(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111,0x2222,0x3333};
-static __align(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444,0x5555,0x6666};
+static __aligned(2) uint16_t dev1HoldingBuf[REG_HOLDING_NREGS] = {0x1111,0x2222,0x3333};
+static __aligned(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444,0x5555,0x6666};
 static  uint8_t dev1CoilsBuf[ REG_COILS_SIZE / 8 ] = {0xaa,0x55};
 static  uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55,0xaa,0x77};
 

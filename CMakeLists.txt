@@ -29,7 +29,6 @@ include_directories(module/memmange)
 include_directories(lib/STM32F10x_StdPeriph_Driver/inc)
 include_directories(lib/STM32F10x_StdPeriph_Driver/Include)
 include_directories(lib/CMSIS/Include)
-include_directories(lib/CMSIS/RTOS)
 include_directories(proj/RTE/_Target_1)
 include_directories(proj/RTE/Device/STM32F103C8)
 
@@ -38,12 +37,15 @@ file(GLOB_RECURSE SOURCES
         lib/STM32F10x_StdPeriph_Driver/Include/*.h
         lib/STM32F10x_StdPeriph_Driver/inc/*.h
         lib/STM32F10x_StdPeriph_Driver/src/*.c
+        lib/CMSIS/Include/cmsis_armcc.h
+        lib/CMSIS/Include/cmsis_compiler.h
+        lib/CMSIS/Include/core_cm3.h
         lib/modbus/*.*
         common/common_signal.h
         dirver/*.*
         module/memmange/heap_4.c
         module/memmange/heap_def.h
-        module/memmange/heap_mange.h
+        module/memmange/heap.h
         module/log.c
         module/log.h
         module/msglink.c
@@ -52,6 +54,7 @@ file(GLOB_RECURSE SOURCES
         proj/RTE/Device/STM32F103C8/RTE_Device.h
         proj/RTE/Device/STM32F103C8/stm32f10x_conf.h
         proj/RTE/Device/STM32F103C8/system_stm32f10x.c
+        startup/startup_stm32f103xb.s
         user/*.*
         )
 
