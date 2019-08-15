@@ -30,11 +30,11 @@ void *MsgAlloc(const uint16_t msgLen) {
     if (msgLen == 0)
         return (void *) NULL;
 
-    hdr = (msgHdr_t *) mo_malloc((size_t) (sizeof(msgHdr_t) + msgLen));
+    hdr = (msgHdr_t *) KMalloc((size_t) (sizeof(msgHdr_t) + msgLen));
     if (hdr) {
         hdr->next = NULL;
         hdr->len = msgLen;
-        hdr->mark = FALSE; // not on qbox list
+        hdr->mark = 1; // not on qbox list
         hdr->spare = 0;
 
         return ((void *) (hdr + 1)); // pass head, point to the data
@@ -48,10 +48,10 @@ int MsgDealloc(void *const msg_ptr) {
         return (MSG_INVALID_POINTER);
 
     // don't deallocate msg buffer when it on the list
-    if (MSG_HDR_MARK(msg_ptr) == TRUE)
+    if (MSG_HDR_MARK(msg_ptr) == 1)
         return (MSG_BUFFER_NOT_AVAIL);
 
-    mo_free((void *) ((uint8_t *) msg_ptr - sizeof(msgHdr_t)));
+    KFree((void *) ((uint8_t *) msg_ptr - sizeof(msgHdr_t)));
 
     return (MSG_SUCCESS);
 }
@@ -82,7 +82,7 @@ uint8_t MsgSpare(void *const msg_ptr) {
 MsgBox_t *MsgBoxNew(const uint16_t MaxCap) {
     msgBoxInner_t *pNewmsgbox;
 
-    pNewmsgbox = (msgBoxInner_t *) mo_malloc(sizeof(msgBoxInner_t));
+    pNewmsgbox = (msgBoxInner_t *) KMalloc(sizeof(msgBoxInner_t));
     if (pNewmsgbox) {
         pNewmsgbox->capacity = MaxCap;
         pNewmsgbox->count = 0;
@@ -142,7 +142,7 @@ int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t
         return MSG_QBOX_FULL;
 
     // Check the message header ,not init it success, or message on the list
-    if (MSG_HDR_NEXT(msg_ptr) != NULL || MSG_HDR_MARK(msg_ptr) != FALSE) {
+    if (MSG_HDR_NEXT(msg_ptr) != NULL || MSG_HDR_MARK(msg_ptr) != 0) {
         return (MSG_INVALID_POINTER);
     }
 
@@ -155,8 +155,8 @@ int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t
 void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isfront) {
     void *list;
 
-    MSG_HDR_MARK(msg_ptr) = TRUE; // mark on the list
-    if (isfront == TRUE) { // put to front
+    MSG_HDR_MARK(msg_ptr) = 1; // mark on the list
+    if (isfront == 1) { // put to front
         // Push message to head of queue
         MSG_HDR_NEXT(msg_ptr) = *q_ptr;
         *q_ptr = msg_ptr;
@@ -185,7 +185,7 @@ void *MsgQPop(MsgQ_t *const q_ptr) {
         msg_ptr = *q_ptr;
         *q_ptr = MSG_HDR_NEXT(msg_ptr);
         MSG_HDR_NEXT(msg_ptr) = NULL;
-        MSG_HDR_MARK(msg_ptr) = FALSE;
+        MSG_HDR_MARK(msg_ptr) = 0;
     }
 
     return msg_ptr;
@@ -207,7 +207,7 @@ void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const premsg_pt
         MSG_HDR_NEXT(premsg_ptr) = MSG_HDR_NEXT(msg_ptr);
     }
     MSG_HDR_NEXT(msg_ptr) = NULL;
-    MSG_HDR_MARK(msg_ptr) = FALSE;
+    MSG_HDR_MARK(msg_ptr) = 0;
 }
 
 // get next message

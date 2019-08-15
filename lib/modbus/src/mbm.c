@@ -3,9 +3,7 @@
 #include "mb.h"
 
 #if MB_RTU_ENABLED > 0
-
 #include "mbrtu.h"
-
 #endif
 #if MB_ASCII_ENABLED > 0
 #include "mbascii.h"

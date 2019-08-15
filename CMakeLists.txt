@@ -20,15 +20,16 @@ include_directories(common)
 include_directories(dirver)
 include_directories(module)
 include_directories(user)
+include_directories(lib/CMSIS/Include)
+include_directories(lib/STM32F10x_StdPeriph_Driver/inc)
+include_directories(lib/STM32F10x_StdPeriph_Driver/Include)
 include_directories(lib/modbus/include)
 include_directories(lib/modbus/include/ascii)
 include_directories(lib/modbus/include/rtu)
 include_directories(lib/modbus/include/tcp)
 include_directories(lib/modbus/port)
-include_directories(module/memmange)
-include_directories(lib/STM32F10x_StdPeriph_Driver/inc)
-include_directories(lib/STM32F10x_StdPeriph_Driver/Include)
-include_directories(lib/CMSIS/Include)
+include_directories(lib/modbus/util)
+include_directories(lib/modbus/util/dram)
 include_directories(proj/RTE/_Target_1)
 include_directories(proj/RTE/Device/STM32F103C8)
 
@@ -40,22 +41,26 @@ file(GLOB_RECURSE SOURCES
         lib/CMSIS/Include/cmsis_armcc.h
         lib/CMSIS/Include/cmsis_compiler.h
         lib/CMSIS/Include/core_cm3.h
-        lib/modbus/*.*
-        common/common_signal.h
+        lib/modbus/include/*.*
+        lib/modbus/src/*.*
+        lib/modbus/port/*.*
+        lib/modbus/util/dram/heap_4.c
+        lib/modbus/util/heap_def.h
+        lib/modbus/util/heap.h
+        lib/modbus/util/mem.c
+        lib/modbus/util/mem.h
+        lib/modbus/util/msglink.c
+        lib/modbus/util/msglink.h
+
+        common/*.*
         dirver/*.*
-        module/memmange/heap_4.c
-        module/memmange/heap_def.h
-        module/memmange/heap.h
-        module/log.c
-        module/log.h
-        module/msglink.c
-        module/msglink.h
+        module/*.*
+        user/*.*
+        startup/startup_stm32f103xb.s
         proj/RTE/_Target_1/RTE_Components.h
         proj/RTE/Device/STM32F103C8/RTE_Device.h
         proj/RTE/Device/STM32F103C8/stm32f10x_conf.h
         proj/RTE/Device/STM32F103C8/system_stm32f10x.c
-        startup/startup_stm32f103xb.s
-        user/*.*
         )
 
 

@@ -24,8 +24,8 @@
 #ifndef __MSG_LINK_H__
 #define __MSG_LINK_H__
 
-#include "mbcpu.h"
-#include "mbmem.h"
+#include <stdint.h>
+#include "mem.h"
 
 #ifdef __cplusplus
 extern "C" {

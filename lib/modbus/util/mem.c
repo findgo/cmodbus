@@ -1,5 +1,5 @@
 
-#include "mbmem.h"
+#include "mem.h"
 #include "heap.h"
 
 /*********************************************************************
@@ -9,7 +9,7 @@
  *
  * @return  pointer the memory
  */
-void *mo_malloc(size_t size) {
+void *KMalloc(size_t size) {
     return pvPortMalloc(size);
     //return malloc(size);
 }
@@ -21,7 +21,7 @@ void *mo_malloc(size_t size) {
  *
  * @return  
  */
-void mo_free(void *ptr) {
+void KFree(void *ptr) {
     vPortFree(ptr);
     //free(ptr);
 }
@@ -34,7 +34,7 @@ void mo_free(void *ptr) {
  *
  * @return  
  */
-void *mo_calloc(size_t nmemb, size_t size) {
+void *KCalloc(size_t nmemb, size_t size) {
     void *addr = NULL;
 
     addr = (void *) pvPortMalloc(size * nmemb);
@@ -52,7 +52,7 @@ void *mo_calloc(size_t nmemb, size_t size) {
  *
  * @return  pointer the memory
  */
-void *mo_realloc(void *ptr, size_t size) {
+void *KRealloc(void *ptr, size_t size) {
     void *addr = NULL;
 
     addr = (void *) pvPortMalloc(size);
