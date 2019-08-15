@@ -28,10 +28,10 @@ extern Mbshandle_t device1;
   *         xTxEnable 发送使能
   * @retval None
   */
-void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable) {
+void MbPortSerialEnable(uint8_t port, bool rxEnable, bool txEnable) {
     switch (port) {
         case MBCOM0:
-            if (xRxEnable) {
+            if (rxEnable) {
                 //使能接收和接收中断
                 USART_ITConfig(USART1, USART_IT_RXNE, ENABLE);
                 //MAX485操作 低电平为接收模式
@@ -42,7 +42,7 @@ void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable) {
                 MBCOM0_RXDIS();
             }
 
-            if (xTxEnable) {
+            if (txEnable) {
                 //使能发送完成中断
                 USART_ITConfig(USART1, USART_IT_TC, ENABLE);
             } else {
@@ -52,7 +52,7 @@ void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable) {
             break;
 
         case MBCOM1:
-            if (xRxEnable) {
+            if (rxEnable) {
                 //使能接收和接收中断
                 USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
                 //MAX485操作 低电平为接收模式
@@ -63,7 +63,7 @@ void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable) {
                 MBCOM1_RXDIS();
             }
 
-            if (xTxEnable) {
+            if (txEnable) {
                 //使能发送完成中断
                 USART_ITConfig(USART2, USART_IT_TC, ENABLE);
             } else {
@@ -79,21 +79,21 @@ void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable) {
 
 /**
   * @brief  串口初始化
-  * @param  ucPORT      串口号
+  * @param  port      串口号
   *         ulBaudRate  波特率
   *         ucDataBits  数据位
   *         eParity     校验位 
   * @retval None
   */
-uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits, MbParity_t eParity) {
+bool MbPortSerialInit(uint8_t port, uint32_t bandRate, uint8_t dataBits, MbParity_t parity) {
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    (void) ucDataBits; //不修改数据位长度
-    (void) eParity;    //不修改校验格式
+    (void) dataBits; //不修改数据位长度
+    (void) parity;    //不修改校验格式
 
-    switch (ucPORT) {
+    switch (port) {
         case MBCOM0:
             //使能USART1，GPIOA
             RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_USART1, ENABLE);
@@ -109,7 +109,7 @@ uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;       //浮动输入
             GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-            USART_InitStructure.USART_BaudRate = ulBaudRate;            //只修改波特率
+            USART_InitStructure.USART_BaudRate = bandRate;            //只修改波特率
             USART_InitStructure.USART_WordLength = USART_WordLength_8b;
             USART_InitStructure.USART_StopBits = USART_StopBits_1;
             USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -151,7 +151,7 @@ uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits
             GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;       //浮动输入
             GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-            USART_InitStructure.USART_BaudRate = ulBaudRate;            //只修改波特率
+            USART_InitStructure.USART_BaudRate = bandRate;            //只修改波特率
             USART_InitStructure.USART_WordLength = USART_WordLength_8b;
             USART_InitStructure.USART_StopBits = USART_StopBits_1;
             USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -180,10 +180,10 @@ uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits
             break;
 
         default:
-            return FALSE;
+            return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 /**
@@ -191,21 +191,21 @@ uint8_t MbPortSerialInit(uint8_t ucPORT, uint32_t ulBaudRate, uint8_t ucDataBits
   * @param  None
   * @retval None
   */
-uint8_t MbPortSerialPutByte(uint8_t port, char ucByte) {
+bool MbPortSerialPutByte(uint8_t port, char byte) {
     switch (port) {
         case MBCOM0:
-            USART_SendData(USART1, ucByte);
+            USART_SendData(USART1, byte);
             break;
 
         case MBCOM1:
-            USART_SendData(USART2, ucByte);
+            USART_SendData(USART2, byte);
             break;
 
         default:
             break;
     }
 
-    return TRUE;
+    return true;
 }
 
 /**
@@ -213,7 +213,7 @@ uint8_t MbPortSerialPutByte(uint8_t port, char ucByte) {
   * @param  None
   * @retval None
   */
-uint8_t MbPortSerialGetByte(uint8_t port, char *pucByte) {
+bool MbPortSerialGetByte(uint8_t port, char *pucByte) {
     switch (port) {
         case MBCOM0:
             *pucByte = USART_ReceiveData(USART1);
@@ -227,7 +227,7 @@ uint8_t MbPortSerialGetByte(uint8_t port, char *pucByte) {
             break;
     }
 
-    return TRUE;
+    return true;
 }
 
 /**

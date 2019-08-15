@@ -14,7 +14,7 @@ MbErrorCode_t MbmRTUInit(Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, M
 
     ENTER_CRITICAL_SECTION();
     /* Modbus RTU uses 8 Databits. */
-    if (MbPortSerialInit(ucPort, ulBaudRate, 8, eParity) != TRUE) {
+    if (MbPortSerialInit(ucPort, ulBaudRate, 8, eParity) != true) {
         eStatus = MB_EPORTERR;
     } else {
         /* If baudrate > 19200 then we should use the fixed timer values
@@ -33,7 +33,7 @@ MbErrorCode_t MbmRTUInit(Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, M
              */
             usTimerT35_50us = (7UL * 220000UL) / (2UL * ulBaudRate);
         }
-        if (MbPortTimersInit(ucPort, (uint16_t) usTimerT35_50us) != TRUE) {
+        if (MbPortTimersInit(ucPort, (uint16_t) usTimerT35_50us) != true) {
             eStatus = MB_EPORTERR;
         }
     }
@@ -46,7 +46,7 @@ void MbmRTUStart(Mbmhandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     ((MbmDev_t *) dev)->sndrcvState = STATE_RTU_RX_IDLE;
-    MbPortSerialEnable(((MbmDev_t *) dev)->port, TRUE, FALSE);
+    MbPortSerialEnable(((MbmDev_t *) dev)->port, true, false);
     MbPortTimersDisable(((MbmDev_t *) dev)->port);
 
     EXIT_CRITICAL_SECTION();
@@ -55,7 +55,7 @@ void MbmRTUStart(Mbmhandle_t dev) {
 
 void MbmRTUStop(Mbmhandle_t dev) {
     ENTER_CRITICAL_SECTION();
-    MbPortSerialEnable(((MbmDev_t *) dev)->port, FALSE, FALSE);
+    MbPortSerialEnable(((MbmDev_t *) dev)->port, false, false);
     MbPortTimersDisable(((MbmDev_t *) dev)->port);
     EXIT_CRITICAL_SECTION();
 }
@@ -121,7 +121,7 @@ MbReqResult_t MbmRTUSend(Mbmhandle_t dev, const uint8_t *pAdu, uint16_t usAduLen
         pdev->sndAduBufPos = 1;  /* next byte in sendbuffer. */
         pdev->sndAduBufCount--;
 
-        MbPortSerialEnable(pdev->port, FALSE, TRUE);
+        MbPortSerialEnable(pdev->port, false, true);
     } else {
         result = MBR_BUSY;
     }
@@ -178,12 +178,12 @@ void MbmRTUTransmitFSM(Mbmhandle_t dev) {
             pdev->sndAduBufCount--;
         } else {
             /* Disable transmitter. This prevents another transmit buffer empty interrupt. */
-            MbPortSerialEnable(pdev->port, TRUE, FALSE);
+            MbPortSerialEnable(pdev->port, true, false);
             pdev->sndrcvState = STATE_RTU_RX_IDLE;
         }
     } else {
         /* enable receiver/disable transmitter. */
-        MbPortSerialEnable(pdev->port, TRUE, FALSE);
+        MbPortSerialEnable(pdev->port, true, false);
     }
 }
 

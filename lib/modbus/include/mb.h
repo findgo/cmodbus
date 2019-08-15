@@ -259,6 +259,6 @@ typedef struct {
 } MbsDev_t;
 
 // 发送个信号
-#define MbsSemGive(pdev) do { pdev->eventInFlag = TRUE;}while(0)
+#define MbsSemGive(pdev) do { pdev->eventInFlag = true;}while(0)
 
 #endif

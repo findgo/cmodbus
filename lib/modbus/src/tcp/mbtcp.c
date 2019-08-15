@@ -9,7 +9,7 @@
 
 MbErrorCode_t MbsTCPInit(uint16_t ucTCPPort)
 {
-    if( MbTCPPortInit( ucTCPPort ) == FALSE )
+    if( MbTCPPortInit( ucTCPPort ) == false )
         return MB_EPORTERR;
     
     return MB_ENOERR;
@@ -33,7 +33,7 @@ MbErrorCode_t MbsTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, u
     uint16_t          usLength;
     uint16_t          usPID;
 
-    if( MbTCPPortGetRequest( &pucMBTCPFrame, &usLength ) != FALSE ) {
+    if( MbTCPPortGetRequest( &pucMBTCPFrame, &usLength ) != false ) {
         
         usPID = pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET] << 8U;
         usPID |= pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET + 1];
@@ -70,7 +70,7 @@ MbErrorCode_t MbsTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16
      */
     pAdu[MB_TCP_ADU_LEN_OFFSET] = ( usLength + 1 ) >> 8U;
     pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = ( usLength + 1 ) & 0xFF;
-    if( MbTCPPortSendResponse( pAdu, usTCPAduLength ) == FALSE )
+    if( MbTCPPortSendResponse( pAdu, usTCPAduLength ) == false )
         return MB_EIO;
     
     return MB_ENOERR;

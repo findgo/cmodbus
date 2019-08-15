@@ -12,8 +12,8 @@ MbErrorCode_t MbsASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,
 
     ENTER_CRITICAL_SECTION();
 
-    if ((MbPortSerialInit(ucPort, ulBaudRate, 7, eParity) != TRUE) \
- || (MbPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != TRUE)) {
+    if ((MbPortSerialInit(ucPort, ulBaudRate, 7, eParity) != true) \
+ || (MbPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != true)) {
         eStatus = MB_EPORTERR;
     }
 
@@ -26,7 +26,7 @@ void MbsASCIIStart(Mbshandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     ((MbsDev_t *) dev)->sndrcvState = STATE_ASCII_RX_IDLE;
-    MbPortSerialEnable(((MbsDev_t *) dev)->port, TRUE, FALSE);
+    MbPortSerialEnable(((MbsDev_t *) dev)->port, true, false);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -34,7 +34,7 @@ void MbsASCIIStart(Mbshandle_t dev) {
 void MbsASCIIStop(Mbshandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
-    MbPortSerialEnable(((MbsDev_t *) dev)->port, FALSE, FALSE);
+    MbPortSerialEnable(((MbsDev_t *) dev)->port, false, false);
     MbPortTimersDisable(((MbsDev_t *) dev)->port);
 
     EXIT_CRITICAL_SECTION();
@@ -111,7 +111,7 @@ MbErrorCode_t MbsASCIISend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_
         pdev->AsciiBytePos = BYTE_HIGH_NIBBLE;
         pdev->sndrcvState = STATE_ASCII_TX_DATA;
 
-        MbPortSerialEnable(pdev->port, FALSE, TRUE);
+        MbPortSerialEnable(pdev->port, false, true);
     } else {
         eStatus = MB_EIO;
     }
@@ -261,7 +261,7 @@ void MbsASCIITransmitFSM(Mbshandle_t dev) {
         case STATE_ASCII_TX_NOTIFY:
             /* Disable transmitter. This prevents another transmit buffer
              * empty interrupt. */
-            MbPortSerialEnable(pdev->port, TRUE, FALSE);
+            MbPortSerialEnable(pdev->port, true, false);
             pdev->sndrcvState = STATE_ASCII_RX_IDLE;
             break;
     }

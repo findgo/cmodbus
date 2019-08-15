@@ -95,10 +95,10 @@ uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us) {
             TIM_Cmd(TIM4, DISABLE);
             break;
         default:
-            return FALSE;
+            return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 

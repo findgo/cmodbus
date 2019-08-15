@@ -11,9 +11,9 @@ MbErrorCode_t MbmASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,
 
     ENTER_CRITICAL_SECTION();
 
-    if (MbPortSerialInit(ucPort, ulBaudRate, 7, eParity) != TRUE) {
+    if (MbPortSerialInit(ucPort, ulBaudRate, 7, eParity) != true) {
         eStatus = MB_EPORTERR;
-    } else if (MbPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != TRUE) {
+    } else if (MbPortTimersInit(ucPort, MBS_ASCII_TIMEOUT_SEC * 20000UL) != true) {
         eStatus = MB_EPORTERR;
     }
 
@@ -26,7 +26,7 @@ void MbmASCIIStart(Mbshandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     ((MbmDev_t *) dev)->sndrcvState = STATE_ASCII_RX_IDLE;
-    MbPortSerialEnable(((MbmDev_t *) dev)->port, TRUE, FALSE);
+    MbPortSerialEnable(((MbmDev_t *) dev)->port, true, false);
 
     EXIT_CRITICAL_SECTION();
 }
@@ -34,7 +34,7 @@ void MbmASCIIStart(Mbshandle_t dev) {
 void MbmASCIIStop(Mbshandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
-    MbPortSerialEnable(((MbmDev_t *) dev)->port, FALSE, FALSE);
+    MbPortSerialEnable(((MbmDev_t *) dev)->port, false, false);
     MbPortTimersDisable(((MbmDev_t *) dev)->port);
 
     EXIT_CRITICAL_SECTION();
@@ -104,7 +104,7 @@ MbReqResult_t MbmASCIISend(Mbshandle_t dev, const uint8_t *pAdu, uint16_t usAduL
         pdev->AsciiBytePos = BYTE_HIGH_NIBBLE;
         pdev->sndrcvState = STATE_ASCII_TX_DATA;
 
-        MbPortSerialEnable(pdev->port, FALSE, TRUE);
+        MbPortSerialEnable(pdev->port, false, true);
     } else {
         result = MBR_BUSY;
     }
@@ -255,7 +255,7 @@ void MbmASCIITransmitFSM(Mbmhandle_t dev) {
         case STATE_ASCII_TX_NOTIFY:
             /* Disable transmitter. This prevents another transmit buffer
              * empty interrupt. */
-            MbPortSerialEnable(pdev->port, TRUE, FALSE);
+            MbPortSerialEnable(pdev->port, true, false);
             pdev->sndrcvState = STATE_ASCII_RX_IDLE;
 
             break;

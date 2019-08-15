@@ -25,6 +25,7 @@
 #define __MSG_LINK_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "mem.h"
 
 #ifdef __cplusplus
@@ -138,14 +139,14 @@ void *MsgBoxPeek(MsgBox_t *const msgbox);
  * @param   msg_ptr - 信息指针
  * @return  返回错误码
  */
-#define MsgBoxPost(msgbox, msg_ptr)        msgBoxGenericpost(msgbox, msg_ptr, FALSE)
+#define MsgBoxPost(msgbox, msg_ptr)        msgBoxGenericpost(msgbox, msg_ptr, false)
 /**
  * @brief   向信息邮箱头 发送一条信息
  * @param   msgbox_t * - 信息邮箱句柄
  * @param   msg_ptr - 信息指针
  * @return  返回错误码
  */
-#define MsgBoxPostFront(msgbox, msg_ptr)   msgBoxGenericpost(msgbox, msg_ptr, TRUE)
+#define MsgBoxPostFront(msgbox, msg_ptr)   msgBoxGenericpost(msgbox, msg_ptr, true)
 
 /*********************** 信息队列**********************************************/
 // 可用于扩展信息功能时使用
@@ -168,14 +169,14 @@ void *MsgQPeek(MsgQ_t *const q_ptr);
  * @param   msg_ptr - 信息指针
  * @return  返回错误码
  */
-#define MsgQPut(q_ptr, msg_ptr)  MsgQGenericPut( q_ptr, msg_ptr, FALSE )
+#define MsgQPut(q_ptr, msg_ptr)  MsgQGenericPut( q_ptr, msg_ptr, false )
 /**
  * @brief   向信息队列头 发送一条信息
  * @param   q_ptr - 信息队列头
  * @param   msg_ptr - 信息指针
  * @return  返回错误码
  */
-#define MsgQPutFront(q_ptr, msg_ptr)  MsgQGenericPut( q_ptr, msg_ptr, TRUE )
+#define MsgQPutFront(q_ptr, msg_ptr)  MsgQGenericPut( q_ptr, msg_ptr, true )
 
 /**
  * @brief   将信息从队列中踢出 Take out of the link list
@@ -229,7 +230,7 @@ void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const premsg_pt
  * @brief   向信息邮箱 发送一条信息
  * @param   msgbox_t * - 信息邮箱句柄
  * @param   msg_ptr - 信息指针
- * @param   isfront - FALSE: 放入信息邮箱尾 : TRUE: 放入信息邮箱头
+ * @param   isfront - false: 放入信息邮箱尾 : true: 放入信息邮箱头
  * @return  返回错误码
  */
 int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isfront);
@@ -238,7 +239,7 @@ int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t
  * @brief   向信息队列头 发送一条信息
  * @param   q_ptr - 信息队列头
  * @param   msg_ptr - 信息指针
- * @param   isfront - FALSE: 放入信息队列尾 : TRUE: 放入信息队列头
+ * @param   isfront - false: 放入信息队列尾 : true: 放入信息队列头
  * @return  返回错误码
  */
 void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isfront);

@@ -12,15 +12,15 @@ extern "C" {
 #if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 
 /* ------------ Serial port functions ----------------------------*/
-uint8_t MbPortSerialInit(uint8_t port, uint32_t ulBaudRate, uint8_t ucDataBits, MbParity_t eParity);
+bool MbPortSerialInit(uint8_t port, uint32_t bandRate, uint8_t dataBits, MbParity_t parity);
 
 void MbPortSerialClose(uint8_t port);
 
-void MbPortSerialEnable(uint8_t port, uint8_t xRxEnable, uint8_t xTxEnable);
+void MbPortSerialEnable(uint8_t port, bool rxEnable, bool txEnable);
 
-uint8_t MbPortSerialGetByte(uint8_t port, char *pucByte);
+bool MbPortSerialGetByte(uint8_t port, char *pucByte);
 
-uint8_t MbPortSerialPutByte(uint8_t port, char ucByte);
+bool MbPortSerialPutByte(uint8_t port, char byte);
 
 /* ------------ Timers functions ---------------------------------*/
 uint8_t MbPortTimersInit(uint8_t port, uint16_t usTimeOut50us);
