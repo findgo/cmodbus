@@ -92,8 +92,8 @@ MsgBox_t *MsgBoxNew(const uint16_t MaxCap) {
     return (MsgBox_t *) pNewmsgbox;
 }
 
-void MsgBoxAssign(MsgBox_t *const pmsgboxBuffer, const uint16_t MaxCap) {
-    msgBoxInner_t *pNewmsgbox = (msgBoxInner_t *) pmsgboxBuffer;
+void MsgBoxAssign(MsgBox_t *const pMsgBoxBuffer, const uint16_t MaxCap) {
+    msgBoxInner_t *pNewmsgbox = (msgBoxInner_t *) pMsgBoxBuffer;
     if (pNewmsgbox) {
         pNewmsgbox->capacity = MaxCap;
         pNewmsgbox->count = 0;
@@ -101,44 +101,44 @@ void MsgBoxAssign(MsgBox_t *const pmsgboxBuffer, const uint16_t MaxCap) {
     }
 }
 
-uint16_t MsgBoxCnt(MsgBox_t *const msgbox) {
-    if (msgbox == NULL)
+uint16_t MsgBoxCnt(MsgBox_t *const msgBox) {
+    if (msgBox == NULL)
         return 0;
 
-    return MSG_BOX_CNT(msgbox);
+    return MSG_BOX_CNT(msgBox);
 }
 
-uint16_t MsgBoxIdle(MsgBox_t *const msgbox) {
-    if (msgbox == NULL)
+uint16_t MsgBoxIdle(MsgBox_t *const msgBox) {
+    if (msgBox == NULL)
         return 0;
 
-    return (MSG_BOX_CAP(msgbox) - MSG_BOX_CNT(msgbox));
+    return (MSG_BOX_CAP(msgBox) - MSG_BOX_CNT(msgBox));
 }
 
-void *MsgBoxAccept(MsgBox_t *const msgbox) {
+void *MsgBoxAccept(MsgBox_t *const msgBox) {
     // no message on the list
-    if (MSG_BOX_CNT(msgbox) == 0)
+    if (MSG_BOX_CNT(msgBox) == 0)
         return NULL;
 
-    MSG_BOX_CNT(msgbox)--;
+    MSG_BOX_CNT(msgBox)--;
 
-    return MsgQPop(&MSG_BOX_QHEAD(msgbox));
+    return MsgQPop(&MSG_BOX_QHEAD(msgBox));
 }
 
-void *MsgBoxPeek(MsgBox_t *const msgbox) {
+void *MsgBoxPeek(MsgBox_t *const msgBox) {
     // no message on the list
-    if (MSG_BOX_CNT(msgbox) == 0)
+    if (MSG_BOX_CNT(msgBox) == 0)
         return NULL;
 
-    return MsgQPeek(&MSG_BOX_QHEAD(msgbox));
+    return MsgQPeek(&MSG_BOX_QHEAD(msgBox));
 }
 
-int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isFront) {
-    if (msg_ptr == NULL || msgbox == NULL) {
+int MsgBoxGenericPost(MsgBox_t *const msgBox, void *const msg_ptr, const uint8_t isFront) {
+    if (msg_ptr == NULL || msgBox == NULL) {
         return (MSG_INVALID_POINTER);
     }
 
-    if (MSG_BOX_CAP(msgbox) != MSGBOX_UNLIMITED_CAP && ((MSG_BOX_CAP(msgbox) - MSG_BOX_CNT(msgbox)) < 1))
+    if (MSG_BOX_CAP(msgBox) != MSGBOX_UNLIMITED_CAP && ((MSG_BOX_CAP(msgBox) - MSG_BOX_CNT(msgBox)) < 1))
         return MSG_QBOX_FULL;
 
     // Check the message header ,not init it success, or message on the list
@@ -146,8 +146,8 @@ int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t
         return (MSG_INVALID_POINTER);
     }
 
-    MSG_BOX_CNT(msgbox)++;
-    MsgQGenericPut(&MSG_BOX_QHEAD(msgbox), msg_ptr, isFront);
+    MSG_BOX_CNT(msgBox)++;
+    MsgQGenericPut(&MSG_BOX_QHEAD(msgBox), msg_ptr, isFront);
 
     return (MSG_SUCCESS);
 }

@@ -274,15 +274,13 @@ const char *MbError2Str(MbException_t excode) {
     }
 }
 
-/*********************************************************************
+/**
  * @brief       计算寄存器所占内存字节数
- *
  * @param       reg_holding_num -  保持寄存器个数
  * @param       reg_input_num -  输入寄存器个数
  * @param       reg_coils_num - 线圈个数
  * @param       reg_discrete_num - 离散输入个数
- *
- * @return      if OK
+ * @return      返回寄存器占用的总内存数
  */
 uint32_t MbRegBufSizeCal(uint16_t reg_holding_num,
                          uint16_t reg_input_num,
