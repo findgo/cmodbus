@@ -1,5 +1,6 @@
 
 #include "mbutils.h"
+#include <assert.h>
 
 #define BITS_uint8_t (8U)
 
@@ -9,13 +10,13 @@
  * The array used for storing the bits must always be a multiple of two
  * bytes. Up to eight bits can be set or cleared in one operation.
  *
- * @param : ucByteBuf A buffer where the bit values are stored. 
+ * @param : byteBuf A buffer where the bit values are stored.
  *          Must be a multiple of 2 bytes. No length checking is performed and if
  *          usBitOffset / 8 is greater than the size of the buffer memory contents is overwritten.
  *
- * @param : usBitOffset The starting address of the bits to set. The first  bit has the offset 0.
- * @param : ucNBits Number of bits to modify. The value must always be smaller than 8.
- * @param : ucValues Thew new values for the bits. The value for the first bit
+ * @param : bitOffset The starting address of the bits to set. The first  bit has the offset 0.
+ * @param : nBits Number of bits to modify. The value must always be smaller than 8.
+ * @param : values Thew new values for the bits. The value for the first bit
  *   starting at <code> usBitOffset </code> is the LSB of the value
  *   <code> ucValues </code>
  *
@@ -32,42 +33,42 @@
  * MbSetBits( ucBits, 8, 8, 0x5A);
  * \! endcode
  */
-void MbSetBits(uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue) {
-    uint16_t usWordBuf;
-    uint16_t usMask;
-    uint16_t usByteOffset;
-    uint16_t usNPreBits;
-    uint16_t usValue = ucValue;
+void MbSetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits, uint8_t value) {
+    uint16_t word;
+    uint16_t mask;
+    uint16_t byteOffset;
+    uint16_t preBits;
+    uint16_t newValue = value;
 
-    assert(ucNBits <= 8);
+    assert(nBits <= 8);
     assert((size_t) BITS_uint8_t == sizeof(uint8_t) * 8);
 
-    /* Calculate byte offset for first byte containing the bit values starting
-     * at usBitOffset. */
-    usByteOffset = (uint16_t) ((usBitOffset) / BITS_uint8_t);
+    /* Calculate byte offset for first byte containing the bit values starting at bitOffset. */
+    byteOffset = (uint16_t) ((bitOffset) / BITS_uint8_t);
     /* How many bits precede our bits to set. */
-    usNPreBits = (uint16_t) (usBitOffset - usByteOffset * BITS_uint8_t);
-
+    preBits = (uint16_t) (bitOffset - byteOffset * BITS_uint8_t);
     /* Move bit field into position over bits to set */
-    usValue <<= usNPreBits;
+    newValue <<= preBits;
 
     /* Prepare a mask for setting the new bits. */
-    usMask = (uint16_t) ((1 << (uint16_t) ucNBits) - 1);
-    usMask <<= usNPreBits;
+    mask = (uint16_t) ((1 << (uint16_t) nBits) - 1);
+    mask <<= preBits;
+    // Prepare a value want to change
+    newValue &=mask;
 
     /* copy bits into temporary storage. */
-    usWordBuf = ucByteBuf[usByteOffset];
-    if ((usNPreBits + ucNBits) > 8) {
-        usWordBuf |= ucByteBuf[usByteOffset + 1] << BITS_uint8_t;
+    word = byteBuf[byteOffset];
+    if ((preBits + nBits) > 8) {
+        word |= (uint16_t)byteBuf[byteOffset + 1] << BITS_uint8_t;
     }
 
     /* Zero out bit field bits and then or value bits into them. */
-    usWordBuf = (uint16_t) ((usWordBuf & (~usMask)) | usValue);
+    word = (uint16_t) ((word & (~mask)) | newValue);
 
     /* move bits back into storage */
-    ucByteBuf[usByteOffset] = (uint8_t) (usWordBuf & 0xFF);
-    if ((usNPreBits + ucNBits) > 8) {
-        ucByteBuf[usByteOffset + 1] = (uint8_t) (usWordBuf >> BITS_uint8_t);
+    byteBuf[byteOffset] = (uint8_t) (word & 0xFF);
+    if ((preBits + nBits) > 8) {
+        byteBuf[byteOffset + 1] = (uint8_t) (word >> BITS_uint8_t);
     }
 }
 
@@ -88,33 +89,31 @@ void MbSetBits(uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_
  * ucResult = MbGetBits( ucBits, 3, 8 );
  * \! endcode
  */
-uint8_t MbGetBits(uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits) {
-    uint16_t usWordBuf;
-    uint16_t usMask;
-    uint16_t usByteOffset;
-    uint16_t usNPreBits;
+uint8_t MbGetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits) {
+    uint16_t word;
+    uint16_t mask;
+    uint16_t byteOffset;
+    uint16_t preBits;
 
-    /* Calculate byte offset for first byte containing the bit values starting
-     * at usBitOffset. */
-    usByteOffset = (uint16_t) ((usBitOffset) / BITS_uint8_t);
+    /* Calculate byte offset for first byte containing the bit values starting at bitOffset. */
+    byteOffset = (uint16_t) ((bitOffset) / BITS_uint8_t);
     /* How many bits precede our bits to set. */
-    usNPreBits = (uint16_t) (usBitOffset - usByteOffset * BITS_uint8_t);
+    preBits = (uint16_t) (bitOffset - byteOffset * BITS_uint8_t);
 
     /* Prepare a mask for setting the new bits. */
-    usMask = (uint16_t) ((1 << (uint16_t) ucNBits) - 1);
+    mask = (uint16_t) ((1 << (uint16_t) nBits) - 1);
 
     /* copy bits into temporary storage. */
-    usWordBuf = ucByteBuf[usByteOffset];
-    if ((usNPreBits + ucNBits) > 8) {
-        usWordBuf |= ucByteBuf[usByteOffset + 1] << BITS_uint8_t;
+    word = byteBuf[byteOffset];
+    if ((preBits + nBits) > 8) {
+        word |= byteBuf[byteOffset + 1] << BITS_uint8_t;
     }
     /* throw away unneeded bits. */
-    usWordBuf >>= usNPreBits;
-
+    word >>= preBits;
     /* mask away bits above the requested bitfield. */
-    usWordBuf &= usMask;
+    word &= mask;
 
-    return (uint8_t) usWordBuf;
+    return (uint8_t) word;
 }
 
 #if MB_RTU_ENABLED > 0
@@ -168,19 +167,19 @@ static const uint8_t aucCRCLo[] = {
         0x41, 0x81, 0x80, 0x40
 };
 
-uint16_t MbCRC16(uint8_t *pucFrame, uint16_t usLen) {
+uint16_t MbCRC16(uint8_t *pFrame, uint16_t len) {
 
-    uint8_t ucCRCHi = 0xFF;
-    uint8_t ucCRCLo = 0xFF;
+    uint8_t CRCHi = 0xFF;
+    uint8_t CRCLo = 0xFF;
     int iIndex;
 
-    while (usLen--) {
-        iIndex = ucCRCLo ^ *(pucFrame++);
-        ucCRCLo = (uint8_t) (ucCRCHi ^ aucCRCHi[iIndex]);
-        ucCRCHi = aucCRCLo[iIndex];
+    while (len--) {
+        iIndex = CRCLo ^ *(pFrame++);
+        CRCLo = (uint8_t) (CRCHi ^ aucCRCHi[iIndex]);
+        CRCHi = aucCRCLo[iIndex];
     }
 
-    return (uint16_t) (ucCRCHi << 8 | ucCRCLo);
+    return (uint16_t) (CRCHi << 8 | CRCLo);
 }
 
 #endif

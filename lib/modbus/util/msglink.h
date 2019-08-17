@@ -182,10 +182,10 @@ void *MsgQPeek(MsgQ_t *const q_ptr);
  * @brief   将信息从队列中踢出 Take out of the link list
  * @param   q_ptr - 信息队列头
  * @param   msg_ptr - 信息指针
- * @param   premsg_ptr - 前一条信息指针
+ * @param   preMsg_ptr - 前一条信息指针
  * @return  返回错误码
  */
-void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const premsg_ptr);
+void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const preMsg_ptr);
 // scan msgQ each message
 #define MsgQ_for_each_msg(q_ptr, listmsg) for(listmsg = *(q_ptr); listmsg != NULL;listmsg = MsgQNext(listmsg))
 // how to take a messge from the list
@@ -230,19 +230,19 @@ void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const premsg_pt
  * @brief   向信息邮箱 发送一条信息
  * @param   msgbox_t * - 信息邮箱句柄
  * @param   msg_ptr - 信息指针
- * @param   isfront - false: 放入信息邮箱尾 : true: 放入信息邮箱头
+ * @param   isFront - false: 放入信息邮箱尾 : true: 放入信息邮箱头
  * @return  返回错误码
  */
-int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isfront);
+int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isFront);
 
 /**
  * @brief   向信息队列头 发送一条信息
  * @param   q_ptr - 信息队列头
  * @param   msg_ptr - 信息指针
- * @param   isfront - false: 放入信息队列尾 : true: 放入信息队列头
+ * @param   isFront - false: 放入信息队列尾 : true: 放入信息队列头
  * @return  返回错误码
  */
-void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isfront);
+void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isFront);
 
 /**
  * @brief   从信息获得下一条信息        ( 信息必需在队列上,这属于内部API,不得调用 )

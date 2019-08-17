@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 /********************* modbus type defined  ************************/
-//#define MB_MASTER_ENABLED        ( 0 )
+#define MB_MASTER_ENABLED        ( 0 )
 #define MB_SLAVE_ENABLED         ( 1 )
 
 /*! \defgroup modbus_cfg Modbus Configuration
@@ -135,7 +135,7 @@ extern "C" {
 
 // check must be defined
 #if (!MB_MASTER_ENABLED) && (!MB_SLAVE_ENABLED)
-    #error no modbus type defined,select MB_MASTER_ENABLED or MB_MASTER_ENABLED or both!
+#error no modbus type defined, select MB_MASTER_ENABLED or MB_SLAVE_ENABLED or both!
 #endif
 
 #ifdef __cplusplus

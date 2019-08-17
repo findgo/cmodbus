@@ -13,7 +13,7 @@
 #define REG_COILS_SIZE        (8 * 3)
 #define REG_DISCRETE_SIZE     (8 * 3)
 
-static void prvnvicInit(void);
+static void prvNvicInit(void);
 
 #if MB_MASTER_ENABLED > 0
 Mbmhandle_t deviceM0;
@@ -29,7 +29,7 @@ int main(void) {
     MbErrorCode_t status;
 
 //	prvClockInit();
-    prvnvicInit();
+    prvNvicInit();
     Systick_Configuration();
     SystemCoreClockUpdate();
     logInit();
@@ -87,6 +87,7 @@ int main(void) {
 
 Mbshandle_t device0;
 Mbshandle_t device1;
+
 static __aligned(2) uint8_t dev0regbuf[
         REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] =
         {0xaa, 0xaa, 0xbb, 0xbb, 0xcc, 0xcc, 0xdd, 0xdd, 0xee, 0xee, 0xff, 0xff, 0xaa, 0x55, 0xaa, 0xcc, 0xff};
@@ -98,29 +99,27 @@ static uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55, 0xaa, 0x77};
 int main(void) {
     MbErrorCode_t status;
 
-    prvnvicInit();
+    prvNvicInit();
     Systick_Configuration();
-//#if MB_RTU_ENABLED > 0
-//    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 115200, MB_PAR_NONE);
-//#elif MB_ASCII_ENABLED > 0
-//    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 115200, MB_PAR_NONE);
-//#endif
-//    if(device0){
-//       status = MbsRegAssign(device0,
-//                        dev0regbuf,
-//                        sizeof(dev0regbuf),
-//                        0,REG_HOLDING_NREGS ,
-//                        0,REG_INPUT_NREGS,
-//                        0,REG_COILS_SIZE,
-//                        0,REG_DISCRETE_SIZE);
-//       if(status == MB_ENOERR)
-//            (void)MbsStart(device0);
-//    }
 #if MB_RTU_ENABLED > 0
+//    device0 = MbsNew(MB_RTU, 0x01, MBCOM0, 115200, MB_PAR_NONE);
     device1 = MbsNew(MB_RTU, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #elif MB_ASCII_ENABLED > 0
-    device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 115200, MB_PAR_NONE);
+    //    device0 = MbsNew(MB_ASCII, 0x01, MBCOM0, 115200, MB_PAR_NONE);
+        device1 = MbsNew(MB_ASCII, 0x01, MBCOM1, 115200, MB_PAR_NONE);
 #endif
+//    if (device0) {
+//        status = MbsRegAssign(device0,
+//                              dev0regbuf,
+//                              sizeof(dev0regbuf),
+//                              0, REG_HOLDING_NREGS,
+//                              0, REG_INPUT_NREGS,
+//                              0, REG_COILS_SIZE,
+//                              0, REG_DISCRETE_SIZE);
+//        if (status == MB_ENOERR){
+//            (void) MbsStart(device0);
+//        }
+//    }
     if (device1) {
         status = MbsRegAssignSingle(device1,
                                     dev1HoldingBuf,
@@ -131,8 +130,9 @@ int main(void) {
                                     0, REG_COILS_SIZE,
                                     dev1DiscreteBuf,
                                     0, REG_DISCRETE_SIZE);
-        if (status == MB_ENOERR)
+        if (status == MB_ENOERR) {
             (void) MbsStart(device1);
+        }
     }
     while (1) {
         MbsPoll();
@@ -142,8 +142,8 @@ int main(void) {
 
 #endif
 
-//nvic configuration
-static void prvnvicInit(void) {
+//Nvic configuration
+static void prvNvicInit(void) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 }
 

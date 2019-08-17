@@ -1,10 +1,10 @@
 
-#include "mbproto.h"
-#include "mbmbuf.h"
+#include "mbconfig.h"
 
 #if MB_MASTER_ENABLED > 0
 
 #include "msglink.h"
+#include "mb.h"
 
 MbmReq_t *MbmReqMsgNew(MbMode_t mode, uint16_t Pdusize) {
     uint16_t Adusize;

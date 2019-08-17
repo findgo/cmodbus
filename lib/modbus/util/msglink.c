@@ -4,10 +4,10 @@
 #define MSG_BOX_CAP(msgBox_ptr)      (((msgBoxInner_t *) (msgBox_ptr))->capacity)
 #define MSG_BOX_QHEAD(msgBox_ptr)      (((msgBoxInner_t *) (msgBox_ptr))->qHead)
 
-#define MSG_HDR_MARK(msg_ptr)      (((msgHdr_t *) (msg_ptr) - 1)->mark)
-#define MSG_HDR_SPARE(msg_ptr)      (((msgHdr_t *) (msg_ptr) - 1)->spare)
+#define MSG_HDR_MARK(msg_ptr)     (((msgHdr_t *) (msg_ptr) - 1)->mark)
+#define MSG_HDR_SPARE(msg_ptr)    (((msgHdr_t *) (msg_ptr) - 1)->spare)
 #define MSG_HDR_LEN(msg_ptr)      (((msgHdr_t *) (msg_ptr) - 1)->len)
-#define MSG_HDR_NEXT(msg_ptr)      (((msgHdr_t *) (msg_ptr) - 1)->next)
+#define MSG_HDR_NEXT(msg_ptr)     (((msgHdr_t *) (msg_ptr) - 1)->next)
 
 // 信息头部
 typedef struct {
@@ -133,7 +133,7 @@ void *MsgBoxPeek(MsgBox_t *const msgbox) {
     return MsgQPeek(&MSG_BOX_QHEAD(msgbox));
 }
 
-int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isfront) {
+int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t isFront) {
     if (msg_ptr == NULL || msgbox == NULL) {
         return (MSG_INVALID_POINTER);
     }
@@ -147,16 +147,16 @@ int MsgBoxGenericPost(MsgBox_t *const msgbox, void *const msg_ptr, const uint8_t
     }
 
     MSG_BOX_CNT(msgbox)++;
-    MsgQGenericPut(&MSG_BOX_QHEAD(msgbox), msg_ptr, isfront);
+    MsgQGenericPut(&MSG_BOX_QHEAD(msgbox), msg_ptr, isFront);
 
     return (MSG_SUCCESS);
 }
 
-void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isfront) {
+void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isFront) {
     void *list;
 
     MSG_HDR_MARK(msg_ptr) = 1; // mark on the list
-    if (isfront == 1) { // put to front
+    if (isFront == 1) { // put to front
         // Push message to head of queue
         MSG_HDR_NEXT(msg_ptr) = *q_ptr;
         *q_ptr = msg_ptr;
@@ -198,13 +198,13 @@ void *MsgQPeek(MsgQ_t *const q_ptr) {
 
 //ok
 // Take out of the link list
-void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const premsg_ptr) {
+void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const preMsg_ptr) {
     if (msg_ptr == *q_ptr) {
         // remove from first
         *q_ptr = MSG_HDR_NEXT(msg_ptr);
     } else {
         // remove from middle
-        MSG_HDR_NEXT(premsg_ptr) = MSG_HDR_NEXT(msg_ptr);
+        MSG_HDR_NEXT(preMsg_ptr) = MSG_HDR_NEXT(msg_ptr);
     }
     MSG_HDR_NEXT(msg_ptr) = NULL;
     MSG_HDR_MARK(msg_ptr) = 0;

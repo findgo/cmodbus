@@ -1,6 +1,6 @@
-#include "mbfunc.h"
-#include "port.h"
-#include "mb.h"
+#include "mbconfig.h"
+
+#if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0 || MB_TCP_ENABLED > 0) && MB_MASTER_ENABLED > 0
 
 #if MB_RTU_ENABLED > 0
 #include "mbrtu.h"
@@ -13,12 +13,11 @@
 #endif
 
 #include "mbutils.h"
-
-/* TODO implement modbus master */
-#if (MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0) && MB_MASTER_ENABLED > 0
-
-#include "mbmem.h"
+#include "mem.h"
 #include "mbmbuf.h"
+#include "mbfunc.h"
+#include "mb.h"
+#include "port.h"
 
 static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff);
 
@@ -185,7 +184,7 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
     memset(node, 0, sizeof(MbmNode_t));
 
     lens = MbRegBufSizeCal(reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num);
-    regbuf = (uint8_t *) mo_malloc(lens);
+    regbuf = (uint8_t *) KMalloc(lens);
     if (regbuf == NULL) {
         MsgDealloc(node);
         return NULL;
@@ -234,7 +233,7 @@ void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg) {
 void MbmNodeFree(MbmNode_t *node) {
     if (node) {
         if (node->regs.pReghold)
-            mo_free(node->regs.pReghold);
+            KFree(node->regs.pReghold);
         MsgDealloc(node);
     }
 }

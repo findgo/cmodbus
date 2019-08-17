@@ -14,11 +14,11 @@ extern "C" {
 
 #include "mb.h"
 
-void MbSetBits(uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits, uint8_t ucValue);
+void MbSetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits, uint8_t value);
 
-uint8_t MbGetBits(uint8_t *ucByteBuf, uint16_t usBitOffset, uint8_t ucNBits);
+uint8_t MbGetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits);
 
-uint16_t MbCRC16(uint8_t *pucFrame, uint16_t usLen);
+uint16_t MbCRC16(uint8_t *pFrame, uint16_t len);
 
 uint8_t MbChar2Bin(uint8_t ucCharacter);
 

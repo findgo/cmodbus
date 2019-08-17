@@ -8,7 +8,7 @@ extern "C" {
 
 /* ----------------------- Defines ------------------------------------------*/
 /*brief Use the default Modbus TCP port (502)*/
-#define MB_TCP_PORT_USE_DEFAULT    (502)
+#define MB_TCP_DEFAULT_PORT    (502)
 
 #define MB_ADDRESS_BROADCAST    ( 0 )   /*! Modbus broadcast address. */
 #define MB_ADDRESS_MIN          ( 1 )   /*! Smallest possible slave address. */
