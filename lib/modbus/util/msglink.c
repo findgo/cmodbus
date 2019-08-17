@@ -11,7 +11,7 @@
 
 // 信息头部
 typedef struct {
-    uint8_t mark;
+    uint8_t mark; // 标记是否在链表中
     uint8_t spare;
     uint16_t len;
     void *next;
@@ -176,7 +176,6 @@ void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isFr
     }
 }
 
-//ok
 void *MsgQPop(MsgQ_t *const q_ptr) {
     void *msg_ptr = NULL;
 
@@ -191,12 +190,10 @@ void *MsgQPop(MsgQ_t *const q_ptr) {
     return msg_ptr;
 }
 
-//ok
 void *MsgQPeek(MsgQ_t *const q_ptr) {
     return (void *) (*q_ptr);
 }
 
-//ok
 // Take out of the link list
 void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const preMsg_ptr) {
     if (msg_ptr == *q_ptr) {
