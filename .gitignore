@@ -2,3 +2,4 @@
 /proj/Listings
 /stm32f1_modbus.si4project
 cmake-build-*
+doxygen

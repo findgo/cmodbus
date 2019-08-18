@@ -24,7 +24,7 @@ static void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void
     //printf("error count: %d, result: %d\r\n" ,result,((MbmReq_t *)req)->errcnt);
 }
 
-int main(void) {
+int main(int argc, char **argv) {
     MbmNode_t *node;
     MbErrorCode_t status;
 
@@ -83,7 +83,7 @@ int main(void) {
 #endif
 
 
-#if MB_SLAVE_ENABLED > 0
+//#if MB_SLAVE_ENABLED > 0
 
 Mbshandle_t device0;
 Mbshandle_t device1;
@@ -96,7 +96,7 @@ static __aligned(2) uint16_t dev1InputBuf[REG_INPUT_NREGS] = {0x4444, 0x5555, 0x
 static uint8_t dev1CoilsBuf[REG_COILS_SIZE / 8] = {0xaa, 0x55};
 static uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55, 0xaa, 0x77};
 
-int main(void) {
+int main(int argc,char **argv) {
     MbErrorCode_t status;
 
     prvNvicInit();
@@ -140,7 +140,7 @@ int main(void) {
     //Should never reach this point!
 }
 
-#endif
+//#endif
 
 //Nvic configuration
 static void prvNvicInit(void) {
