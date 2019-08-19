@@ -1,9 +1,9 @@
 /**
- * @file msglink.h
- * @brief 消息,邮箱,队列API库
- * @author mo
+ * @file    msglink.h
+ * @brief   消息,邮箱,队列API库
+ * @author  mo
  * @version v0.1.0
- * @date 2018-12-01
+ * @date    2018-12-01
  *
  * @pre mem.h
  * @attention 消息链表有两个主要API, MsgAlloc, MsgDealloc 所有消息的处理必须 ::MsgAlloc 创建, ::MsgDealloc 释放 \n
@@ -63,7 +63,7 @@ void *MsgAlloc(const uint16_t len);
  * @pre     msg_ptr 变量必须 ::MsgAlloc 的返回值
  * @see     ::MsgAlloc
  */
-int MsgDealloc(void *const msg_ptr);
+int MsgFree(void *const msg_ptr);
 
 /**
  * @brief   获得消息的长度
@@ -124,7 +124,7 @@ uint16_t MsgBoxCnt(MsgBox_t *const msgBox);
  * @brief   获得消息邮箱中空闲数量
  * @param   msgBox 消息邮箱句柄
  * @return  空闲消息数量,无效指针返回0
- * @pre msgBox 变量必须 ::MsgBoxNew 的返回值
+ * @pre     msgBox 变量必须 ::MsgBoxNew 的返回值
  */
 uint16_t MsgBoxIdle(MsgBox_t *const msgBox);
 
@@ -195,6 +195,7 @@ void *MsgQPeek(MsgQ_t *const q_ptr);
  * @pre     msg_ptr 变量必须 ::MsgAlloc 的返回值
  */
 #define MsgQPut(q_ptr, msg_ptr)  MsgQGenericPut( q_ptr, msg_ptr, false )
+
 /**
  * @brief   向信息队列头 发送一条信息
  * @param   q_ptr 消息队列头
@@ -216,44 +217,44 @@ void *MsgQPeek(MsgQ_t *const q_ptr);
  */
 void MsgQExtract(MsgQ_t *const q_ptr, void *const msg_ptr, void *const preMsg_ptr);
 
-// scan msgQ each message
-#define MsgQ_for_each_msg(q_ptr, listmsg) for(listmsg = *(q_ptr); listmsg != NULL;listmsg = MsgQNext(listmsg))
-// how to take a messge from the list
-/*
-{
-    void *prev = NULL;
-    void *srch;
+/**
+ * @brief   scan msgQ each message
+ * @param   q_ptr 消息队列头
+ * @param   listMsg 临时变量
+ * @return  None
+ * @par     示例1
+ * @code
+ * {
+ *   void *prev = NULL;
+ *   void *srch;
+ *   msgQ_for_each_msg(q_ptr, srch){
+ *      if(message find){
+ *           //take out the list
+ *           msgQextract(q_ptr, srch, prev);
+ *          // do you job
+ *       }else{
+ *           prev = srch; // save previous message
+ *       }
+ *   }
+ *}
+ * @endcode
+ * @par     示例2
+ * @code
+ *   void *prev = NULL;
+ *   void *srch;
+ *   msgQ_for_each_msg(q_ptr, srch){
+ *       if(message find)
+ *           break;
+ *       prev = srch; // save previous message
+ *  }
+ *  if(srh){
+ *       //take out the list
+ *       MsgQExtract(q_ptr, srch, prev);
+ *   }
+ * @endcode
+ */
+#define MsgQ_for_each_msg(q_ptr, listMsg) for(listMsg = *(q_ptr); listMsg != NULL; listMsg = MsgQNext(listMsg))
 
-    msgQ_for_each_msg(q_ptr, srch){
-        if(message find){
-            //take out the list
-            msgQextract(q_ptr, srch, prev);
-           // do you job
-        }
-        else{
-            prev = srch; // save previous message
-        }
-    }
-}
-//or
-{
-    void *prev = NULL;
-    void *srch;
-
-    msgQ_for_each_msg(q_ptr, srch){
-        if(message find)
-            break;
-        prev = srch; // save previous message
-    }
-
-    if(srh){
-        //take out the list
-        MsgQExtract(q_ptr, srch, prev);
-    }
-}
-*/
-
-/*********************** 消息队列**********************************************/
 /*********************** 内部API,不可独立调用**********************************************/
 /**
  * @brief   向消息邮箱发送一条消息
@@ -291,7 +292,6 @@ void MsgQGenericPut(MsgQ_t *const q_ptr, void *const msg_ptr, const uint8_t isFr
  * @note    消息必需在队列上,这属于内部API,不建议调用
  */
 void *MsgQNext(void *const msg_ptr);
-/*********************** 内部API,不可独立调用**********************************************/
 
 
 #ifdef __cplusplus

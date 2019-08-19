@@ -43,7 +43,7 @@ void *MsgAlloc(const uint16_t msgLen) {
     return (void *) (NULL);
 }
 
-int MsgDealloc(void *const msg_ptr) {
+int MsgFree(void *const msg_ptr) {
     if (msg_ptr == NULL)
         return (MSG_INVALID_POINTER);
 

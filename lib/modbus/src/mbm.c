@@ -234,7 +234,7 @@ void MbmNodeFree(MbmNode_t *node) {
     if (node) {
         if (node->regs.pReghold)
             KFree(node->regs.pReghold);
-        MsgDealloc(node);
+        MsgFree(node);
     }
 }
 

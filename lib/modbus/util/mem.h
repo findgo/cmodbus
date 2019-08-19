@@ -1,9 +1,9 @@
 /**
- * @file mem.h
- * @brief 内存分配api重定向
- * @author mo
+ * @file    mem.h
+ * @brief   内存分配api重定向
+ * @author  mo
  * @version v0.1.0
- * @date 2018-12-01
+ * @date    2018-12-01
  *
  */
 #ifndef __MEM_H__
