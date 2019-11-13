@@ -63,12 +63,12 @@ MbErrCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler p
             parseRspHandlers[i].functionCode = pHandler ? functionCode : 0;
             parseRspHandlers[i].pHandler = pHandler;
 
-            eStatus = MB_ENOERR;
+            eStatus = MB_ESUCCESS;
             break;
         }
     }
     if (!pHandler) // remove can't failed!
-        eStatus = MB_ENOERR;
+        eStatus = MB_ESUCCESS;
 
     return eStatus;
 }

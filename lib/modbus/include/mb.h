@@ -60,7 +60,7 @@ typedef enum {
 } MbDevState_t;
 /* \brief Errorcodes used by all function in the protocol stack.*/
 typedef enum {
-    MB_ENOERR,                  /*!< no error. */
+    MB_ESUCCESS,                  /*!< no error. */
     MB_ENOREG,                  /*!< illegal register address. */
     MB_EINVAL,                  /*!< illegal argument. */
     MB_EPORTERR,                /*!< porting layer error. */

@@ -30,7 +30,7 @@ static MsgQ_t mbm_dev_head = NULL;
 //static msgboxstatic_t msgboxHandlebuf = MSGBOX_STATIC_INIT(MSGBOX_UNLIMITED_CAP);
 
 MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
-    MbErrCode_t eStatus = MB_ENOERR;
+    MbErrCode_t eStatus = MB_ESUCCESS;
     MbmDev_t *dev;
 
     if ((dev = (MbmDev_t *) MsgAlloc(sizeof(MbmDev_t))) == NULL)
@@ -69,7 +69,7 @@ MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
 
     }
 
-    if (eStatus != MB_ENOERR) {
+    if (eStatus != MB_ESUCCESS) {
         MsgDealloc(dev);
         return NULL;
     }
@@ -160,7 +160,7 @@ MbErrCode_t MbmSetPara(MbmHandle_t dev, uint8_t retry, uint32_t replytimeout,
     else
         pdev->Broadcastturntime = broadcastturntime;
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 /* 创建一个独立节点和寄存器列表 */
@@ -256,7 +256,7 @@ MbErrCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node) {
 
     MsgQPutFront(&(((MbmDev_t *) dev)->nodehead), node);
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 /* 将节点从主机删除 */
@@ -281,7 +281,7 @@ MbErrCode_t MbmRemoveNode(MbmHandle_t dev, uint8_t slaveID) {
     // init
     srchnode->slaveID = 0;
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 /* search node on the host list ? */
@@ -312,7 +312,7 @@ MbErrCode_t MbmStart(MbmHandle_t dev) {
         pdev->state = DEV_STATE_ENABLED;
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbmStop(MbmHandle_t dev) {
@@ -326,7 +326,7 @@ MbErrCode_t MbmStop(MbmHandle_t dev) {
         pdev->state = DEV_STATE_DISABLED;
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbmClose(MbmHandle_t dev) {
@@ -338,7 +338,7 @@ MbErrCode_t MbmClose(MbmHandle_t dev) {
             pdev->pCloseCur(dev);
         }
 
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_EILLSTATE;
@@ -415,7 +415,7 @@ static MbErrCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             break;
         case MBM_XMIT:
             req = MsgQPeek(&(dev->Reqreadyhead)); // peek ready list ,any request on the list?
-            if (req && (dev->pSendCur(dev, req->adu, req->adulength) == MB_ENOERR)) {
+            if (req && (dev->pSendCur(dev, req->adu, req->adulength) == MB_ESUCCESS)) {
                 if (dev->mode == MB_RTU) {
                     dev->XmitingTime = dev->T50PerCharater * 50 * req->adulength / 1000 + 1;
                 } else {
@@ -546,7 +546,7 @@ static MbErrCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
         __MbmReqPendlistScan(dev, timediff);// scan pend list 
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 

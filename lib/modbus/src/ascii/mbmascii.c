@@ -6,7 +6,7 @@
 #if MB_ASCII_ENABLED > 0 && MB_MASTER_ENABLED > 0
 
 MbErrCode_t MbmASCIIInit(MbsHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
-    MbErrCode_t eStatus = MB_ENOERR;
+    MbErrCode_t eStatus = MB_ESUCCESS;
     (void) dev;
 
     ENTER_CRITICAL_SECTION();

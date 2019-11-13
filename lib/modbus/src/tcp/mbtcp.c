@@ -11,7 +11,7 @@ MbErrCode_t MbsTCPInit(uint16_t port) {
     if (MbsTCPPortInit(port) == false)
         return MB_EPORTERR;
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 void MbsTCPStart(void *dev) {
@@ -38,7 +38,7 @@ MbErrCode_t MbsTCPReceive(void *dev, uint8_t *pRcvAddress, uint8_t **pPdu, uint1
 
             *pPdu = &pucMBTCPFrame[MB_TCP_ADU_PDU_OFFSET];
             *pLen = usLength - MB_TCP_ADU_PDU_OFFSET;
-            eStatus = MB_ENOERR;
+            eStatus = MB_ESUCCESS;
 
             /* Modbus TCP does not use any addresses. Fake the source address such
              * that the processing part deals with this frame.
@@ -67,7 +67,7 @@ MbErrCode_t MbsTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t
     if (MbTCPPortSendResponse(pAdu, usTCPAduLength) == false)
         return MB_EIO;
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 #endif

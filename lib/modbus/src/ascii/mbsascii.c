@@ -8,7 +8,7 @@
 
 MbErrCode_t MbsASCIIInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     (void) dev;
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
 
     ENTER_CRITICAL_SECTION();
 
@@ -43,7 +43,7 @@ void MbsASCIIStop(MbsHandle_t dev) {
 void MbsASCIIClose(MbsHandle_t dev) {}
 
 MbErrCode_t MbsASCIIReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
-    MbErrCode_t eStatus = MB_ENOERR;
+    MbErrCode_t eStatus = MB_ESUCCESS;
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
     ENTER_CRITICAL_SECTION();
@@ -78,7 +78,7 @@ MbErrCode_t MbsASCIISend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, 
     uint8_t *pAdu;
     uint8_t byte;
     MbsDev_t *pDev = (MbsDev_t *) dev;
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
 
     ENTER_CRITICAL_SECTION();
     /* Check if the receiver is still in idle state. If not we where too

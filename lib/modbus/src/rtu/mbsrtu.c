@@ -16,7 +16,7 @@
  */
 MbErrCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     (void) dev;
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
     uint32_t timerT35_50us;
 
     ENTER_CRITICAL_SECTION();
@@ -69,7 +69,7 @@ void MbsRTUStop(MbsHandle_t dev) {
 void MbsRTUClose(MbsHandle_t dev) {}
 
 MbErrCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     ENTER_CRITICAL_SECTION();
@@ -98,7 +98,7 @@ MbErrCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
 }
 
 MbErrCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len) {
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
     uint16_t crcValue;
     uint8_t *pAdu;
     MbsDev_t *pDev = (MbsDev_t *) dev;

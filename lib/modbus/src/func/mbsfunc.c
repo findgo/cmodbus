@@ -78,12 +78,12 @@ MbErrCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandl
             funcHandlers[i].functionCode = pHandler ? functionCode : 0;
             funcHandlers[i].pHandler = pHandler;
 
-            status = MB_ENOERR;
+            status = MB_ESUCCESS;
             break;
         }
     }
     if (!pHandler) // remove can't failed!
-        status = MB_ENOERR;
+        status = MB_ESUCCESS;
 
     return status;
 }

@@ -40,7 +40,7 @@ static MbErrCode_t __MbsRegCoilsCB(MbReg_t *pRegs, uint8_t *pRegBuffer,
                 break;
         }
 
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_ENOREG;
@@ -67,7 +67,7 @@ static MbErrCode_t __MbsRegDiscreteCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint1
             bitOffset += 8;
         }
 
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_ENOREG;
@@ -111,7 +111,7 @@ MbException_t MbsFuncRdCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
 
             regStatus = __MbsRegCoilsCB(pRegs, pFrameCur, address, quantity, MB_REG_READ);
             /* If an error occured convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 /* The response contains the function code, the starting address
@@ -155,7 +155,7 @@ MbException_t MbsFuncWrCoil(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
 
             regStatus = __MbsRegCoilsCB(pRegs, &buf[0], address, 1, MB_REG_WRITE);
             /* If an error occurred convert it into a modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             }
         } else {
@@ -198,7 +198,7 @@ MbException_t MbsFuncWrMulCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
             regStatus = __MbsRegCoilsCB(pRegs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
                                         address, quantity, MB_REG_WRITE);
             /* If an error occured convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 /* The response contains the function code, the starting address
@@ -256,7 +256,7 @@ MbException_t MbsFuncRdDiscreteInputs(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *p
 
             regStatus = __MbsRegDiscreteCB(pRegs, pFrameCur, address, quantity);
             /* If an error occurred convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 /* The response contains the function code, the starting address

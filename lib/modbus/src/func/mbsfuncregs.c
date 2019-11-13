@@ -42,7 +42,7 @@ static MbErrCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
                 break;
         }
 
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_ENOREG;
@@ -72,7 +72,7 @@ static MbErrCode_t __MbsRegInputCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint16_t
             regIndex++;
             quantity--;
         }
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_ENOREG;
@@ -114,7 +114,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
             /* Make callback to fill the buffer. */
             regStatus = __MbsRegHoldingCB(pRegs, pFrameCur, address, quantity, MB_REG_READ);
             /* If an error occured convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 *len += quantity * 2;
@@ -149,7 +149,7 @@ MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
         regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_WRITE_VALUE_OFF],
                                       address, 1, MB_REG_WRITE);
         /* If an error occured convert it into a Modbus exception. */
-        if (regStatus != MB_ENOERR) {
+        if (regStatus != MB_ESUCCESS) {
             status = MbError2Exception(regStatus);
         }
     } else {
@@ -187,7 +187,7 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_
             regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
                                           address, quantity, MB_REG_WRITE);
             /* If an error occured convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 /* The response contains the function code, the starting
@@ -241,7 +241,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
             /* Make callback to update the register values. */
             regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
                                           writeAddress, writeQuantity, MB_REG_WRITE);
-            if (regStatus == MB_ENOERR) {
+            if (regStatus == MB_ESUCCESS) {
                 /* Set the current PDU data pointer to the beginning. */
                 pFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
                 /* First byte contains the function code. */
@@ -254,7 +254,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
                 /* Make the read callback. */
                 regStatus = __MbsRegHoldingCB(pRegs, pFrameCur, readAddress, readQuantity, MB_REG_READ);
                 /* If an error occured convert it into a Modbus exception. */
-                if (regStatus != MB_ENOERR) {
+                if (regStatus != MB_ESUCCESS) {
                     status = MbError2Exception(regStatus);
                 } else {
                     *len += 2 * readQuantity;
@@ -307,7 +307,7 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *le
 
             regStatus = __MbsRegInputCB(pRegs, pFrameCur, address, quantity);
             /* If an error occured convert it into a Modbus exception. */
-            if (regStatus != MB_ENOERR) {
+            if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
                 *len += quantity * 2;
