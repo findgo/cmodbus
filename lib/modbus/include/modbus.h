@@ -24,7 +24,6 @@ uint32_t MbRegBufSizeCal(uint16_t holdingNum, uint16_t inputNum, uint16_t coilsN
 
 MbErrCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler pHandler);
 
-/* TODO implement modbus master */
 MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
 void MbmFree(uint8_t ucPort);
@@ -126,32 +125,36 @@ MbErrCode_t MbsSetSlaveID(MbReg_t *pRegs, uint8_t slaveID, uint8_t isRunning,
  * @brief   register function code handle
  * @param   functionCode - 功能码
  * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
- * @return  
+ * @return  ::MbErrCode_t
  */
 MbErrCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandler);
 
-/*********************************************************************
- * @brief   create new slave modbus device  
+/**
+ * @brief   create new slave modbus device
+ *
  * @param   mode - MB_RTU or MB_ASCII
  * @param   slaveID - slave id
  * @param   port - use which usart port
- * @param   baudRate - bandrate
+ * @param   baudRate - bandRate
  * @param   parity - Parity used for characters in serial mode
- * @param   Mbshandle_t - slave device handle ,if failed return NULL 句柄
- * @return  
+ *
+ * @return  slave device handle ,if failed return NULL 句柄
  */
 MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
-/*********************************************************************
+/**
  * @brief   free the slave modbus device with port
+ *
  * @param   port - use which usart port
- * @return  
+ *
+ * @return  none
  */
 void MbsFree(uint8_t port);
 
-/*********************************************************************
+/**
  * @brief   assign buffer for register
- * @return  
+ *
+ * @return  ::MbErrCode_t
  */
 MbErrCode_t MbsRegAssign(MbsHandle_t dev,
                          uint8_t *storageBuf, uint32_t storageSize,
@@ -160,39 +163,64 @@ MbErrCode_t MbsRegAssign(MbsHandle_t dev,
                          uint16_t coilsAddrStart, uint16_t coilsNum,
                          uint16_t discreteAddrStart, uint16_t discreteNum);
 
+/**
+ * @brief   assign buffer for register
+ *
+ * @param dev
+ * @param holdingBuff
+ * @param holdingAddrStart
+ * @param holdingNum
+ * @param inputBuff
+ * @param inputAddrStart
+ * @param inputNum
+ * @param coilsBuff
+ * @param coilsAddrStart
+ * @param coilsNum
+ * @param discreteBuff
+ * @param discreteAddrStart
+ * @param discreteNum
+ *
+ * @return ::MbErrCode_t
+ */
 MbErrCode_t MbsRegAssignSingle(MbsHandle_t dev,
                                uint16_t *holdingBuff, uint16_t holdingAddrStart, uint16_t holdingNum,
                                uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
                                uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
                                uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum);
 
-/*********************************************************************
+/**
  * @brief   start the slave device
+ *
  * @param   dev - the handle of the slave device
- * @return  
+ *
+ * @return  ::MbErrCode_t
  */
 MbErrCode_t MbsStart(MbsHandle_t dev);
 
-/*********************************************************************
+/**
  * @brief   stop the slave device
+ *
  * @param   dev - the handle of the slave device
- * @return  
+ *
+ * @return  ::MbErrCode_t
  */
 MbErrCode_t MbsStop(MbsHandle_t dev);
 
-/*********************************************************************
+/**
  * @brief   close the slave device, before it,muse be use MbsStop first
+ *
  * @param   dev - the handle of the slave device
- * @return  
+ *
+ * @return  ::MbErrCode_t
  */
 MbErrCode_t MbsClose(MbsHandle_t dev);
 
-//
+/**
+ * @brief 主循环周期调用
+ */
 void MbsPoll(void);
 
 #endif
-
 #endif
-
 #endif
 

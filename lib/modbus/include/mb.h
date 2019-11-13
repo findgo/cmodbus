@@ -6,26 +6,26 @@
 #include "msglink.h"
 
 // request fail retry 
-#define MBM_DEFAULT_RETRY_COUNT        0        /* default request failed to retry count */
-#define MBM_RETRY_COUNT_MAX            3        /* every request retry count */
+#define MBM_DEFAULT_RETRY_COUNT        0        //!< default request failed to retry count
+#define MBM_RETRY_COUNT_MAX            3        //!< every request retry count
 
 /* for master defined (units of millisecond)*/
-#define MBM_DEFAULT_REPLYTIMEOUT    1000        /* response timeout */
-#define MBM_REPLYTIMEOUT_MIN        50          /* response timeout min*/
-#define MBM_REPLYTIMEOUT_MAX        60000       /* response timeout max*/
+#define MBM_DEFAULT_REPLYTIMEOUT    1000        //!< response timeout
+#define MBM_REPLYTIMEOUT_MIN        50          //!< response timeout min
+#define MBM_REPLYTIMEOUT_MAX        60000       //!< response timeout max
 
-#define MBM_DEFAULT_DELAYPOLLTIME   10          /* delay time between polls */
-#define MBM_DELAYPOLLTIME_MIN       1           /* delay time between polls */
-#define MBM_DELAYPOLLTIME_MAX       1000        /* delay time between polls */
+#define MBM_DEFAULT_DELAYPOLLTIME   10          //!< delay time between polls
+#define MBM_DELAYPOLLTIME_MIN       1           //!< delay time between polls
+#define MBM_DELAYPOLLTIME_MAX       1000        //!< delay time between polls
 
-#define MBM_DEFAULT_BROADTURNTIME   100         /* after broadcast turn round time */
-#define MBM_BROADTURNTIME_MIN       50          /* after broadcast turn round time */
-#define MBM_BROADTURNTIME_MAX       200         /* after broadcast turn round time */
+#define MBM_DEFAULT_BROADTURNTIME   100         //!< after broadcast turn round time
+#define MBM_BROADTURNTIME_MIN       50          //!< after broadcast turn round time
+#define MBM_BROADTURNTIME_MAX       200         //!< after broadcast turn round time
 
-#define MBM_DEFAULT_SCANRATE        1000        /* every request scan rate */
-#define MBM_SCANRATE_MAX            60000       /* every request scan rate */
+#define MBM_DEFAULT_SCANRATE        1000        //!< every request scan rate
+#define MBM_SCANRATE_MAX            60000       //!< every request scan rate
 
-// port defined
+//! @brief port defined
 enum {
     MBCOM0 = 0,
     MBCOM1,
@@ -38,18 +38,18 @@ enum {
     MBCOM8,
 };
 
-/*\brief Parity used for characters in serial mode.*/
+/** @brief Parity used for characters in serial mode.*/
 typedef enum {
-    MB_PAR_NONE,                /*!< No parity. */
-    MB_PAR_ODD,                 /*!< Odd parity. */
-    MB_PAR_EVEN                 /*!< Even parity. */
+    MB_PAR_NONE,                //!< No parity.
+    MB_PAR_ODD,                 //!< Odd parity.
+    MB_PAR_EVEN                 //!< Even parity.
 } MbParity_t;
 
-/*vbrief Modbus serial transmission modes .*/
+/*@brief Modbus serial transmission modes .*/
 typedef enum {
-    MB_RTU,     /*!< RTU transmission mode. */
-    MB_ASCII,   /*!< ASCII transmission mode. */
-    MB_TCP      /*!< TCP mode. */
+    MB_RTU,     //!< RTU transmission mode.
+    MB_ASCII,   //!< ASCII transmission mode.
+    MB_TCP      //!< TCP mode.
 } MbMode_t;
 
 // device state
@@ -58,19 +58,20 @@ typedef enum {
     DEV_STATE_DISABLED,
     DEV_STATE_ENABLED
 } MbDevState_t;
-/* \brief Errorcodes used by all function in the protocol stack.*/
+
+/** @brief Error codes used by all function in the protocol stack.*/
 typedef enum {
-    MB_ESUCCESS,                  /*!< no error. */
-    MB_ENOREG,                  /*!< illegal register address. */
-    MB_EINVAL,                  /*!< illegal argument. */
-    MB_EPORTERR,                /*!< porting layer error. */
-    MB_ENORES,                  /*!< insufficient resources. */
-    MB_EIO,                     /*!< I/O error. */
-    MB_EILLSTATE,               /*!< protocol stack in illegal state. */
-    MB_ETIMEDOUT,               /*!< timeout error occurred. */
-    MB_EDEVEXIST,               // device exist
-    MB_EILLNODEADDR,            // invalid node address
-    MB_ENODEEXIST,             /*!< node exist */
+    MB_ESUCCESS,                //!< no error.
+    MB_ENOREG,                  //!< illegal register address.
+    MB_EINVAL,                  //!< illegal argument.
+    MB_EPORTERR,                //!< porting layer error.
+    MB_ENORES,                  //!< insufficient resources.
+    MB_EIO,                     //!< I/O error.
+    MB_EILLSTATE,               //!< protocol stack in illegal state.
+    MB_ETIMEDOUT,               //!< timeout error occurred.
+    MB_EDEVEXIST,               //!< device exist
+    MB_EILLNODEADDR,            //!< invalid node address
+    MB_ENODEEXIST,              //!< node exist
 } MbErrCode_t;
 
 // 定义寄存器属性  
@@ -91,12 +92,12 @@ typedef struct {
 
 //定义modbus头部 
 typedef struct {
-    uint16_t tid;       // TCP : Transaction Identifier
-    uint16_t pid;       // TCP : Protocol Identifier default : 0
-    uint16_t length;    // TCP : Number of bytes UID+ PDU length
+    uint16_t tid;       //!< TCP : Transaction Identifier
+    uint16_t pid;       //!< TCP : Protocol Identifier default : 0
+    uint16_t length;    //!< TCP : Number of bytes UID+ PDU length
     union {
-        uint8_t uid;    // TCP: same as slave ID
-        uint8_t slaveID; // slave ID
+        uint8_t uid;    //!< TCP: same as slave ID
+        uint8_t slaveID; //!< slave ID
     } inRoute;
 } MbHeader_t;
 

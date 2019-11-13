@@ -12,6 +12,11 @@ extern "C" {
 #include "mbcpu.h"
 #include "mb.h"
 
+/**
+* @defgroup rtu rtu实现
+* @{
+*/
+
 /* ----------------------- Type definitions ---------------------------------*/
 typedef enum {
     STATE_RTU_RX_IDLE,              /*!< RTU Receiver is in idle state. */
@@ -19,8 +24,6 @@ typedef enum {
     STATE_RTU_TX_XMIT               /*!< RTU Transmitter is in transfer state. */
 } MbRTUSndRcvState;
 
-#if MB_RTU_ENABLED > 0
-#if MB_MASTER_ENABLED > 0
 
 MbErrCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
@@ -43,14 +46,28 @@ void MbmRTUTimerT15Expired(MbmHandle_t dev);
 
 void MbmRTUTimerT35Expired(MbmHandle_t dev);
 
-#endif
 
-#if MB_SLAVE_ENABLED > 0
-
+/**
+ * @brief modbus从机初始化
+ *
+ * @param dev: 句柄
+ * @param port: 端口
+ * @param baudRate: 波特率
+ * @param parity: 校验位
+ * @return ::MbErrCode_t
+ */
 MbErrCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
+/**
+ * @brief 启动
+ *
+ * @param dev: 句柄
+ */
 void MbsRTUStart(MbsHandle_t dev);
-
+/**
+ * @brief 停止
+ * @param dev: 句柄
+ */
 void MbsRTUStop(MbsHandle_t dev);
 
 void MbsRTUClose(MbsHandle_t dev);
@@ -67,8 +84,9 @@ void MbsRTUTimerT15Expired(MbsHandle_t dev);
 
 void MbsRTUTimerT35Expired(MbsHandle_t dev);
 
-#endif
-#endif
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

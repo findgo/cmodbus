@@ -5,15 +5,7 @@
 
 #if MB_RTU_ENABLED > 0 && MB_SLAVE_ENABLED > 0
 
-/**
- * @brief modbus从机初始化
- *
- * @param dev: 句柄
- * @param port: 端口
- * @param baudRate: 波特率
- * @param parity: 校验位
- * @return ::MbErrorCode_t
- */
+
 MbErrCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     (void) dev;
     MbErrCode_t status = MB_ESUCCESS;
