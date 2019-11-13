@@ -107,7 +107,7 @@ void MbsFree(uint8_t port) {
 }
 
 
-// static uint8_t __aligned(2) regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
+// static uint8_t __aligned(2) regBuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
 MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
                            uint8_t *storageBuf, uint32_t storageSize,
                            uint16_t holdingAddrStart, uint16_t holdingNum,
@@ -115,7 +115,7 @@ MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
                            uint16_t coilsAddrStart, uint16_t coilsNum,
                            uint16_t discreteAddrStart, uint16_t discreteNum) {
     uint32_t offset;
-    MbReg_t *regs;
+    MbReg_t *pRegs;
 
     if (dev == NULL || storageBuf == NULL)
         return MB_EINVAL;
@@ -123,29 +123,29 @@ MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
     if (storageSize < MbRegBufSizeCal(holdingNum, inputNum, coilsNum, discreteNum))
         return MB_EINVAL;
 
-    regs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
+    pRegs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
 
-    regs->holdingAddrStart = holdingAddrStart;
-    regs->holdingNum = holdingNum;
-    regs->inputAddrStart = inputAddrStart;
-    regs->inputNum = inputNum;
+    pRegs->holdingAddrStart = holdingAddrStart;
+    pRegs->holdingNum = holdingNum;
+    pRegs->inputAddrStart = inputAddrStart;
+    pRegs->inputNum = inputNum;
 
-    regs->coilsAddrStart = coilsAddrStart;
-    regs->coilsNum = coilsNum;
-    regs->discreteAddrStart = discreteAddrStart;
-    regs->discreteNum = discreteNum;
+    pRegs->coilsAddrStart = coilsAddrStart;
+    pRegs->coilsNum = coilsNum;
+    pRegs->discreteAddrStart = discreteAddrStart;
+    pRegs->discreteNum = discreteNum;
 
     // hold register
-    regs->pHolding = (uint16_t *) &storageBuf[0];
+    pRegs->pHolding = (uint16_t *) &storageBuf[0];
     offset = holdingNum * sizeof(uint16_t);
     // input register
-    regs->pInput = (uint16_t *) &storageBuf[offset];
+    pRegs->pInput = (uint16_t *) &storageBuf[offset];
     offset += inputNum * sizeof(uint16_t);
     // coil register
-    regs->pCoil = &storageBuf[offset];
+    pRegs->pCoil = &storageBuf[offset];
     offset += (coilsNum >> 3) + (((coilsNum & 0x07) > 0) ? 1 : 0);
     // disc register
-    regs->pDiscrete = &storageBuf[offset];
+    pRegs->pDiscrete = &storageBuf[offset];
     //offset += (discreteNum >> 3) + (((discreteNum & 0x07) > 0) ? 1 : 0);
 
     return MB_ENOERR;
@@ -156,68 +156,68 @@ MbErrorCode_t MbsRegAssignSingle(MbsHandle_t dev,
                                  uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
                                  uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
                                  uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum) {
-    MbReg_t *regs;
+    MbReg_t *pRegs;
 
     if (dev == NULL)
         return MB_EINVAL;
 
-    regs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
+    pRegs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
 
-    regs->holdingAddrStart = holdingAddrStart;
-    regs->holdingNum = holdingNum;
-    regs->pHolding = holdingBuff;
+    pRegs->holdingAddrStart = holdingAddrStart;
+    pRegs->holdingNum = holdingNum;
+    pRegs->pHolding = holdingBuff;
 
-    regs->inputAddrStart = inputAddrStart;
-    regs->inputNum = inputNum;
-    regs->pInput = inputBuff;
+    pRegs->inputAddrStart = inputAddrStart;
+    pRegs->inputNum = inputNum;
+    pRegs->pInput = inputBuff;
 
-    regs->coilsAddrStart = coilsAddrStart;
-    regs->coilsNum = coilsNum;
-    regs->pCoil = coilsBuff;
+    pRegs->coilsAddrStart = coilsAddrStart;
+    pRegs->coilsNum = coilsNum;
+    pRegs->pCoil = coilsBuff;
 
-    regs->discreteAddrStart = discreteAddrStart;
-    regs->discreteNum = discreteNum;
-    regs->pDiscrete = discreteBuff;
+    pRegs->discreteAddrStart = discreteAddrStart;
+    pRegs->discreteNum = discreteNum;
+    pRegs->pDiscrete = discreteBuff;
 
     return MB_ENOERR;
 }
 
 MbErrorCode_t MbsStart(MbsHandle_t dev) {
-    MbsDev_t *pdev = (MbsDev_t *) dev;
+    MbsDev_t *pDev = (MbsDev_t *) dev;
 
-    if (pdev->state == DEV_STATE_NOT_INITIALIZED)
+    if (pDev->state == DEV_STATE_NOT_INITIALIZED)
         return MB_EILLSTATE;
 
-    if (pdev->state == DEV_STATE_DISABLED) {
+    if (pDev->state == DEV_STATE_DISABLED) {
         /* Activate the protocol stack. */
-        pdev->pStartCur(dev);
-        pdev->state = DEV_STATE_ENABLED;
+        pDev->pStartCur(dev);
+        pDev->state = DEV_STATE_ENABLED;
     }
 
     return MB_ENOERR;
 }
 
 MbErrorCode_t MbsStop(MbsHandle_t dev) {
-    MbsDev_t *pdev = (MbsDev_t *) dev;
+    MbsDev_t *pDev = (MbsDev_t *) dev;
 
-    if (pdev->state == DEV_STATE_NOT_INITIALIZED)
+    if (pDev->state == DEV_STATE_NOT_INITIALIZED)
         return MB_EILLSTATE;
 
-    if (pdev->state == DEV_STATE_ENABLED) {
-        pdev->pStopCur(dev);
-        pdev->state = DEV_STATE_DISABLED;
+    if (pDev->state == DEV_STATE_ENABLED) {
+        pDev->pStopCur(dev);
+        pDev->state = DEV_STATE_DISABLED;
     }
 
     return MB_ENOERR;
 }
 
 MbErrorCode_t MbsClose(MbsHandle_t dev) {
-    MbsDev_t *pdev = (MbsDev_t *) dev;
+    MbsDev_t *pDev = (MbsDev_t *) dev;
 
     // must be stop first then it can close
-    if (pdev->state == DEV_STATE_DISABLED) {
-        if (pdev->pCloseCur != NULL) {
-            pdev->pCloseCur(dev);
+    if (pDev->state == DEV_STATE_DISABLED) {
+        if (pDev->pCloseCur != NULL) {
+            pDev->pCloseCur(dev);
         }
 
         return MB_ENOERR;
@@ -238,10 +238,10 @@ void MbsPoll(void) {
 
 static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
     MbsAduFrame_t aduFramePkt;
-    MbException_t eException;
-    uint8_t RcvAddress;
+    MbException_t exception;
+    uint8_t rcvAddress;
     pMbsFunctionHandler handle;
-    MbErrorCode_t eStatus = MB_ENOERR;
+    MbErrorCode_t status = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
     if (dev->state != DEV_STATE_ENABLED) {
@@ -253,29 +253,30 @@ static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
     if (dev->eventInFlag) {
         dev->eventInFlag = false;
         /* parser a receive adu frame */
-        eStatus = dev->pReceiveParseCur(dev, &aduFramePkt);
-        if (eStatus != MB_ENOERR)
-            return eStatus;
+        status = dev->pReceiveParseCur(dev, &aduFramePkt);
+        if (status != MB_ENOERR)
+            return status;
 
-        RcvAddress = aduFramePkt.hdr.introute.slaveID;
+        rcvAddress = aduFramePkt.hdr.inRoute.slaveID;
 
         /* Check if the frame is for us. If not ignore the frame. */
-        if ((RcvAddress == dev->slaveID) || (RcvAddress == MB_ADDRESS_BROADCAST)) {
-            eException = MB_EX_ILLEGAL_FUNCTION;
+        if ((rcvAddress == dev->slaveID) || (rcvAddress == MB_ADDRESS_BROADCAST)) {
+            exception = MB_EX_ILLEGAL_FUNCTION;
             handle = MbsFuncHandleSearch(aduFramePkt.functionCode);
-            if (handle)
-                eException = handle(&dev->regs, aduFramePkt.pPduFrame, &aduFramePkt.pduFrameLength);
+            if (handle) {
+                exception = handle(&dev->regs, aduFramePkt.pPduFrame, &aduFramePkt.pduFrameLength);
+            }
 
             /* If the request was not sent to the broadcast address and then we return a reply. */
-            if (RcvAddress == MB_ADDRESS_BROADCAST)
+            if (rcvAddress == MB_ADDRESS_BROADCAST)
                 return MB_ENOERR;
 
-            if (eException != MB_EX_NONE) {
+            if (exception != MB_EX_NONE) {
                 /* An exception occured. Build an error frame. */
                 aduFramePkt.pPduFrame = 0;
-                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = (uint8_t) (aduFramePkt.functionCode |
-                                                                                 MB_FUNC_ERROR);
-                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = eException;
+                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] =
+                        (uint8_t) (aduFramePkt.functionCode | MB_FUNC_ERROR);
+                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = exception;
             }
 
             if ((dev->mode == MB_ASCII) && MBS_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS) {

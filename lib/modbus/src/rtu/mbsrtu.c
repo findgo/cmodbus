@@ -15,10 +15,9 @@
  * @return ::MbErrorCode_t
  */
 MbErrorCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
+    (void) dev;
     MbErrorCode_t status = MB_ENOERR;
     uint32_t timerT35_50us;
-
-    (void) dev;
 
     ENTER_CRITICAL_SECTION();
     /* modbus RTU uses 8 DataBits. */
@@ -82,7 +81,7 @@ MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
         /* Save the address field. All frames are passed to the upper layer
          * and the decision if a frame is used is done there.
          */
-        aduFrame->hdr.introute.slaveID = pDev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        aduFrame->hdr.inRoute.slaveID = pDev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         aduFrame->functionCode = pDev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
@@ -99,8 +98,8 @@ MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
     return status;
 }
 
-MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength) {
-    MbErrorCode_t eStatus = MB_ENOERR;
+MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len) {
+    MbErrorCode_t status = MB_ENOERR;
     uint16_t crcValue;
     uint8_t *pAdu;
     MbsDev_t *pDev = (MbsDev_t *) dev;
@@ -116,8 +115,8 @@ MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t 
         pDev->sendAduBuffCount = 1;
 
         /* Now copy the Modbus-PDU into the Modbus-Serial-Line-PDU. */
-        pAdu[MB_SER_ADU_ADDR_OFFSET] = ucSlaveAddress;
-        pDev->sendAduBuffCount += usLength;
+        pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveID;
+        pDev->sendAduBuffCount += len;
 
         /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
         crcValue = MbCRC16((uint8_t *) pAdu, pDev->sendAduBuffCount);
@@ -134,19 +133,19 @@ MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t 
 
         MbPortSerialEnable(pDev->port, false, true);
     } else {
-        eStatus = MB_EIO;
+        status = MB_EIO;
     }
     EXIT_CRITICAL_SECTION();
 
-    return eStatus;
+    return status;
 }
 
 void MbsRTUReceiveFSM(MbsHandle_t dev) {
-    uint8_t ucByte;
+    uint8_t byte;
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     /* Always read the character. */
-    (void) MbPortSerialGetByte(pDev->port, (char *) &ucByte);
+    (void) MbPortSerialGetByte(pDev->port, (char *) &byte);
 
     /* In the idle state we wait for a new character. If a character
      * is received the t1.5 and t3.5 timers are started and the
@@ -154,7 +153,7 @@ void MbsRTUReceiveFSM(MbsHandle_t dev) {
      */
     if (pDev->sendRcvState == STATE_RTU_RX_IDLE) {
         pDev->rcvAduBuffPos = 0;
-        pDev->AduBuf[pDev->rcvAduBuffPos++] = ucByte;
+        pDev->AduBuf[pDev->rcvAduBuffPos++] = byte;
         pDev->sendRcvState = STATE_RTU_RX_RCV;
 
     } else if (pDev->sendRcvState == STATE_RTU_RX_RCV) {
@@ -164,7 +163,7 @@ void MbsRTUReceiveFSM(MbsHandle_t dev) {
          * ignored.
          */
         if (pDev->rcvAduBuffPos < MB_ADU_SIZE_MAX) {
-            pDev->AduBuf[pDev->rcvAduBuffPos++] = ucByte;
+            pDev->AduBuf[pDev->rcvAduBuffPos++] = byte;
         } else {
             /* In the error state we wait until all characters in the
              * damaged frame are transmitted.

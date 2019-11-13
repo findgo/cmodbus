@@ -439,7 +439,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             result = dev->pMbReceivedCur(dev, &header, &functionCode, &pRemainFrame, &usLength);
             if (result == MBR_ENOERR) {
                 /* not for us ,continue to wait response */
-                if ((req->funcode != (functionCode & 0x7f)) || (req->slaveID != header.introute.slaveID)) {
+                if ((req->funcode != (functionCode & 0x7f)) || (req->slaveID != header.inRoute.slaveID)) {
                     dev->Pollstate = MBM_WAITRSP;
                     break;
                 }

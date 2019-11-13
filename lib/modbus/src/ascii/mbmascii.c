@@ -54,7 +54,7 @@ MbmASCIIReceive(MbsHandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t *
     /* Length and LRC check */
     if ((pdev->rcvAduBuffPos >= 4)/* addr+funcode+(other >= 1)+lrc(1)  */
         && (MbLRC((uint8_t *) pdev->AduBuf, pdev->rcvAduBuffPos) == 0)) {
-        phead->introute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        phead->inRoute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */

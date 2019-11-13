@@ -75,7 +75,7 @@ MbmRTUReceive(MbmHandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **p
     if (pdev->rcvAduBuffPos >= (MB_ADU_RTU_SIZE_MIN + 1) /* addr+funcode+(other >= 1)+crc(2)  */
         && (MbCRC16((uint8_t *) pdev->AduBuf, pdev->rcvAduBuffPos) == 0)) {
 
-        phead->introute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        phead->inRoute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */

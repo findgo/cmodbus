@@ -54,7 +54,7 @@ MbErrorCode_t MbsASCIIReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
         /* Save the address field. All frames are passed to the upper layed
          * and the decision if a frame is used is done there.
          */
-        aduFrame->hdr.introute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
+        aduFrame->hdr.inRoute.slaveID = pdev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
 
         aduFrame->functionCode = pdev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus

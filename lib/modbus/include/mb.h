@@ -44,12 +44,14 @@ typedef enum {
     MB_PAR_ODD,                 /*!< Odd parity. */
     MB_PAR_EVEN                 /*!< Even parity. */
 } MbParity_t;
+
 /*vbrief Modbus serial transmission modes .*/
 typedef enum {
     MB_RTU,     /*!< RTU transmission mode. */
     MB_ASCII,   /*!< ASCII transmission mode. */
     MB_TCP      /*!< TCP mode. */
 } MbMode_t;
+
 // device state
 typedef enum {
     DEV_STATE_NOT_INITIALIZED = 0,
@@ -89,13 +91,13 @@ typedef struct {
 
 //定义modbus头部 
 typedef struct {
-    uint16_t tid;       //TCP : Transaction Identifier 
+    uint16_t tid;       // TCP : Transaction Identifier
     uint16_t pid;       // TCP : Protocol Identifier default : 0
     uint16_t length;    // TCP : Number of bytes UID+ PDU length
     union {
         uint8_t uid;    // TCP: same as slave ID
         uint8_t slaveID; // slave ID
-    } introute;
+    } inRoute;
 } MbHeader_t;
 
 // 主机设备句柄

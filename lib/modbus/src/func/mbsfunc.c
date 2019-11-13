@@ -7,9 +7,7 @@ typedef struct {
     pMbsFunctionHandler pHandler;
 } MbsFunctionHandler;
 
-/* An array of Modbus functions handlers which associates Modbus function
- * codes with implementing functions.
- */
+/* An array of modbus functions handlers which associates modbus function codes with implementing functions. */
 static MbsFunctionHandler funcHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
         {MB_FUNC_OTHER_REPORT_SLAVEID, MbsFuncReportSlaveID},
@@ -58,6 +56,15 @@ static MbsFunctionHandler funcHandlers[MBS_FUNC_HANDLERS_MAX] = {
  * @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
  * @return  
  */
+
+/**
+ * @brief   register function code handle
+ *
+ * @param functionCode 功能码
+ * @param pHandler 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ *
+ * @return ::MbErrorCode_t
+ */
 MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandler) {
     int i;
     MbErrorCode_t status = MB_ENORES;
@@ -82,9 +89,11 @@ MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHan
 }
 
 /*
-* @brief search function handle with function code  
+* @brief search function handle with function code
+ *
 * @param   functionCode - 功能码
 * @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ *
 * @return  function handle point, if not exist return NULL
 */
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t functionCode) {

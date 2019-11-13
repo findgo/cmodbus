@@ -147,37 +147,37 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *le
 /****************************** for register *******************************/
 /**
 * @brief   function handlers:  read coils register 
-* @param   regs - real slave register pointer
+* @param   pRegs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
-* @param   usLen - usLen pdu frame length pointer
+* @param   pLen - usLen pdu frame length pointer
 * @return  exception code , see mbproto.h
 */
-MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncRdCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
 * @brief   function handlers:  write coils register 
-* @param   regs - real slave register pointer
+* @param   pRegs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
-* @param   usLen - usLen pdu frame length pointer
+* @param   pLen - usLen pdu frame length pointer
 * @return  exception code , see mbproto.h
 */
-MbException_t MbsFuncWrCoil(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncWrCoil(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
 * @brief   function handlers:  write multi coils register 
-* @param   regs - real slave register pointer
+* @param   pRegs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
-* @param   usLen - usLen pdu frame length pointer
+* @param   pLen - usLen pdu frame length pointer
 * @return  exception code , see mbproto.h
 */
-MbException_t MbsFuncWrMulCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen); /**
+MbException_t MbsFuncWrMulCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen); /**
 * @brief   function handlers:  read discrete imput register 
-* @param   regs - real slave register pointer
+* @param   pRegs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
-* @param   usLen - usLen pdu frame length pointer
+* @param   pLen - usLen pdu frame length pointer
 * @return  exception code , see mbproto.h
 */
-MbException_t MbsFuncRdDiscreteInputs(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+MbException_t MbsFuncRdDiscreteInputs(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 #endif
 

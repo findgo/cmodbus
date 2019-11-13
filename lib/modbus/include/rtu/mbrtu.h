@@ -57,7 +57,7 @@ void MbsRTUClose(MbsHandle_t dev);
 
 MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame);
 
-MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len);
 
 void MbsRTUReceiveFSM(MbsHandle_t dev);
 
