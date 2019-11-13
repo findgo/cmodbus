@@ -26,7 +26,7 @@ static void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void
 
 int main(int argc, char **argv) {
     MbmNode_t *node;
-    MbErrorCode_t status;
+    MbErrCode_t status;
 
 //	prvClockInit();
     prvNvicInit();
@@ -97,7 +97,7 @@ static uint8_t dev1CoilsBuf[REG_COILS_SIZE / 8] = {0xaa, 0x55};
 static uint8_t dev1DiscreteBuf[REG_DISCRETE_SIZE / 8] = {0x55, 0xaa, 0x77};
 
 int main(int argc,char **argv) {
-    MbErrorCode_t status;
+    MbErrCode_t status;
 
     prvNvicInit();
     Systick_Configuration();

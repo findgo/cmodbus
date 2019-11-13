@@ -8,10 +8,10 @@
 static uint8_t MbSlaveID[MBS_FUNC_OTHER_REP_SLAVEID_BUF];
 static uint16_t MbSlaveIDLen;
 
-MbErrorCode_t MbsSetSlaveID(MbReg_t *pRegs, uint8_t slaveID, uint8_t isRunning,
-                            uint8_t const *pAdditional, uint16_t additionalLen) {
+MbErrCode_t MbsSetSlaveID(MbReg_t *pRegs, uint8_t slaveID, uint8_t isRunning,
+                          uint8_t const *pAdditional, uint16_t additionalLen) {
     (void) pRegs;
-    MbErrorCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ENOERR;
 
     /* the first byte and second byte in the buffer is reserved for
      * the parameter slaveID and the running flag. The rest of

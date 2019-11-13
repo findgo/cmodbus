@@ -24,11 +24,11 @@
 static MbsDev_t mbsDevTable[MBS_SUPPORT_MULTIPLE_NUMBER];
 
 //local function
-static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev);
+static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev);
 
 MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     MbsDev_t *dev = NULL;
-    MbErrorCode_t status;
+    MbErrCode_t status;
     uint8_t i;
 
     /* check preconditions */
@@ -108,12 +108,12 @@ void MbsFree(uint8_t port) {
 
 
 // static uint8_t __aligned(2) regBuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
-                           uint8_t *storageBuf, uint32_t storageSize,
-                           uint16_t holdingAddrStart, uint16_t holdingNum,
-                           uint16_t inputAddrStart, uint16_t inputNum,
-                           uint16_t coilsAddrStart, uint16_t coilsNum,
-                           uint16_t discreteAddrStart, uint16_t discreteNum) {
+MbErrCode_t MbsRegAssign(MbsHandle_t dev,
+                         uint8_t *storageBuf, uint32_t storageSize,
+                         uint16_t holdingAddrStart, uint16_t holdingNum,
+                         uint16_t inputAddrStart, uint16_t inputNum,
+                         uint16_t coilsAddrStart, uint16_t coilsNum,
+                         uint16_t discreteAddrStart, uint16_t discreteNum) {
     uint32_t offset;
     MbReg_t *pRegs;
 
@@ -151,11 +151,11 @@ MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsRegAssignSingle(MbsHandle_t dev,
-                                 uint16_t *holdingBuff, uint16_t holdingAddrStart, uint16_t holdingNum,
-                                 uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
-                                 uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
-                                 uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum) {
+MbErrCode_t MbsRegAssignSingle(MbsHandle_t dev,
+                               uint16_t *holdingBuff, uint16_t holdingAddrStart, uint16_t holdingNum,
+                               uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
+                               uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
+                               uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum) {
     MbReg_t *pRegs;
 
     if (dev == NULL)
@@ -182,7 +182,7 @@ MbErrorCode_t MbsRegAssignSingle(MbsHandle_t dev,
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStart(MbsHandle_t dev) {
+MbErrCode_t MbsStart(MbsHandle_t dev) {
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     if (pDev->state == DEV_STATE_NOT_INITIALIZED)
@@ -197,7 +197,7 @@ MbErrorCode_t MbsStart(MbsHandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStop(MbsHandle_t dev) {
+MbErrCode_t MbsStop(MbsHandle_t dev) {
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     if (pDev->state == DEV_STATE_NOT_INITIALIZED)
@@ -211,7 +211,7 @@ MbErrorCode_t MbsStop(MbsHandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsClose(MbsHandle_t dev) {
+MbErrCode_t MbsClose(MbsHandle_t dev) {
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     // must be stop first then it can close
@@ -236,12 +236,12 @@ void MbsPoll(void) {
     }
 }
 
-static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
+static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
     MbsAduFrame_t aduFramePkt;
     MbException_t exception;
     uint8_t rcvAddress;
     pMbsFunctionHandler handle;
-    MbErrorCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ENOERR;
 
     /* Check if the protocol stack is ready. */
     if (dev->state != DEV_STATE_ENABLED) {

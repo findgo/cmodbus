@@ -12,8 +12,8 @@
   * @param  mode         操作方式，读或者写
   * @return              错误状态
   */
-static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
-                                       uint16_t address, uint16_t quantity, MbRegMode_t mode) {
+static MbErrCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
+                                     uint16_t address, uint16_t quantity, MbRegMode_t mode) {
     int16_t index;
 
     if (((int16_t) address >= pRegs->holdingAddrStart)
@@ -56,7 +56,7 @@ static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
   * @param  quantity       寄存器数量
   * @return              错误状态
   */
-static MbErrorCode_t __MbsRegInputCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint16_t address, uint16_t quantity) {
+static MbErrCode_t __MbsRegInputCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint16_t address, uint16_t quantity) {
     int16_t regIndex;
 
     if (((int16_t) address >= pRegs->inputAddrStart)
@@ -90,7 +90,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
     uint16_t quantity;
     uint8_t *pFrameCur;
     MbException_t status = MB_EX_NONE;
-    MbErrorCode_t regStatus;
+    MbErrCode_t regStatus;
 
     if (*len == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8);
@@ -139,7 +139,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
 MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
     uint16_t address;
     MbException_t status = MB_EX_NONE;
-    MbErrorCode_t regStatus;
+    MbErrCode_t regStatus;
 
     if (*len == (MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_ADDR_OFF] << 8);
@@ -172,7 +172,7 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_
     uint16_t quantity;
     uint8_t nBytes;
     MbException_t status = MB_EX_NONE;
-    MbErrorCode_t regStatus;
+    MbErrCode_t regStatus;
 
     if (*len >= (MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_MUL_ADDR_OFF] << 8);
@@ -222,7 +222,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
     uint8_t WriteNBytes;
     uint8_t *pFrameCur;
     MbException_t status = MB_EX_NONE;
-    MbErrorCode_t regStatus;
+    MbErrCode_t regStatus;
 
     if (*len >= (MB_PDU_FUNC_READWRITE_SIZE_MIN + MB_PDU_SIZE_MIN)) {
         readAddress = (uint16_t) (pPdu[MB_PDU_FUNC_READWRITE_READ_ADDR_OFF] << 8U);
@@ -285,7 +285,7 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *le
     uint16_t quantity;
     uint8_t *pFrameCur;
     MbException_t status = MB_EX_NONE;
-    MbErrorCode_t regStatus;
+    MbErrCode_t regStatus;
 
     if (*len == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8);

@@ -71,7 +71,7 @@ typedef enum {
     MB_EDEVEXIST,               // device exist
     MB_EILLNODEADDR,            // invalid node address
     MB_ENODEEXIST,             /*!< node exist */
-} MbErrorCode_t;
+} MbErrCode_t;
 
 // 定义寄存器属性  
 typedef struct {
@@ -229,9 +229,9 @@ typedef void *MbsHandle_t;
 
 typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLength);
 
-typedef MbErrorCode_t (*pActionSlaveReceiveParse)(MbsHandle_t dev, MbsAduFrame_t *pAduFramePkt);
+typedef MbErrCode_t (*pActionSlaveReceiveParse)(MbsHandle_t dev, MbsAduFrame_t *pAduFramePkt);
 
-typedef MbErrorCode_t (*pActionSlaveSend)(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t length);
+typedef MbErrCode_t (*pActionSlaveSend)(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t length);
 
 // 从机设备描述
 typedef struct {

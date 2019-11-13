@@ -19,7 +19,7 @@
 #include "mb.h"
 #include "port.h"
 
-static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff);
+static MbErrCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff);
 
 static void __MbmReqPendlistScan(MbmDev_t *dev, uint32_t diff);
 
@@ -30,7 +30,7 @@ static MsgQ_t mbm_dev_head = NULL;
 //static msgboxstatic_t msgboxHandlebuf = MSGBOX_STATIC_INIT(MSGBOX_UNLIMITED_CAP);
 
 MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
-    MbErrorCode_t eStatus = MB_ENOERR;
+    MbErrCode_t eStatus = MB_ENOERR;
     MbmDev_t *dev;
 
     if ((dev = (MbmDev_t *) MsgAlloc(sizeof(MbmDev_t))) == NULL)
@@ -130,7 +130,7 @@ void MbmFree(uint8_t ucPort) {
     */
 }
 
-MbErrorCode_t MbmSetPara(MbmHandle_t dev, uint8_t retry, uint32_t replytimeout,
+MbErrCode_t MbmSetPara(MbmHandle_t dev, uint8_t retry, uint32_t replytimeout,
                          uint32_t delaypolltime, uint32_t broadcastturntime) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
@@ -239,7 +239,7 @@ void MbmNodeFree(MbmNode_t *node) {
 }
 
 /* 将节点加入到主机，由MbmNodeNew创建的节点 */
-MbErrorCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node) {
+MbErrCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node) {
     MbmNode_t *srhnode;
 
     if (dev == NULL || node == NULL)
@@ -260,7 +260,7 @@ MbErrorCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node) {
 }
 
 /* 将节点从主机删除 */
-MbErrorCode_t MbmRemoveNode(MbmHandle_t dev, uint8_t slaveID) {
+MbErrCode_t MbmRemoveNode(MbmHandle_t dev, uint8_t slaveID) {
     MbmNode_t *srchnode;
     MbmNode_t *prenode = NULL;
 
@@ -300,7 +300,7 @@ MbmNode_t *MbmSearchNode(MbmHandle_t dev, uint8_t slaveID) {
 }
 
 
-MbErrorCode_t MbmStart(MbmHandle_t dev) {
+MbErrCode_t MbmStart(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
     if (pdev->state == DEV_STATE_NOT_INITIALIZED)
@@ -315,7 +315,7 @@ MbErrorCode_t MbmStart(MbmHandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmStop(MbmHandle_t dev) {
+MbErrCode_t MbmStop(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
     if (pdev->state == DEV_STATE_NOT_INITIALIZED)
@@ -329,7 +329,7 @@ MbErrorCode_t MbmStop(MbmHandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmClose(MbmHandle_t dev) {
+MbErrCode_t MbmClose(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
     // must be stop first then it can close
@@ -392,7 +392,7 @@ void MbmPoll(void) {
     }
 }
 
-static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
+static MbErrCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
     uint8_t *pRemainFrame; // remain fram
     uint8_t functionCode;
     uint16_t usLength;

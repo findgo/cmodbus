@@ -50,9 +50,9 @@ static MbmParseRspHandler parseRspHandlers[MBM_PARSE_RSP_HANDLERS_MAX] = {
  *
  * @return  
  */
-MbErrorCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler pHandler) {
+MbErrCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler pHandler) {
     int i;
-    MbErrorCode_t eStatus = MB_ENORES;
+    MbErrCode_t eStatus = MB_ENORES;
 
     if ((functionCode < MB_FUNC_MIN) || (functionCode > MB_FUNC_MAX))
         return MB_EINVAL;

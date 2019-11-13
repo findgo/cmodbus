@@ -65,9 +65,9 @@ static MbsFunctionHandler funcHandlers[MBS_FUNC_HANDLERS_MAX] = {
  *
  * @return ::MbErrorCode_t
  */
-MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandler) {
+MbErrCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandler) {
     int i;
-    MbErrorCode_t status = MB_ENORES;
+    MbErrCode_t status = MB_ENORES;
 
     if ((functionCode < MB_FUNC_MIN) || (functionCode > MB_FUNC_MAX))
         return MB_EINVAL;

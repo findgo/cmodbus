@@ -223,7 +223,7 @@ uint8_t MbLRC(uint8_t *pFrame, uint16_t len) {
 
 #endif
 
-MbException_t MbError2Exception(MbErrorCode_t errorCode) {
+MbException_t MbError2Exception(MbErrCode_t errorCode) {
     switch (errorCode) {
         case MB_ENOERR:
             return MB_EX_NONE;

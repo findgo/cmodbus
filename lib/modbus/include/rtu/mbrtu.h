@@ -22,7 +22,7 @@ typedef enum {
 #if MB_RTU_ENABLED > 0
 #if MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+MbErrCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
 void MbmRTUStart(MbmHandle_t dev);
 
@@ -47,7 +47,7 @@ void MbmRTUTimerT35Expired(MbmHandle_t dev);
 
 #if MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
+MbErrCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
 void MbsRTUStart(MbsHandle_t dev);
 
@@ -55,9 +55,9 @@ void MbsRTUStop(MbsHandle_t dev);
 
 void MbsRTUClose(MbsHandle_t dev);
 
-MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame);
+MbErrCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame);
 
-MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len);
+MbErrCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len);
 
 void MbsRTUReceiveFSM(MbsHandle_t dev);
 

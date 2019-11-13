@@ -7,8 +7,8 @@
 /* TODO implement modbus rtu master */
 #if MB_RTU_ENABLED > 0 && MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
-    MbErrorCode_t eStatus = MB_ENOERR;
+MbErrCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
+    MbErrCode_t eStatus = MB_ENOERR;
     uint32_t usTimerT35_50us;
     (void) dev;
 

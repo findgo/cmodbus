@@ -14,9 +14,9 @@
  * @param parity: 校验位
  * @return ::MbErrorCode_t
  */
-MbErrorCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
+MbErrCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     (void) dev;
-    MbErrorCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ENOERR;
     uint32_t timerT35_50us;
 
     ENTER_CRITICAL_SECTION();
@@ -33,8 +33,7 @@ MbErrorCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbPar
              * ChTimeValue = Ticks_per_1s / ( baudRate / 11 )
              *             = 11 * Ticks_per_1s / baudRate
              *             = 220000 / baudRate
-             * The reload for t3.5 is 1.5 times this value and similar
-             * for t3.5.
+             * The reload for t3.5 is 1.5 times this value and similar for t3.5.
              */
             timerT35_50us = (7UL * 220000UL) / (2UL * baudRate);
         }
@@ -69,8 +68,8 @@ void MbsRTUStop(MbsHandle_t dev) {
 
 void MbsRTUClose(MbsHandle_t dev) {}
 
-MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
-    MbErrorCode_t status = MB_ENOERR;
+MbErrCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
+    MbErrCode_t status = MB_ENOERR;
     MbsDev_t *pDev = (MbsDev_t *) dev;
 
     ENTER_CRITICAL_SECTION();
@@ -98,8 +97,8 @@ MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
     return status;
 }
 
-MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len) {
-    MbErrorCode_t status = MB_ENOERR;
+MbErrCode_t MbsRTUSend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len) {
+    MbErrCode_t status = MB_ENOERR;
     uint16_t crcValue;
     uint8_t *pAdu;
     MbsDev_t *pDev = (MbsDev_t *) dev;

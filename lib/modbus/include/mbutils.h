@@ -26,7 +26,7 @@ uint8_t MbBin2Char(uint8_t byte);
 
 uint8_t MbLRC(uint8_t *pFrame, uint16_t len);
 
-MbException_t MbError2Exception(MbErrorCode_t errorCode);
+MbException_t MbError2Exception(MbErrCode_t errorCode);
 
 const char *MbError2Str(MbException_t exCode);
 
