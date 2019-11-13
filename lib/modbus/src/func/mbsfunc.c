@@ -88,14 +88,14 @@ MbErrCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandl
     return status;
 }
 
-/*
-* @brief search function handle with function code
+/**
+ * @brief search function handle with function code
  *
-* @param   functionCode - 功能码
-* @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ * @param   functionCode - 功能码
+ * @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
  *
-* @return  function handle point, if not exist return NULL
-*/
+ * @return  function handle point, if not exist return NULL
+ */
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t functionCode) {
     int i;
     pMbsFunctionHandler search = NULL;

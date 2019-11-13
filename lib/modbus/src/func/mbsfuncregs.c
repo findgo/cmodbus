@@ -4,13 +4,15 @@
 #if MB_SLAVE_ENABLED > 0
 
 /**
-  * @brief  保持寄存器处理函数，保持寄存器可读，可读可写
-  * @param  pRegs          操作寄存器指针
-  * @param  pRegsBuffer  读操作时--返回数据指针，写操作时--输入数据指针
-  * @param  address     寄存器起始地址
-  * @param  quantity       寄存器数量
-  * @param  mode         操作方式，读或者写
-  * @return              错误状态
+  * @brief 保持寄存器处理函数，保持寄存器可读，可读可写
+  *
+  * @param pRegs        操作寄存器指针
+  * @param pRegsBuffer[in,out] 读操作时--返回数据指针，写操作时--输入数据指针
+  * @param address     寄存器起始地址
+  * @param quantity    寄存器数量
+  * @param mode        操作方式，读或者写
+  *
+  * @return ::MbErrCode_t
   */
 static MbErrCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
                                      uint16_t address, uint16_t quantity, MbRegMode_t mode) {
@@ -50,11 +52,13 @@ static MbErrCode_t __MbsRegHoldingCB(MbReg_t *pRegs, uint8_t *pRegsBuffer,
 
 /**
   * @brief  输入寄存器处理函数，输入寄存器可读，但不可写。
-  * @param  pRegs          操作寄存器指针
-  * @param  pRegBuffer  返回数据指针
-  * @param  address     寄存器起始地址
-  * @param  quantity       寄存器数量
-  * @return              错误状态
+  *
+  * @param pRegs       操作寄存器指针
+  * @param pRegBuffer  返回数据指针
+  * @param address     寄存器起始地址
+  * @param quantity    寄存器数量
+  *
+  * @return MbErrCode_t
   */
 static MbErrCode_t __MbsRegInputCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint16_t address, uint16_t quantity) {
     int16_t regIndex;
@@ -236,7 +240,8 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
         WriteNBytes = pPdu[MB_PDU_FUNC_READWRITE_BYTECNT_OFF];
 
         if ((readQuantity >= MB_READWRITE_READ_REG_QUANTITY_MIN) && (readQuantity <= MB_READWRITE_READ_REG_QUANTITY_MAX)
-            && (writeQuantity >= MB_READWRITE_WRITE_REGS_QUANTITY_MIN) && (writeQuantity <= MB_READWRITE_WRITEREG_CNT_MAX)
+            && (writeQuantity >= MB_READWRITE_WRITE_REGS_QUANTITY_MIN) &&
+            (writeQuantity <= MB_READWRITE_WRITEREG_CNT_MAX)
             && ((2 * writeQuantity) == WriteNBytes)) {
             /* Make callback to update the register values. */
             regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],

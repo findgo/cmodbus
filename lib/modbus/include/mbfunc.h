@@ -13,18 +13,24 @@ extern "C" {
 #include "mbutils.h"
 #include "mb.h"
 
-// read holding input coil disc offset in pdu
+/**
+* @defgroup function function handler
+* @{
+*/
+
+
+//! @brief read holding input coil disc offset in pdu
 #define MB_PDU_FUNC_READ_ADDR_OFF           ( MB_PDU_DATA_OFF)
 #define MB_PDU_FUNC_READ_REGCNT_OFF         ( MB_PDU_DATA_OFF + 2 ) // only for holding reg
 #define MB_PDU_FUNC_READ_BITSCNT_OFF        ( MB_PDU_DATA_OFF + 2 ) // only for coils
 #define MB_PDU_FUNC_READ_SIZE               ( 4 )
 
-// write single holding coil offset in pdu
+//! @brief write single holding coil offset in pdu
 #define MB_PDU_FUNC_WRITE_ADDR_OFF          ( MB_PDU_DATA_OFF )
 #define MB_PDU_FUNC_WRITE_VALUE_OFF         ( MB_PDU_DATA_OFF + 2 )
 #define MB_PDU_FUNC_WRITE_SIZE              ( 4 )
 
-// write multiple holding coils offset in pdu
+//! @brief write multiple holding coils offset in pdu
 #define MB_PDU_FUNC_WRITE_MUL_ADDR_OFF      ( MB_PDU_DATA_OFF )
 #define MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF    ( MB_PDU_DATA_OFF + 2 ) // for holding reg
 #define MB_PDU_FUNC_WRITE_MUL_COILCNT_OFF   ( MB_PDU_DATA_OFF + 2 ) // for coils
@@ -32,7 +38,7 @@ extern "C" {
 #define MB_PDU_FUNC_WRITE_MUL_VALUES_OFF    ( MB_PDU_DATA_OFF + 5 )
 #define MB_PDU_FUNC_WRITE_MUL_SIZE_MIN      ( 5 )
 
-// readwrite multiple holding offset in pdu
+//! @brief readwrite multiple holding offset in pdu
 #define MB_PDU_FUNC_READWRITE_READ_ADDR_OFF     ( MB_PDU_DATA_OFF + 0 )
 #define MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF   ( MB_PDU_DATA_OFF + 2 )
 #define MB_PDU_FUNC_READWRITE_WRITE_ADDR_OFF    ( MB_PDU_DATA_OFF + 4 )
@@ -42,8 +48,8 @@ extern "C" {
 #define MB_PDU_FUNC_READWRITE_SIZE_MIN          ( 9 )
 
 typedef enum {
-    MB_REG_READ,                /*!< Read register values and pass to protocol stack. */
-    MB_REG_WRITE                /*!< Update register values. */
+    MB_REG_READ,                //!< Read register values and pass to protocol stack.
+    MB_REG_WRITE                //!< Update register values.
 } MbRegMode_t;
 
 #if MB_MASTER_ENABLED > 0
@@ -94,95 +100,120 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *pRegs,
 
 #if MB_SLAVE_ENABLED > 0
 
-/*
-* @brief search function handle with function code  
-* @param   functionCode - 功能码
-* @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
-* @return  function handle point, if not exist return NULL
-*/
+/**
+ * @brief search function handle with function code
+ *
+ * @param functionCode function code
+ *
+ * @return function handle point, if not exist return NULL
+ */
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t functionCode);
 
 /****************************** for parse host request *************************/
-MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
-
-/****************************** for bits *******************************/
-MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
- * @brief   function handlers:  read holding register 
- * @param   pRegs - real slave register pointer
- * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
- * @return  exception code , see mbproto.h
+ * @brief function handlers, read holding register
+ *
+ * @param pRegs real slave register pointer
+ * @param pPdu pdu frame pointer
+ * @param pLen pdu frame length pointer
+ *
+ * @return  ::MbException_t
  */
-MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
- * @brief   function handlers:  write holding register 
- * @param   pRegs - real slave register pointer
- * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
- * @return  exception code , see mbproto.h
+ * @brief function handlers, write holding register
+ *
+ * @param pRegs real slave register pointer
+ * @param pPdu pdu frame pointer
+ * @param pLen pdu frame length pointer
+ *
+ * @return ::MbException_t
  */
-MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
- * @brief   function handlers:  reand and write multi holding register 
- * @param   pRegs - real slave register pointer
- * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
- * @return  exception code , see mbproto.h
+ * @brief function handlers,write multiple holding register
+ *
+ * @param pRegs real slave register pointer
+ * @param pPdu pdu frame pointer
+ * @param pLen pdu frame length pointer
+ *
+ * @return ::MbException_t
  */
-MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
-* @brief   function handlers:  read input register
-* @param   pRegs - real slave register pointer
-* @param   pPdu - pdu frame pointer
-* @param   len - usLen pdu frame length pointer
-* @return  exception code , see mbproto.h
+ * @brief function handlers,read and write multi holding register
+ *
+ * @param pRegs real slave register pointer
+ * @param pPdu pdu frame pointer
+ * @param pLen pdu frame length pointer
+ *
+ * @return ::MbException_t
+ */
+MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
+
+/**
+* @brief function handlers,read input register
+ *
+* @param pRegs real slave register pointer
+* @param pPdu pdu frame pointer
+* @param pLen pdu frame length pointer
+ *
+* @return ::MbException_t
 */
-MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
-/****************************** for register *******************************/
 /**
-* @brief   function handlers:  read coils register 
-* @param   pRegs - real slave register pointer
-* @param   pPdu - pdu frame pointer 
-* @param   pLen - usLen pdu frame length pointer
-* @return  exception code , see mbproto.h
+* @brief function handlers, read coils register
+* @param pRegs real slave register pointer
+* @param pPdu pdu frame pointer
+* @param pLen pdu frame length pointer
+* @return ::MbException_t
 */
 MbException_t MbsFuncRdCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
-* @brief   function handlers:  write coils register 
-* @param   pRegs - real slave register pointer
-* @param   pPdu - pdu frame pointer 
-* @param   pLen - usLen pdu frame length pointer
-* @return  exception code , see mbproto.h
+* @brief function handlers,write coils register
+ *
+* @param pRegs real slave register pointer
+* @param pPdu pdu frame pointer
+* @param pLen pdu frame length pointer
+* @return ::MbException_t
 */
 MbException_t MbsFuncWrCoil(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 /**
-* @brief   function handlers:  write multi coils register 
-* @param   pRegs - real slave register pointer
-* @param   pPdu - pdu frame pointer 
-* @param   pLen - usLen pdu frame length pointer
-* @return  exception code , see mbproto.h
+* @brief   function handlers,write multi coils register
+* @param   pRegs real slave register pointer
+* @param   pPdu pdu frame pointer
+* @param   pLen pdu frame length pointer
+* @return  ::MbException_t
 */
-MbException_t MbsFuncWrMulCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen); /**
-* @brief   function handlers:  read discrete imput register 
-* @param   pRegs - real slave register pointer
-* @param   pPdu - pdu frame pointer 
-* @param   pLen - usLen pdu frame length pointer
-* @return  exception code , see mbproto.h
+MbException_t MbsFuncWrMulCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
+
+/**
+* @brief function handlers,read discrete imput register
+* @param pRegs real slave register pointer
+* @param pPdu pdu frame pointer
+* @param pLen pdu frame length pointer
+* @return  ::MbException_t
 */
 MbException_t MbsFuncRdDiscreteInputs(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen);
 
 #endif
 
+/**
+ * @}
+ */
+
+
 #ifdef __cplusplus
 }
 #endif
+
 #endif
 
