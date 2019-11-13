@@ -85,8 +85,8 @@ int main(int argc, char **argv) {
 
 //#if MB_SLAVE_ENABLED > 0
 
-Mbshandle_t device0;
-Mbshandle_t device1;
+MbsHandle_t device0;
+MbsHandle_t device1;
 
 static __aligned(2) uint8_t dev0regbuf[
         REG_HOLDING_NREGS * 2 + REG_INPUT_NREGS * 2 + REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8] =

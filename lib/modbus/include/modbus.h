@@ -8,10 +8,10 @@
 #if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 
 //public
-uint32_t MbRegBufSizeCal(uint16_t reg_holding_num,
-                         uint16_t reg_input_num,
-                         uint16_t reg_coils_num,
-                         uint16_t reg_discrete_num);
+uint32_t MbRegBufSizeCal(uint16_t holdingNum,
+                         uint16_t inputNum,
+                         uint16_t coilsNum,
+                         uint16_t discreteNum);
 
 #define MbGetRegsHoldPtr(pReg)       ((uint16_t *)(((MbReg_t *)(pReg))->pReghold))
 #define MbGetRegsInputPtr(pReg)      ((uint16_t *)(((MbReg_t *)(pReg))->pReginput))
@@ -143,7 +143,7 @@ MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHan
  * @param   Mbshandle_t - slave device handle ,if failed return NULL 句柄
  * @return  
  */
-Mbshandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity);
+MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
 /*********************************************************************
  * @brief   free the slave modbus device with port
@@ -156,39 +156,39 @@ void MbsFree(uint8_t ucPort);
  * @brief   assign buffer for register
  * @return  
  */
-MbErrorCode_t MbsRegAssign(Mbshandle_t dev,
-                           uint8_t *regStorageBuf, uint32_t regStorageSize,
-                           uint16_t regHoldingAddrStart, uint16_t regHoldingNum,
-                           uint16_t regInputAddrStart, uint16_t regInputNum,
-                           uint16_t regCoilsAddrStart, uint16_t regCoilsNum,
-                           uint16_t regDiscreteAddrStart, uint16_t regDiscreteNum);
+MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
+                           uint8_t *storageBuf, uint32_t storageSize,
+                           uint16_t holdingAddrStart, uint16_t holdingNum,
+                           uint16_t inputAddrStart, uint16_t inputNum,
+                           uint16_t coilsAddrStart, uint16_t coilsNum,
+                           uint16_t discreteAddrStart, uint16_t discreteNum);
 
-MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
-                                 uint16_t *reg_holdingbuf, uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
-                                 uint16_t *reg_inputbuf, uint16_t reg_input_addr_start, uint16_t reg_input_num,
-                                 uint8_t *reg_coilsbuf, uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
-                                 uint8_t *reg_discretebuf, uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num);
+MbErrorCode_t MbsRegAssignSingle(MbsHandle_t dev,
+                                 uint16_t *holdingBuff, uint16_t holdingAddrStart, uint16_t holdingNum,
+                                 uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
+                                 uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
+                                 uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum);
 
 /*********************************************************************
  * @brief   start the slave device
  * @param   dev - the handle of the slave device
  * @return  
  */
-MbErrorCode_t MbsStart(Mbshandle_t dev);
+MbErrorCode_t MbsStart(MbsHandle_t dev);
 
 /*********************************************************************
  * @brief   stop the slave device
  * @param   dev - the handle of the slave device
  * @return  
  */
-MbErrorCode_t MbsStop(Mbshandle_t dev);
+MbErrorCode_t MbsStop(MbsHandle_t dev);
 
 /*********************************************************************
  * @brief   close the slave device, before it,muse be use MbsStop first
  * @param   dev - the handle of the slave device
  * @return  
  */
-MbErrorCode_t MbsClose(Mbshandle_t dev);
+MbErrorCode_t MbsClose(MbsHandle_t dev);
 
 //
 void MbsPoll(void);

@@ -6,7 +6,7 @@
 
 #if MB_ASCII_ENABLED > 0 && MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
+MbErrorCode_t MbsASCIIInit(MbsHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
     MbErrorCode_t eStatus = MB_ENOERR;
     (void) dev;
 
@@ -22,7 +22,7 @@ MbErrorCode_t MbsASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,
     return eStatus;
 }
 
-void MbsASCIIStart(Mbshandle_t dev) {
+void MbsASCIIStart(MbsHandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     ((MbsDev_t *) dev)->sendRcvState = STATE_ASCII_RX_IDLE;
@@ -31,7 +31,7 @@ void MbsASCIIStart(Mbshandle_t dev) {
     EXIT_CRITICAL_SECTION();
 }
 
-void MbsASCIIStop(Mbshandle_t dev) {
+void MbsASCIIStop(MbsHandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     MbPortSerialEnable(((MbsDev_t *) dev)->port, false, false);
@@ -40,11 +40,11 @@ void MbsASCIIStop(Mbshandle_t dev) {
     EXIT_CRITICAL_SECTION();
 }
 
-void MbsASCIIClose(Mbshandle_t dev) {
+void MbsASCIIClose(MbsHandle_t dev) {
 
 }
 
-MbErrorCode_t MbsASCIIReceiveParse(Mbshandle_t dev, MbsAduFrame_t *aduFrame) {
+MbErrorCode_t MbsASCIIReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
     MbErrorCode_t eStatus = MB_ENOERR;
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
@@ -75,7 +75,7 @@ MbErrorCode_t MbsASCIIReceiveParse(Mbshandle_t dev, MbsAduFrame_t *aduFrame) {
     return eStatus;
 }
 
-MbErrorCode_t MbsASCIISend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength) {
+MbErrorCode_t MbsASCIISend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength) {
     MbErrorCode_t eStatus = MB_ENOERR;
     uint8_t usLRC;
     uint8_t *pAdu;
@@ -120,7 +120,7 @@ MbErrorCode_t MbsASCIISend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_
     return eStatus;
 }
 
-void MbsASCIIReceiveFSM(Mbshandle_t dev) {
+void MbsASCIIReceiveFSM(MbsHandle_t dev) {
     uint8_t ucByte;
     uint8_t ucResult;
     MbsDev_t *pdev = (MbsDev_t *) dev;
@@ -206,7 +206,7 @@ void MbsASCIIReceiveFSM(Mbshandle_t dev) {
     }
 }
 
-void MbsASCIITransmitFSM(Mbshandle_t dev) {
+void MbsASCIITransmitFSM(MbsHandle_t dev) {
     uint8_t ucByte;
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
@@ -267,7 +267,7 @@ void MbsASCIITransmitFSM(Mbshandle_t dev) {
     }
 }
 
-void MbsASCIITimerT1SExpired(Mbshandle_t dev) {
+void MbsASCIITimerT1SExpired(MbsHandle_t dev) {
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
     /* If we have a timeout we go back to the idle state and wait for

@@ -17,8 +17,8 @@
 
 extern MbmHandle_t deviceM0;
 extern MbmHandle_t deviceM1;
-extern Mbshandle_t device0;
-extern Mbshandle_t device1;
+extern MbsHandle_t device0;
+extern MbsHandle_t device1;
 
 
 /* ----------------------- Start implementation -----------------------------*/

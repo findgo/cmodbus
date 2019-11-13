@@ -47,25 +47,25 @@ void MbmRTUTimerT35Expired(MbmHandle_t dev);
 
 #if MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
+MbErrorCode_t MbsRTUInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
-void MbsRTUStart(Mbshandle_t dev);
+void MbsRTUStart(MbsHandle_t dev);
 
-void MbsRTUStop(Mbshandle_t dev);
+void MbsRTUStop(MbsHandle_t dev);
 
-void MbsRTUClose(Mbshandle_t dev);
+void MbsRTUClose(MbsHandle_t dev);
 
-MbErrorCode_t MbsRTUReceiveParse(Mbshandle_t dev, MbsAduFrame_t *aduFrame);
+MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame);
 
-MbErrorCode_t MbsRTUSend(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsRTUSend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
 
-void MbsRTUReceiveFSM(Mbshandle_t dev);
+void MbsRTUReceiveFSM(MbsHandle_t dev);
 
-void MbsRTUTransmitFSM(Mbshandle_t dev);
+void MbsRTUTransmitFSM(MbsHandle_t dev);
 
-void MbsRTUTimerT15Expired(Mbshandle_t dev);
+void MbsRTUTimerT15Expired(MbsHandle_t dev);
 
-void MbsRTUTimerT35Expired(Mbshandle_t dev);
+void MbsRTUTimerT35Expired(MbsHandle_t dev);
 
 #endif
 #endif

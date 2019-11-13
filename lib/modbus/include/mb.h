@@ -223,13 +223,13 @@ typedef struct {
 } MbsAduFrame_t;
 
 //从机设备句柄
-typedef void *Mbshandle_t;
+typedef void *MbsHandle_t;
 
 typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
 
-typedef MbErrorCode_t (*pActionSlaveReceiveParse)(Mbshandle_t dev, MbsAduFrame_t *pAduFramePkt);
+typedef MbErrorCode_t (*pActionSlaveReceiveParse)(MbsHandle_t dev, MbsAduFrame_t *pAduFramePkt);
 
-typedef MbErrorCode_t (*pActionSlaveSend)(Mbshandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu,
+typedef MbErrorCode_t (*pActionSlaveSend)(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu,
                                           uint16_t usLength);
 
 // 从机设备描述

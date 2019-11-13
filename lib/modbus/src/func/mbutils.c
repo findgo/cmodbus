@@ -54,12 +54,12 @@ void MbSetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits, uint8_t valu
     mask = (uint16_t) ((1 << (uint16_t) nBits) - 1);
     mask <<= preBits;
     // Prepare a value want to change
-    newValue &=mask;
+    newValue &= mask;
 
     /* copy bits into temporary storage. */
     word = byteBuf[byteOffset];
     if ((preBits + nBits) > 8) {
-        word |= (uint16_t)byteBuf[byteOffset + 1] << BITS_uint8_t;
+        word |= (uint16_t) byteBuf[byteOffset + 1] << BITS_uint8_t;
     }
 
     /* Zero out bit field bits and then or value bits into them. */
@@ -247,8 +247,8 @@ MbException_t MbError2Exception(MbErrorCode_t eErrorCode) {
     }
 }
 
-const char *MbError2Str(MbException_t excode) {
-    switch (excode) {
+const char *MbError2Str(MbException_t exCode) {
+    switch (exCode) {
         case MB_EX_NONE:
             return "No error!";
         case MB_EX_ILLEGAL_FUNCTION:
@@ -276,21 +276,18 @@ const char *MbError2Str(MbException_t excode) {
 
 /**
  * @brief       计算寄存器所占内存字节数
- * @param       reg_holding_num -  保持寄存器个数
- * @param       reg_input_num -  输入寄存器个数
- * @param       reg_coils_num - 线圈个数
- * @param       reg_discrete_num - 离散输入个数
+ * @param       holdingNum -  保持寄存器个数
+ * @param       inputNum -  输入寄存器个数
+ * @param       coilsNum - 线圈个数
+ * @param       discreteNum - 离散输入个数
  * @return      返回寄存器占用的总内存数
  */
-uint32_t MbRegBufSizeCal(uint16_t reg_holding_num,
-                         uint16_t reg_input_num,
-                         uint16_t reg_coils_num,
-                         uint16_t reg_discrete_num) {
+uint32_t MbRegBufSizeCal(uint16_t holdingNum, uint16_t inputNum, uint16_t coilsNum, uint16_t discreteNum) {
     uint32_t size;
 
-    size = reg_holding_num * sizeof(uint16_t) + reg_input_num * sizeof(uint16_t);
-    size += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
-    size += (reg_discrete_num >> 3) + (((reg_discrete_num & 0x07) > 0) ? 1 : 0);
+    size = holdingNum * sizeof(uint16_t) + inputNum * sizeof(uint16_t);
+    size += (coilsNum >> 3) + (((coilsNum & 0x07) > 0) ? 1 : 0);
+    size += (discreteNum >> 3) + (((discreteNum & 0x07) > 0) ? 1 : 0);
 
     return size;
 }

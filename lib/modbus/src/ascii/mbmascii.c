@@ -5,7 +5,7 @@
 
 #if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
+MbErrorCode_t MbmASCIIInit(MbsHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
     MbErrorCode_t eStatus = MB_ENOERR;
     (void) dev;
 
@@ -22,7 +22,7 @@ MbErrorCode_t MbmASCIIInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate,
     return eStatus;
 }
 
-void MbmASCIIStart(Mbshandle_t dev) {
+void MbmASCIIStart(MbsHandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     ((MbmDev_t *) dev)->sendRcvState = STATE_ASCII_RX_IDLE;
@@ -31,7 +31,7 @@ void MbmASCIIStart(Mbshandle_t dev) {
     EXIT_CRITICAL_SECTION();
 }
 
-void MbmASCIIStop(Mbshandle_t dev) {
+void MbmASCIIStop(MbsHandle_t dev) {
     ENTER_CRITICAL_SECTION();
 
     MbPortSerialEnable(((MbmDev_t *) dev)->port, false, false);
@@ -40,12 +40,12 @@ void MbmASCIIStop(Mbshandle_t dev) {
     EXIT_CRITICAL_SECTION();
 }
 
-void MbmASCIIClose(Mbshandle_t dev) {
+void MbmASCIIClose(MbsHandle_t dev) {
 
 }
 
 MbReqResult_t
-MbmASCIIReceive(Mbshandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength) {
+MbmASCIIReceive(MbsHandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength) {
     MbReqResult_t result = MBR_ENOERR;
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
@@ -79,7 +79,7 @@ MbmASCIIReceive(Mbshandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t *
     return result;
 }
 
-MbReqResult_t MbmASCIISend(Mbshandle_t dev, const uint8_t *pAdu, uint16_t usAduLength) {
+MbReqResult_t MbmASCIISend(MbsHandle_t dev, const uint8_t *pAdu, uint16_t usAduLength) {
     MbReqResult_t result = MBR_ENOERR;
     uint8_t ucByte;
     MbmDev_t *pdev = (MbmDev_t *) dev;
@@ -113,7 +113,7 @@ MbReqResult_t MbmASCIISend(Mbshandle_t dev, const uint8_t *pAdu, uint16_t usAduL
     return result;
 }
 
-void MbmASCIIReceiveFSM(Mbshandle_t dev) {
+void MbmASCIIReceiveFSM(MbsHandle_t dev) {
     uint8_t ucByte;
     uint8_t ucResult;
     MbmDev_t *pdev = (MbmDev_t *) dev;

@@ -28,7 +28,7 @@ uint8_t MbLRC(uint8_t *pucFrame, uint16_t usLen);
 
 MbException_t MbError2Exception(MbErrorCode_t eErrorCode);
 
-const char *MbError2Str(MbException_t excode);
+const char *MbError2Str(MbException_t exCode);
 
 
 #ifdef __cplusplus

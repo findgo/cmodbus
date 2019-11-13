@@ -21,12 +21,12 @@
 
 
 // local variate
-static MbsDev_t mbs_devTal[MBS_SUPPORT_MULTIPLE_NUMBER];
+static MbsDev_t mbsDevTable[MBS_SUPPORT_MULTIPLE_NUMBER];
 
 //local function
 static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev);
 
-Mbshandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity) {
+MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity) {
     MbsDev_t *dev = NULL;
     MbErrorCode_t status;
     uint8_t i;
@@ -38,10 +38,10 @@ Mbshandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRa
 
     // search device table and then check port exit and dev in use ?
     for (i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++) {
-        if (mbs_devTal[i].inuse == 0) {
-            dev = (MbsDev_t *) &mbs_devTal[i];
+        if (mbsDevTable[i].inuse == 0) {
+            dev = (MbsDev_t *) &mbsDevTable[i];
             break;
-        } else if (mbs_devTal[i].port == port) {
+        } else if (mbsDevTable[i].port == port) {
             return NULL; // find port in used
         }
     }
@@ -92,15 +92,15 @@ Mbshandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRa
     dev->state = DEV_STATE_DISABLED;
     dev->eventInFlag = false;
 
-    return (Mbshandle_t) dev;
+    return (MbsHandle_t) dev;
 }
 
 void MbsFree(uint8_t ucPort) {
     uint8_t i;
 
     for (i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++) {
-        if ((mbs_devTal[i].inuse == 1) && (mbs_devTal[i].port == ucPort)) {
-            mbs_devTal[i].inuse = 0; // mark it not in use!
+        if ((mbsDevTable[i].inuse == 1) && (mbsDevTable[i].port == ucPort)) {
+            mbsDevTable[i].inuse = 0; // mark it not in use!
             break;
         }
     }
@@ -108,55 +108,54 @@ void MbsFree(uint8_t ucPort) {
 
 
 // static uint8_t __aligned(2) regbuf[REG_COILS_SIZE / 8 + REG_DISCRETE_SIZE / 8 + REG_INPUT_NREGS * 2 + REG_HOLDING_NREGS * 2];
-MbErrorCode_t MbsRegAssign(Mbshandle_t dev,
-                           uint8_t *regStorageBuf, uint32_t regStorageSize,
-                           uint16_t regHoldingAddrStart, uint16_t regHoldingNum,
-                           uint16_t regInputAddrStart, uint16_t regInputNum,
-                           uint16_t regCoilsAddrStart, uint16_t regCoilsNum,
-                           uint16_t regDiscreteAddrStart, uint16_t regDiscreteNum) {
+MbErrorCode_t MbsRegAssign(MbsHandle_t dev,
+                           uint8_t *storageBuf, uint32_t storageSize,
+                           uint16_t holdingAddrStart, uint16_t holdingNum,
+                           uint16_t inputAddrStart, uint16_t inputNum,
+                           uint16_t coilsAddrStart, uint16_t coilsNum,
+                           uint16_t discreteAddrStart, uint16_t discreteNum) {
     uint32_t offset;
     MbReg_t *regs;
 
-    if (dev == NULL || regStorageBuf == NULL)
+    if (dev == NULL || storageBuf == NULL)
         return MB_EINVAL;
 
-    if (regStorageSize < MbRegBufSizeCal(regHoldingNum, regInputNum, regCoilsNum, regDiscreteNum))
+    if (storageSize < MbRegBufSizeCal(holdingNum, inputNum, coilsNum, discreteNum))
         return MB_EINVAL;
 
     regs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
 
-    regs->holdingAddrStart = regHoldingAddrStart;
-    regs->holdingNum = regHoldingNum;
-    regs->inputAddrStart = regInputAddrStart;
-    regs->inputNum = regInputNum;
+    regs->holdingAddrStart = holdingAddrStart;
+    regs->holdingNum = holdingNum;
+    regs->inputAddrStart = inputAddrStart;
+    regs->inputNum = inputNum;
 
-    regs->coilsAddrStart = regCoilsAddrStart;
-    regs->coilsNum = regCoilsNum;
-    regs->discreteAddrStart = regDiscreteAddrStart;
-    regs->discreteNum = regDiscreteNum;
+    regs->coilsAddrStart = coilsAddrStart;
+    regs->coilsNum = coilsNum;
+    regs->discreteAddrStart = discreteAddrStart;
+    regs->discreteNum = discreteNum;
 
     // hold register
-    regs->pHolding = (uint16_t *) &regStorageBuf[0];
-    offset = regHoldingNum * sizeof(uint16_t);
+    regs->pHolding = (uint16_t *) &storageBuf[0];
+    offset = holdingNum * sizeof(uint16_t);
     // input register
-    regs->pInput = (uint16_t *) &regStorageBuf[offset];
-    offset += regInputNum * sizeof(uint16_t);
+    regs->pInput = (uint16_t *) &storageBuf[offset];
+    offset += inputNum * sizeof(uint16_t);
     // coil register
-    regs->pCoil = &regStorageBuf[offset];
-    offset += (regCoilsNum >> 3) + (((regCoilsNum & 0x07) > 0) ? 1 : 0);
+    regs->pCoil = &storageBuf[offset];
+    offset += (coilsNum >> 3) + (((coilsNum & 0x07) > 0) ? 1 : 0);
     // disc register
-    regs->pDiscrete = &regStorageBuf[offset];
-    //offset += (regDiscreteNum >> 3) + (((regDiscreteNum & 0x07) > 0) ? 1 : 0);
+    regs->pDiscrete = &storageBuf[offset];
+    //offset += (discreteNum >> 3) + (((discreteNum & 0x07) > 0) ? 1 : 0);
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
-                                 uint16_t *reg_holdingbuf, uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
-                                 uint16_t *reg_inputbuf, uint16_t reg_input_addr_start, uint16_t reg_input_num,
-                                 uint8_t *reg_coilsbuf, uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
-                                 uint8_t *reg_discretebuf, uint16_t reg_discrete_addr_start,
-                                 uint16_t reg_discrete_num) {
+MbErrorCode_t MbsRegAssignSingle(MbsHandle_t dev,
+                                 uint16_t *holdingBuff, uint16_t holdingAddrStart, uint16_t holdingNum,
+                                 uint16_t *inputBuff, uint16_t inputAddrStart, uint16_t inputNum,
+                                 uint8_t *coilsBuff, uint16_t coilsAddrStart, uint16_t coilsNum,
+                                 uint8_t *discreteBuff, uint16_t discreteAddrStart, uint16_t discreteNum) {
     MbReg_t *regs;
 
     if (dev == NULL)
@@ -164,26 +163,26 @@ MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
 
     regs = (MbReg_t *) &(((MbsDev_t *) dev)->regs);
 
-    regs->holdingAddrStart = reg_holding_addr_start;
-    regs->holdingNum = reg_holding_num;
-    regs->pHolding = reg_holdingbuf;
+    regs->holdingAddrStart = holdingAddrStart;
+    regs->holdingNum = holdingNum;
+    regs->pHolding = holdingBuff;
 
-    regs->inputAddrStart = reg_input_addr_start;
-    regs->inputNum = reg_input_num;
-    regs->pInput = reg_inputbuf;
+    regs->inputAddrStart = inputAddrStart;
+    regs->inputNum = inputNum;
+    regs->pInput = inputBuff;
 
-    regs->coilsAddrStart = reg_coils_addr_start;
-    regs->coilsNum = reg_coils_num;
-    regs->pCoil = reg_coilsbuf;
+    regs->coilsAddrStart = coilsAddrStart;
+    regs->coilsNum = coilsNum;
+    regs->pCoil = coilsBuff;
 
-    regs->discreteAddrStart = reg_discrete_addr_start;
-    regs->discreteNum = reg_discrete_num;
-    regs->pDiscrete = reg_discretebuf;
+    regs->discreteAddrStart = discreteAddrStart;
+    regs->discreteNum = discreteNum;
+    regs->pDiscrete = discreteBuff;
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStart(Mbshandle_t dev) {
+MbErrorCode_t MbsStart(MbsHandle_t dev) {
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
     if (pdev->state == DEV_STATE_NOT_INITIALIZED)
@@ -198,7 +197,7 @@ MbErrorCode_t MbsStart(Mbshandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsStop(Mbshandle_t dev) {
+MbErrorCode_t MbsStop(MbsHandle_t dev) {
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
     if (pdev->state == DEV_STATE_NOT_INITIALIZED)
@@ -212,7 +211,7 @@ MbErrorCode_t MbsStop(Mbshandle_t dev) {
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbsClose(Mbshandle_t dev) {
+MbErrorCode_t MbsClose(MbsHandle_t dev) {
     MbsDev_t *pdev = (MbsDev_t *) dev;
 
     // must be stop first then it can close
@@ -231,8 +230,8 @@ void MbsPoll(void) {
     uint8_t i;
 
     for (i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++) {
-        if (mbs_devTal[i].inuse) {
-            (void) __MbsAduFrameHandle(&mbs_devTal[i]);
+        if (mbsDevTable[i].inuse) {
+            (void) __MbsAduFrameHandle(&mbsDevTable[i]);
         }
     }
 }
