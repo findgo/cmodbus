@@ -19,7 +19,7 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
-    if (Regcnt < MB_READREG_CNT_MIN || Regcnt > MB_READREG_CNT_MAX)
+    if (Regcnt < MB_READ_REGS_QUANTITY_MIN || Regcnt > MB_READ_REG_QUANTITY_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if (slaveID != MB_ADDRESS_BROADCAST) {
@@ -135,8 +135,8 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
     /* check slave address valid */
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
-    if ((valcnt < MB_WRITEREG_CNT_MIN)
-        || (valcnt > MB_WRITEREG_CNT_MAX)
+    if ((valcnt < MB_WRITE_REGS_QUANTITY_MIN)
+        || (valcnt > MB_WRITE_REGS_QUANTITY_MAX)
         || Regcnt != valcnt)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
@@ -207,7 +207,7 @@ MbReqResult_t MbmReqRdInputRegister(MbmHandle_t dev, uint8_t slaveID,
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
-    if (Regcnt < MB_READREG_CNT_MIN || Regcnt > MB_READREG_CNT_MAX)
+    if (Regcnt < MB_READ_REGS_QUANTITY_MIN || Regcnt > MB_READ_REG_QUANTITY_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if (slaveID != MB_ADDRESS_BROADCAST) {
@@ -269,8 +269,8 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
 
-    if (RegReadCnt < MB_READWRITE_READREG_CNT_MIN || RegReadCnt > MB_READWRITE_READREG_CNT_MAX
-        || (RegWriteCnt < MB_READWRITE_WRITEREG_CNT_MIN) || (RegWriteCnt > MB_READWRITE_WRITEREG_CNT_MAX)
+    if (RegReadCnt < MB_READWRITE_READ_REG_QUANTITY_MIN || RegReadCnt > MB_READWRITE_READ_REG_QUANTITY_MAX
+        || (RegWriteCnt < MB_READWRITE_WRITE_REGS_QUANTITY_MIN) || (RegWriteCnt > MB_READWRITE_WRITEREG_CNT_MAX)
         || RegWriteCnt != valcnt)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/

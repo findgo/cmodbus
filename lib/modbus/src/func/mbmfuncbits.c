@@ -18,7 +18,7 @@ MbReqResult_t MbmReqRdCoils(MbmHandle_t dev, uint8_t slaveID, uint16_t RegStartA
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */
-    if (Coilcnt < MB_READBITS_CNT_MIN || Coilcnt > MB_READBITS_CNT_MAX)
+    if (Coilcnt < MB_READ_BITS_QUANTITY_MIN || Coilcnt > MB_READ_BITS_QUANTITY_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if (slaveID != MB_ADDRESS_BROADCAST) {
@@ -136,7 +136,7 @@ MbReqResult_t MbmReqWrMulCoils(MbmHandle_t dev, uint8_t slaveID,
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */
-    if ((Coilcnt < MB_WRITEBITS_CNT_MIN) || (Coilcnt > MB_WRITEBITS_CNT_MAX))
+    if ((Coilcnt < MB_WRITE_BITS_QUANTITY_MIN) || (Coilcnt > MB_WRITE_BITS_QUANTITY_MAX))
         return MBR_EINVAL;
 
     /* Compute the number of expected bytes in the request. */
@@ -209,7 +209,7 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmHandle_t dev, uint8_t slaveID,
     if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 1 - 2000 ) */
-    if (Discnt < MB_READBITS_CNT_MIN || Discnt > MB_READBITS_CNT_MAX)
+    if (Discnt < MB_READ_BITS_QUANTITY_MIN || Discnt > MB_READ_BITS_QUANTITY_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
     if (slaveID != MB_ADDRESS_BROADCAST) {

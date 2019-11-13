@@ -97,7 +97,7 @@ MbException_t MbsFuncRdCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
         /* Check if the number of registers to read is valid. If not
          * return modbus illegal data value exception.
          */
-        if ((quantity >= MB_READBITS_CNT_MIN) && (quantity < MB_READBITS_CNT_MAX)) {
+        if ((quantity >= MB_READ_BITS_QUANTITY_MIN) && (quantity < MB_READ_BITS_QUANTITY_MAX)) {
             /* Set the current PDU data pointer to the beginning. */
             pFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
             /* First byte contains the function code. */
@@ -194,7 +194,7 @@ MbException_t MbsFuncWrMulCoils(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
         /* Compute the number of expected bytes in the request. */
         nBytesVerify = quantity / 8 + (((quantity & 0x0007) > 0) ? 1 : 0);
 
-        if ((quantity >= MB_WRITEBITS_CNT_MIN) && (quantity <= MB_WRITEBITS_CNT_MAX) && (nBytesVerify == nBytes)) {
+        if ((quantity >= MB_WRITE_BITS_QUANTITY_MIN) && (quantity <= MB_WRITE_BITS_QUANTITY_MAX) && (nBytesVerify == nBytes)) {
             regStatus = __MbsRegCoilsCB(pRegs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
                                         address, quantity, MB_REG_WRITE);
             /* If an error occured convert it into a Modbus exception. */
@@ -242,7 +242,7 @@ MbException_t MbsFuncRdDiscreteInputs(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *p
         /* Check if the number of registers to read is valid. If not
          * return Modbus illegal data value exception. 
          */
-        if ((quantity >= MB_READBITS_CNT_MIN) && (quantity < MB_READBITS_CNT_MAX)) {
+        if ((quantity >= MB_READ_BITS_QUANTITY_MIN) && (quantity < MB_READ_BITS_QUANTITY_MAX)) {
             /* Set the current PDU data pointer to the beginning. */
             pFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
             /* First byte contains the function code. */

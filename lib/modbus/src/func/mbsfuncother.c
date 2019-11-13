@@ -31,11 +31,11 @@ MbErrCode_t MbsSetSlaveID(MbReg_t *pRegs, uint8_t slaveID, uint8_t isRunning,
     return status;
 }
 
-MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     (void) pRegs;
 
     memcpy(&pPdu[MB_PDU_DATA_OFF], &MbSlaveID[0], (size_t) MbSlaveIDLen);
-    *len = (uint16_t) (MB_PDU_DATA_OFF + MbSlaveIDLen);
+    *pLen = (uint16_t) (MB_PDU_DATA_OFF + MbSlaveIDLen);
 
     return MB_EX_NONE;
 }

@@ -6,22 +6,26 @@
 extern "C" {
 #endif
 
-/* ----------------------- Defines ------------------------------------------*/
-/*brief Use the default Modbus TCP port (502)*/
+/**
+* @defgroup protocol protocol defined
+* @{
+*/
+
+/** @brief Use the default Modbus TCP port (502)*/
 #define MB_TCP_DEFAULT_PORT    (502)
 
-#define MB_ADDRESS_BROADCAST    ( 0 )   /*! Modbus broadcast address. */
-#define MB_ADDRESS_MIN          ( 1 )   /*! Smallest possible slave address. */
-#define MB_ADDRESS_MAX          ( 247 ) /*! Biggest possible slave address. */
-/* 
- * Modbus TCP does not use any addresses. Fake the source address such 
+#define MB_ADDRESS_BROADCAST    ( 0 )   //!< Modbus broadcast address.
+#define MB_ADDRESS_MIN          ( 1 )   //!< Smallest possible slave address.
+#define MB_ADDRESS_MAX          ( 247 ) //!< Biggest possible slave address.
+/**
+ * @brief Modbus TCP does not use any addresses. Fake the source address such
  * that the processing part deals with this frame. 
  */
 #define MB_TCP_PSEUDO_ADDRESS   ( 255 )
-/* modbus tcp MBAP TID */
-#define MB_TCP_PROTOCOL_ID     ( 0 )   /* 0 = Modbus Protocol */
+/* Modbus tcp MBAP PID */
+#define MB_TCP_PROTOCOL_ID     ( 0 )   //!< 0: modbus Protocol
 
-/* modbus function code */
+/* Modbus function code */
 #define MB_FUNC_MIN                           ( 1 )
 #define MB_FUNC_MAX                           ( 127 )
 
@@ -43,20 +47,20 @@ extern "C" {
 #define MB_FUNC_ERROR                         ( 128 )
 
 // proto coils disc holding input limit
-#define MB_READBITS_CNT_MIN             ( 0x0001 )
-#define MB_READBITS_CNT_MAX             ( 0x07D0 )
-#define MB_WRITEBITS_CNT_MIN            ( 0x0001 )
-#define MB_WRITEBITS_CNT_MAX            ( 0x07B0 )
-#define MB_READREG_CNT_MIN              ( 0x0001 )
-#define MB_READREG_CNT_MAX              ( 0x007D )
-#define MB_WRITEREG_CNT_MIN             ( 0x0001 )
-#define MB_WRITEREG_CNT_MAX             ( 0x007B )
-#define MB_READWRITE_READREG_CNT_MIN    ( 0x0001 )
-#define MB_READWRITE_READREG_CNT_MAX    ( 0x007D )
-#define MB_READWRITE_WRITEREG_CNT_MIN   ( 0x0001 )
-#define MB_READWRITE_WRITEREG_CNT_MAX   ( 0x0079 )
+#define MB_READ_BITS_QUANTITY_MIN             ( 0x0001 )
+#define MB_READ_BITS_QUANTITY_MAX             ( 0x07D0 )
+#define MB_WRITE_BITS_QUANTITY_MIN            ( 0x0001 )
+#define MB_WRITE_BITS_QUANTITY_MAX            ( 0x07B0 )
+#define MB_READ_REGS_QUANTITY_MIN             ( 0x0001 )
+#define MB_READ_REG_QUANTITY_MAX              ( 0x007D )
+#define MB_WRITE_REGS_QUANTITY_MIN            ( 0x0001 )
+#define MB_WRITE_REGS_QUANTITY_MAX            ( 0x007B )
+#define MB_READWRITE_READ_REG_QUANTITY_MIN    ( 0x0001 )
+#define MB_READWRITE_READ_REG_QUANTITY_MAX    ( 0x007D )
+#define MB_READWRITE_WRITE_REGS_QUANTITY_MIN  ( 0x0001 )
+#define MB_READWRITE_WRITEREG_CNT_MAX         ( 0x0079 )
 
-/* ----------------------- Type definitions ---------------------------------*/
+
 typedef enum {
     MB_EX_NONE = 0x00,
     MB_EX_ILLEGAL_FUNCTION = 0x01,
@@ -70,14 +74,13 @@ typedef enum {
     MB_EX_GATEWAY_TGT_FAILED = 0x0B
 } MbException_t;
 
-/*************************modbus fram defined************************************/
 
-/*!
- * Constants which defines the format of a modbus frame. The example is
+/**
+ * @brief Constants which defines the format of a modbus frame. The example is
  * shown for a Modbus RTU/ASCII frame. Note that the Modbus PDU is not
  * dependent on the underlying transport.
  *
- * <code>
+ * @code
  * <------------------------ MODBUS SERIAL LINE ADU (1) ------------------->
  *              <----------- MODBUS PDU (1') ---------------->
  *  +-----------+---------------+----------------------------+-------------+
@@ -95,55 +98,58 @@ typedef enum {
  * (1') ... MB_PDU_SIZE_MAX     = 253
  * (2') ... MB_PDU_FUNC_OFFSET     = 0
  * (3') ... MB_PDU_DATA_OFFSET     = 1
- * </code>
+ *
+ *
+ * <------------------------ MODBUS TCP/IP ADU(1) ------------------------->
+ *                              <----------- MODBUS PDU (1') -------------->
+ *  +-----------+---------------+------------------------------------------+
+ *  | TID | PID | Length | UID  | Function Code  | Data                    |
+ *  +-----------+---------------+------------------------------------------+
+ *  |     |     |        |      |
+ * (2)   (3)   (4)      (5)    (6)
+ *
+ * (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte)
+ * (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
+ * (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)  ( UID + PDU length )
+ * (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
+ * (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
+ *
+ * (1)  ... Modbus TCP/IP Application Data Unit
+ * (1') ... Modbus Protocol Data Unit
+ * @endcode
  */
 
-/*!
-* <------------------------ MODBUS TCP/IP ADU(1) ------------------------->
-*                              <----------- MODBUS PDU (1') -------------->
-*  +-----------+---------------+------------------------------------------+
-*  | TID | PID | Length | UID  | Function Code  | Data                    |
-*  +-----------+---------------+------------------------------------------+
-*  |     |     |        |      |
-* (2)   (3)   (4)      (5)    (6)
-*
-* (2)  ... MB_TCP_ADU_TID_OFFSET          = 0 (Transaction Identifier - 2 Byte)
-* (3)  ... MB_TCP_ADU_PID_OFFSET          = 2 (Protocol Identifier - 2 Byte)
-* (4)  ... MB_TCP_ADU_LEN_OFFSET          = 4 (Number of bytes - 2 Byte)  ( UID + PDU length )
-* (5)  ... MB_TCP_ADU_UID_OFFSET          = 6 (Unit Identifier - 1 Byte)
-* (6)  ... MB_TCP_ADU_PDU_OFFSET          = 7 (Modbus PDU )
-*
-* (1)  ... Modbus TCP/IP Application Data Unit
-* (1') ... Modbus Protocol Data Unit
-*/
-
 /* RS232 / RS485 ADU -- TCP MODBUS ADU */
-#define MB_ADU_SIZE_MAX           256
-#define MB_ADU_ASCII_SIZE_MIN     3       /*!< Minimum size of a Modbus ASCII frame. */
-#define MB_ADU_RTU_SIZE_MIN       4       /*!< Minimum size of a Modbus RTU frame. */
-#define MB_ADU_TCP_SIZE_MIN       8       /*!< Minimum size of a Modbus TCP frame. */
+#define MB_ADU_SIZE_MAX           256     //!< maximum size of a Modbus ASCII frame.
+#define MB_ADU_ASCII_SIZE_MIN     3       //!< minimum size of a Modbus ASCII frame.
+#define MB_ADU_RTU_SIZE_MIN       4       //!< minimum size of a Modbus RTU frame.
+#define MB_ADU_TCP_SIZE_MIN       8       //!< minimum size of a Modbus TCP frame.
 
 /* MODBUS SERIAL RTU/ASCII Defines*/
-#define MB_SER_ADU_SIZE_ADDR   1  /*!< Size of ADDRESS field in ADU. */
-#define MB_SER_ADU_SIZE_CRC    2  /*!< Size of CRC field in ADU. */
-#define MB_SER_ADU_SIZE_LRC    1  /*!< Size of CRC field in ADU. */
-#define MB_SER_ADU_ADDR_OFFSET 0  /*!< Offset of slave address in Ser-ADU. */
-#define MB_SER_ADU_PDU_OFFSET  1  /*!< Offset of Modbus-PDU in Ser-ADU. */
+#define MB_SER_ADU_SIZE_ADDR   1  //!< Size of ADDRESS field in ADU.
+#define MB_SER_ADU_SIZE_CRC    2  //!< Size of CRC field in ADU.
+#define MB_SER_ADU_SIZE_LRC    1  //!< Size of CRC field in ADU.
+#define MB_SER_ADU_ADDR_OFFSET 0  //!< Offset of slave address in Ser-ADU.
+#define MB_SER_ADU_PDU_OFFSET  1  //!< Offset of Modbus-PDU in Ser-ADU.
 
 /* MODBUS TCP  ADU Defines*/
-#define MB_TCP_ADU_SIZE_MBAP           7   /*!< Size of MBAP header field in ADU. */
-#define MB_TCP_ADU_TID_OFFSET          0
-#define MB_TCP_ADU_PID_OFFSET          2
-#define MB_TCP_ADU_LEN_OFFSET          4
-#define MB_TCP_ADU_UID_OFFSET          6
-#define MB_TCP_ADU_PDU_OFFSET          7
+#define MB_TCP_ADU_SIZE_MBAP           7   //!< Size of MBAP header field in ADU.
+#define MB_TCP_ADU_TID_OFFSET          0   //!< Offset of MBAP header TID field in ADU.
+#define MB_TCP_ADU_PID_OFFSET          2   //!< Offset of MBAP header PID field in ADU.
+#define MB_TCP_ADU_LEN_OFFSET          4   //!< Offset of MBAP header LEN field in ADU.
+#define MB_TCP_ADU_UID_OFFSET          6   //!< Offset of MBAP header UID field in ADU.
+#define MB_TCP_ADU_PDU_OFFSET          7   //!< Offset of MBAP header PDU field in ADU.
 
-/* ----------------------- Defines ------------------------------------------*/
-#define MB_PDU_SIZE_MAX         253 /*!< Maximum size of a PDU. */
-#define MB_PDU_SIZE_MIN         1   /*!< Function Code */
-#define MB_PDU_SIZE_FUNCODE     1   /*!< Size of Function Code in PDU */
-#define MB_PDU_FUNCODE_OFF      0   /*!< Offset of function code in PDU. */
-#define MB_PDU_DATA_OFF         1   /*!< Offset for response data in PDU. */
+
+#define MB_PDU_SIZE_MAX         253 //!< Maximum size of a PDU.
+#define MB_PDU_SIZE_MIN         1   //!< Function Code
+#define MB_PDU_SIZE_FUNCODE     1   //!< Size of Function Code in PDU
+#define MB_PDU_FUNCODE_OFF      0   //!< Offset of function code in PDU.
+#define MB_PDU_DATA_OFF         1   //!< Offset for response data in PDU.
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

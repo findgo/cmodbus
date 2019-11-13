@@ -82,17 +82,17 @@ static MbErrCode_t __MbsRegInputCB(MbReg_t *pRegs, uint8_t *pRegBuffer, uint16_t
  * @brief   function handlers:  read holding register 
  * @param   pRegs - real slave register pointer
  * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
+ * @param   pLen - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     uint16_t address;
     uint16_t quantity;
     uint8_t *pFrameCur;
     MbException_t status = MB_EX_NONE;
     MbErrCode_t regStatus;
 
-    if (*len == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
+    if (*pLen == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8);
         address |= (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF + 1]);
         quantity = (uint16_t) (pPdu[MB_PDU_FUNC_READ_REGCNT_OFF] << 8);
@@ -101,7 +101,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
         /* Check if the number of registers to read is valid. If not
          * return Modbus illegal data value exception. 
          */
-        if ((quantity >= MB_READREG_CNT_MIN) && (quantity <= MB_READREG_CNT_MAX)) {
+        if ((quantity >= MB_READ_REGS_QUANTITY_MIN) && (quantity <= MB_READ_REG_QUANTITY_MAX)) {
             /* Set the current PDU data pointer to the beginning. */
             pFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
             /* First byte contains the function code. */
@@ -109,7 +109,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
             /* Second byte in the response contain the number of bytes. */
             *pFrameCur++ = (uint8_t) (quantity * 2);
 
-            *len = MB_PDU_FUNCODE_OFF + 1 + 1;
+            *pLen = MB_PDU_FUNCODE_OFF + 1 + 1;
 
             /* Make callback to fill the buffer. */
             regStatus = __MbsRegHoldingCB(pRegs, pFrameCur, address, quantity, MB_REG_READ);
@@ -117,7 +117,7 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
             if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
-                *len += quantity * 2;
+                *pLen += quantity * 2;
             }
         } else {
             status = MB_EX_ILLEGAL_DATA_VALUE;
@@ -133,15 +133,15 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
  * @brief   function handlers:  write holding register 
  * @param   pRegs - real slave register pointer
  * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
+ * @param   pLen - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     uint16_t address;
     MbException_t status = MB_EX_NONE;
     MbErrCode_t regStatus;
 
-    if (*len == (MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN)) {
+    if (*pLen == (MB_PDU_FUNC_WRITE_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_ADDR_OFF] << 8);
         address |= (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_ADDR_OFF + 1]);
 
@@ -164,24 +164,24 @@ MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
  * @brief   function handlers:  write multi holding register 
  * @param   pRegs - real slave register pointer
  * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
+ * @param   pLen - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     uint16_t address;
     uint16_t quantity;
     uint8_t nBytes;
     MbException_t status = MB_EX_NONE;
     MbErrCode_t regStatus;
 
-    if (*len >= (MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN)) {
+    if (*pLen >= (MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_MUL_ADDR_OFF] << 8);
         address |= (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_MUL_ADDR_OFF + 1]);
         quantity = (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF] << 8);
         quantity |= (uint16_t) (pPdu[MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF + 1]);
         nBytes = pPdu[MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF];
 
-        if ((quantity >= MB_WRITEREG_CNT_MIN) && (quantity <= MB_WRITEREG_CNT_MAX)
+        if ((quantity >= MB_WRITE_REGS_QUANTITY_MIN) && (quantity <= MB_WRITE_REGS_QUANTITY_MAX)
             && (nBytes == (uint8_t) (2 * quantity))) {
             /* Make callback to update the register values. */
             regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_WRITE_MUL_VALUES_OFF],
@@ -194,7 +194,7 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_
                  * address and the quantity of registers. We reuse the
                  * old values in the buffer because they are still valid.
                  */
-                *len = MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF;
+                *pLen = MB_PDU_FUNC_WRITE_MUL_BYTECNT_OFF;
             }
         } else {
             status = MB_EX_ILLEGAL_DATA_VALUE;
@@ -211,10 +211,10 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_
  * @brief   function handlers:  reand and write multi holding register 
  * @param   pRegs - real slave register pointer
  * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
+ * @param   pLen - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     uint16_t readAddress;
     uint16_t readQuantity;
     uint16_t writeAddress;
@@ -224,7 +224,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
     MbException_t status = MB_EX_NONE;
     MbErrCode_t regStatus;
 
-    if (*len >= (MB_PDU_FUNC_READWRITE_SIZE_MIN + MB_PDU_SIZE_MIN)) {
+    if (*pLen >= (MB_PDU_FUNC_READWRITE_SIZE_MIN + MB_PDU_SIZE_MIN)) {
         readAddress = (uint16_t) (pPdu[MB_PDU_FUNC_READWRITE_READ_ADDR_OFF] << 8U);
         readAddress |= (uint16_t) (pPdu[MB_PDU_FUNC_READWRITE_READ_ADDR_OFF + 1]);
         readQuantity = (uint16_t) (pPdu[MB_PDU_FUNC_READWRITE_READ_REGCNT_OFF] << 8U);
@@ -235,8 +235,8 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
         writeQuantity |= (uint16_t) (pPdu[MB_PDU_FUNC_READWRITE_WRITE_REGCNT_OFF + 1]);
         WriteNBytes = pPdu[MB_PDU_FUNC_READWRITE_BYTECNT_OFF];
 
-        if ((readQuantity >= MB_READWRITE_READREG_CNT_MIN) && (readQuantity <= MB_READWRITE_READREG_CNT_MAX)
-            && (writeQuantity >= MB_READWRITE_WRITEREG_CNT_MIN) && (writeQuantity <= MB_READWRITE_WRITEREG_CNT_MAX)
+        if ((readQuantity >= MB_READWRITE_READ_REG_QUANTITY_MIN) && (readQuantity <= MB_READWRITE_READ_REG_QUANTITY_MAX)
+            && (writeQuantity >= MB_READWRITE_WRITE_REGS_QUANTITY_MIN) && (writeQuantity <= MB_READWRITE_WRITEREG_CNT_MAX)
             && ((2 * writeQuantity) == WriteNBytes)) {
             /* Make callback to update the register values. */
             regStatus = __MbsRegHoldingCB(pRegs, &pPdu[MB_PDU_FUNC_READWRITE_WRITE_VALUES_OFF],
@@ -249,7 +249,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
                 /* Second byte in the response contain the number of bytes. */
                 *pFrameCur++ = (uint8_t) (readQuantity * 2);
 
-                *len = MB_PDU_FUNCODE_OFF + 1 + 1;
+                *pLen = MB_PDU_FUNCODE_OFF + 1 + 1;
 
                 /* Make the read callback. */
                 regStatus = __MbsRegHoldingCB(pRegs, pFrameCur, readAddress, readQuantity, MB_REG_READ);
@@ -257,7 +257,7 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
                 if (regStatus != MB_ESUCCESS) {
                     status = MbError2Exception(regStatus);
                 } else {
-                    *len += 2 * readQuantity;
+                    *pLen += 2 * readQuantity;
                 }
             } else {
                 status = MbError2Exception(regStatus);
@@ -277,24 +277,24 @@ MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint1
  * @brief   function handlers:  read input register 
  * @param   pRegs - real slave register pointer
  * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
+ * @param   pLen - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len) {
+MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLen) {
     uint16_t address;
     uint16_t quantity;
     uint8_t *pFrameCur;
     MbException_t status = MB_EX_NONE;
     MbErrCode_t regStatus;
 
-    if (*len == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
+    if (*pLen == (MB_PDU_FUNC_READ_SIZE + MB_PDU_SIZE_MIN)) {
         address = (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF] << 8);
         address |= (uint16_t) (pPdu[MB_PDU_FUNC_READ_ADDR_OFF + 1]);
         quantity = (uint16_t) (pPdu[MB_PDU_FUNC_READ_REGCNT_OFF] << 8);
         quantity |= (uint16_t) (pPdu[MB_PDU_FUNC_READ_REGCNT_OFF + 1]);
 
         /* Check if the number of registers to read is valid. If not return Modbus illegal data value exception. */
-        if ((quantity >= MB_READREG_CNT_MIN) && (quantity < MB_READREG_CNT_MAX)) {
+        if ((quantity >= MB_READ_REGS_QUANTITY_MIN) && (quantity < MB_READ_REG_QUANTITY_MAX)) {
 
             /* Set the current PDU data pointer to the beginning. */
             pFrameCur = &pPdu[MB_PDU_FUNCODE_OFF];
@@ -303,14 +303,14 @@ MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *le
             /* Second byte in the response contain the number of bytes. */
             *pFrameCur++ = (uint8_t) (quantity * 2);
 
-            *len = MB_PDU_FUNCODE_OFF + 1 + 1;
+            *pLen = MB_PDU_FUNCODE_OFF + 1 + 1;
 
             regStatus = __MbsRegInputCB(pRegs, pFrameCur, address, quantity);
             /* If an error occured convert it into a Modbus exception. */
             if (regStatus != MB_ESUCCESS) {
                 status = MbError2Exception(regStatus);
             } else {
-                *len += quantity * 2;
+                *pLen += quantity * 2;
             }
         } else {
             status = MB_EX_ILLEGAL_DATA_VALUE;
