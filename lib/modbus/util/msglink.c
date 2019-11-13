@@ -34,7 +34,7 @@ void *MsgAlloc(const uint16_t msgLen) {
     if (hdr) {
         hdr->next = NULL;
         hdr->len = msgLen;
-        hdr->mark = 1; // not on qbox list
+        hdr->mark = 0; // not on qbox list
         hdr->spare = 0;
 
         return ((void *) (hdr + 1)); // pass head, point to the data

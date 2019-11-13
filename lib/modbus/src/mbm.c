@@ -29,7 +29,7 @@ static MsgQ_t mbm_dev_head = NULL;
 
 //static msgboxstatic_t msgboxHandlebuf = MSGBOX_STATIC_INIT(MSGBOX_UNLIMITED_CAP);
 
-Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
+MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
     MbErrorCode_t eStatus = MB_ENOERR;
     MbmDev_t *dev;
 
@@ -41,10 +41,10 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
     switch (eMode) {
 #if MB_RTU_ENABLED > 0
         case MB_RTU:
-            dev->pMbStartCur = MbmRTUStart;
-            dev->pMbStopCur = MbmRTUStop;
-            dev->pMbCloseCur = MbmRTUClose;
-            dev->pMbSendCur = MbmRTUSend;
+            dev->pStartCur = MbmRTUStart;
+            dev->pStopCur = MbmRTUStop;
+            dev->pCloseCur = MbmRTUClose;
+            dev->pSendCur = MbmRTUSend;
             dev->pMbReceivedCur = MbmRTUReceive;
 
             eStatus = MbmRTUInit(dev, ucPort, ulBaudRate, eParity);
@@ -53,10 +53,10 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
 
 #if MB_ASCII_ENABLED > 0
         case MB_ASCII:
-            dev->pMbStartCur = MbmASCIIStart;
-            dev->pMbStopCur = MbmASCIIStop;
-            dev->pMbCloseCur = MbmASCIIClose;
-            dev->pMbSendCur = MbmASCIISend;
+            dev->pStartCur = MbmASCIIStart;
+            dev->pStopCur = MbmASCIIStop;
+            dev->pCloseCur = MbmASCIIClose;
+            dev->pSendCur = MbmASCIISend;
             dev->pMbReceivedCur = MbmASCIIReceive;
 
             eStatus = MbmASCIIInit(dev, ucPort, ulBaudRate, eParity);
@@ -79,7 +79,7 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
     dev->mode = eMode;
     dev->T50PerCharater = (ulBaudRate > 19200) ? 10 : (220000 / ulBaudRate);
 
-    dev->devstate = DEV_STATE_DISABLED;
+    dev->state = DEV_STATE_DISABLED;
 
     dev->nodehead = NULL;
 
@@ -106,7 +106,7 @@ Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity
         return NULL;
     }
     MsgQPutFront(&mbm_dev_head, dev);
-    return (Mbmhandle_t) dev;
+    return (MbmHandle_t) dev;
 }
 
 // must be delete all the request and node
@@ -130,7 +130,7 @@ void MbmFree(uint8_t ucPort) {
     */
 }
 
-MbErrorCode_t MbmSetPara(Mbmhandle_t dev, uint8_t retry, uint32_t replytimeout,
+MbErrorCode_t MbmSetPara(MbmHandle_t dev, uint8_t retry, uint32_t replytimeout,
                          uint32_t delaypolltime, uint32_t broadcastturntime) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
@@ -164,18 +164,18 @@ MbErrorCode_t MbmSetPara(Mbmhandle_t dev, uint8_t retry, uint32_t replytimeout,
 }
 
 /* 创建一个独立节点和寄存器列表 */
-MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
-                      uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
-                      uint16_t reg_input_addr_start, uint16_t reg_input_num,
-                      uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
-                      uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num) {
+MbmNode_t *MbmNodeNew(uint8_t slaveID,
+                      uint16_t holdingAddrStart, uint16_t holdingNum,
+                      uint16_t inputAddrStart, uint16_t inputNum,
+                      uint16_t coilsAddrStart, uint16_t coilsNum,
+                      uint16_t discreteAddrStart, uint16_t discreteNum) {
     uint32_t lens;
     uint8_t *regbuf;
     MbReg_t *reg;
     MbmNode_t *node;
 
     /* check slave address valid */
-    if (slaveaddr < MB_ADDRESS_MIN || slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID < MB_ADDRESS_MIN || slaveID > MB_ADDRESS_MAX)
         return NULL;
 
     if ((node = (MbmNode_t *) MsgAlloc(sizeof(MbmNode_t))) == NULL) {
@@ -183,7 +183,7 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
     }
     memset(node, 0, sizeof(MbmNode_t));
 
-    lens = MbRegBufSizeCal(reg_holding_num, reg_input_num, reg_coils_num, reg_discrete_num);
+    lens = MbRegBufSizeCal(holdingNum, inputNum, coilsNum, discreteNum);
     regbuf = (uint8_t *) KMalloc(lens);
     if (regbuf == NULL) {
         MsgDealloc(node);
@@ -193,30 +193,30 @@ MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
 
     reg = (MbReg_t *) &node->regs;
 
-    reg->reg_holding_addr_start = reg_holding_addr_start;
-    reg->reg_holding_num = reg_holding_num;
+    reg->holdingAddrStart = holdingAddrStart;
+    reg->holdingNum = holdingNum;
 
-    reg->reg_input_addr_start = reg_input_addr_start;
-    reg->reg_input_num = reg_input_num;
+    reg->inputAddrStart = inputAddrStart;
+    reg->inputNum = inputNum;
 
-    reg->reg_coils_addr_start = reg_coils_addr_start;
-    reg->reg_coils_num = reg_coils_num;
+    reg->coilsAddrStart = coilsAddrStart;
+    reg->coilsNum = coilsNum;
 
-    reg->reg_discrete_addr_start = reg_discrete_addr_start;
-    reg->reg_discrete_num = reg_discrete_num;
+    reg->discreteAddrStart = discreteAddrStart;
+    reg->discreteNum = discreteNum;
 
-    reg->pReghold = (uint16_t *) &regbuf[0];
-    lens = reg_holding_num * sizeof(uint16_t);
+    reg->pHolding = (uint16_t *) &regbuf[0];
+    lens = holdingNum * sizeof(uint16_t);
 
-    reg->pReginput = (uint16_t *) &regbuf[lens];
-    lens += reg_input_num * sizeof(uint16_t);
+    reg->pInput = (uint16_t *) &regbuf[lens];
+    lens += inputNum * sizeof(uint16_t);
 
-    reg->pRegCoil = (uint8_t *) &regbuf[lens];
-    lens += (reg_coils_num >> 3) + (((reg_coils_num & 0x07) > 0) ? 1 : 0);
+    reg->pCoil = (uint8_t *) &regbuf[lens];
+    lens += (coilsNum >> 3) + (((coilsNum & 0x07) > 0) ? 1 : 0);
 
-    reg->pRegDisc = (uint8_t *) &regbuf[lens];
+    reg->pDiscrete = (uint8_t *) &regbuf[lens];
 
-    node->slaveaddr = slaveaddr;
+    node->slaveID = slaveID;
 
     return node;
 }
@@ -232,25 +232,25 @@ void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg) {
 /* 释放节点，释放由MbmNodeNew创建的节点内存 */
 void MbmNodeFree(MbmNode_t *node) {
     if (node) {
-        if (node->regs.pReghold)
-            KFree(node->regs.pReghold);
+        if (node->regs.pHolding)
+            KFree(node->regs.pHolding);
         MsgFree(node);
     }
 }
 
 /* 将节点加入到主机，由MbmNodeNew创建的节点 */
-MbErrorCode_t MbmAddNode(Mbmhandle_t dev, MbmNode_t *node) {
+MbErrorCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node) {
     MbmNode_t *srhnode;
 
     if (dev == NULL || node == NULL)
         return MB_EINVAL;
 
     /* check slave address valid */
-    if (node->slaveaddr<MB_ADDRESS_MIN || node->slaveaddr>MB_ADDRESS_MAX)
+    if (node->slaveID<MB_ADDRESS_MIN || node->slaveID>MB_ADDRESS_MAX)
         return MB_EILLNODEADDR;
 
     // check node on the list?
-    srhnode = MbmSearchNode(dev, node->slaveaddr);
+    srhnode = MbmSearchNode(dev, node->slaveID);
     if (srhnode)
         return MB_ENODEEXIST;
 
@@ -260,7 +260,7 @@ MbErrorCode_t MbmAddNode(Mbmhandle_t dev, MbmNode_t *node) {
 }
 
 /* 将节点从主机删除 */
-MbErrorCode_t MbmRemoveNode(Mbmhandle_t dev, uint8_t slaveaddr) {
+MbErrorCode_t MbmRemoveNode(MbmHandle_t dev, uint8_t slaveID) {
     MbmNode_t *srchnode;
     MbmNode_t *prenode = NULL;
 
@@ -268,7 +268,7 @@ MbErrorCode_t MbmRemoveNode(Mbmhandle_t dev, uint8_t slaveaddr) {
         return MB_EINVAL;
 
     MsgQ_for_each_msg(&(((MbmDev_t *) dev)->nodehead), srchnode) {
-        if (srchnode->slaveaddr == slaveaddr) // find it
+        if (srchnode->slaveID == slaveID) // find it
             break;
 
         prenode = srchnode;
@@ -279,20 +279,20 @@ MbErrorCode_t MbmRemoveNode(Mbmhandle_t dev, uint8_t slaveaddr) {
         MsgQExtract(&(((MbmDev_t *) dev)->nodehead), srchnode, prenode);
     }
     // init
-    srchnode->slaveaddr = 0;
+    srchnode->slaveID = 0;
 
     return MB_ENOERR;
 }
 
 /* search node on the host list ? */
-MbmNode_t *MbmSearchNode(Mbmhandle_t dev, uint8_t slaveaddr) {
+MbmNode_t *MbmSearchNode(MbmHandle_t dev, uint8_t slaveID) {
     MbmNode_t *srh;
 
     if (dev == NULL)
         return NULL;
 
     MsgQ_for_each_msg(&(((MbmDev_t *) dev)->nodehead), srh) {
-        if (srh->slaveaddr == slaveaddr)
+        if (srh->slaveID == slaveID)
             break;
     }
 
@@ -300,42 +300,42 @@ MbmNode_t *MbmSearchNode(Mbmhandle_t dev, uint8_t slaveaddr) {
 }
 
 
-MbErrorCode_t MbmStart(Mbmhandle_t dev) {
+MbErrorCode_t MbmStart(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
-    if (pdev->devstate == DEV_STATE_NOT_INITIALIZED)
+    if (pdev->state == DEV_STATE_NOT_INITIALIZED)
         return MB_EILLSTATE;
 
-    if (pdev->devstate == DEV_STATE_DISABLED) {
+    if (pdev->state == DEV_STATE_DISABLED) {
         /* Activate the protocol stack. */
-        pdev->pMbStartCur(dev);
-        pdev->devstate = DEV_STATE_ENABLED;
+        pdev->pStartCur(dev);
+        pdev->state = DEV_STATE_ENABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmStop(Mbmhandle_t dev) {
+MbErrorCode_t MbmStop(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
-    if (pdev->devstate == DEV_STATE_NOT_INITIALIZED)
+    if (pdev->state == DEV_STATE_NOT_INITIALIZED)
         return MB_EILLSTATE;
 
-    if (pdev->devstate == DEV_STATE_ENABLED) {
-        pdev->pMbStopCur(dev);
-        pdev->devstate = DEV_STATE_DISABLED;
+    if (pdev->state == DEV_STATE_ENABLED) {
+        pdev->pStopCur(dev);
+        pdev->state = DEV_STATE_DISABLED;
     }
 
     return MB_ENOERR;
 }
 
-MbErrorCode_t MbmClose(Mbmhandle_t dev) {
+MbErrorCode_t MbmClose(MbmHandle_t dev) {
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
     // must be stop first then it can close
-    if (pdev->devstate == DEV_STATE_DISABLED) {
-        if (pdev->pMbCloseCur != NULL) {
-            pdev->pMbCloseCur(dev);
+    if (pdev->state == DEV_STATE_DISABLED) {
+        if (pdev->pCloseCur != NULL) {
+            pdev->pCloseCur(dev);
         }
 
         return MB_ENOERR;
@@ -344,7 +344,7 @@ MbErrorCode_t MbmClose(Mbmhandle_t dev) {
     return MB_EILLSTATE;
 }
 
-MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req) {
+MbReqResult_t MbmSend(MbmHandle_t dev, MbmReq_t *req) {
     uint16_t crc_lrc;
     MbmDev_t *pdev = (MbmDev_t *) dev;
 
@@ -404,7 +404,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
     pMbmParseRspHandler handle;
 
     /* Check if the protocol stack is ready. */
-    if (dev->devstate != DEV_STATE_ENABLED) {
+    if (dev->state != DEV_STATE_ENABLED) {
         return MB_EILLSTATE;
     }
 
@@ -415,7 +415,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             break;
         case MBM_XMIT:
             req = MsgQPeek(&(dev->Reqreadyhead)); // peek ready list ,any request on the list?
-            if (req && (dev->pMbSendCur(dev, req->adu, req->adulength) == MB_ENOERR)) {
+            if (req && (dev->pSendCur(dev, req->adu, req->adulength) == MB_ENOERR)) {
                 if (dev->mode == MB_RTU) {
                     dev->XmitingTime = dev->T50PerCharater * 50 * req->adulength / 1000 + 1;
                 } else {
@@ -439,12 +439,12 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             result = dev->pMbReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
             if (result == MBR_ENOERR) {
                 /* not for us ,continue to wait response */
-                if ((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveaddr != header.introute.slaveid)) {
+                if ((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveID != header.introute.slaveID)) {
                     dev->Pollstate = MBM_WAITRSP;
                     break;
                 }
 
-                /* funcode and slaveid same, this frame for us and then excute it*/
+                /* funcode and slaveID same, this frame for us and then excute it*/
                 if (ucFunctionCode & 0x80) { // 异常
                     result = MBR_ERSPEXCEPTOIN;
                     exception = (MbException_t) pRemainFrame[0]; //异常码
@@ -467,7 +467,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             if (result == MBR_EINFUNCTION) { // 无此功能码
                 MbmReqMsgDelete(req); // delete request
             } else {
-                if ((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0)) {// only once
+                if ((req->slaveID == MB_ADDRESS_BROADCAST) || (req->scanrate == 0)) {// only once
                     MbmReqMsgDelete(req);
                 } else { // move to pend list
                     MsgQPut(&(dev->Reqpendinghead), req);
@@ -485,7 +485,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
                 if (req->node->cb)
                     req->node->cb(result, MB_EX_NONE, req); //执行回调
 
-                if ((req->slaveaddr == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
+                if ((req->slaveID == MB_ADDRESS_BROADCAST) || (req->scanrate == 0))// only once
                     MbmReqMsgDelete(req);
                 else {// move to pend list
                     MsgQPut(&(dev->Reqpendinghead), req);
@@ -500,7 +500,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             req = MsgQPeek(&(dev->Reqreadyhead));
             if (req == NULL) { /* some err happen ,then no request in list*/
                 dev->Pollstate = MBM_DELYPOLL;
-            } else if (req->slaveaddr == MB_ADDRESS_BROADCAST) { // broadcast ,remove from pend list soon
+            } else if (req->slaveID == MB_ADDRESS_BROADCAST) { // broadcast ,remove from pend list soon
                 MsgQPop(&(dev->Reqreadyhead));
                 MbmReqMsgDelete(req);
                 dev->Pollstate = MBM_BROADCASTTURN;

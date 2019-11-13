@@ -22,32 +22,32 @@ typedef enum {
 #if MB_RTU_ENABLED > 0
 #if MB_MASTER_ENABLED > 0
 
-MbErrorCode_t MbmRTUInit(Mbmhandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+MbErrorCode_t MbmRTUInit(MbmHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
-void MbmRTUStart(Mbmhandle_t dev);
+void MbmRTUStart(MbmHandle_t dev);
 
-void MbmRTUStop(Mbmhandle_t dev);
+void MbmRTUStop(MbmHandle_t dev);
 
-void MbmRTUClose(Mbmhandle_t dev);
+void MbmRTUClose(MbmHandle_t dev);
 
 MbReqResult_t
-MbmRTUReceive(Mbmhandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
+MbmRTUReceive(MbmHandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain, uint16_t *premainLength);
 
-MbReqResult_t MbmRTUSend(Mbmhandle_t dev, const uint8_t *pAdu, uint16_t usLength);
+MbReqResult_t MbmRTUSend(MbmHandle_t dev, const uint8_t *pAdu, uint16_t usLength);
 
-void MbmRTUReceiveFSM(Mbmhandle_t dev);
+void MbmRTUReceiveFSM(MbmHandle_t dev);
 
-void MbmRTUTransmitFSM(Mbmhandle_t dev);
+void MbmRTUTransmitFSM(MbmHandle_t dev);
 
-void MbmRTUTimerT15Expired(Mbmhandle_t dev);
+void MbmRTUTimerT15Expired(MbmHandle_t dev);
 
-void MbmRTUTimerT35Expired(Mbmhandle_t dev);
+void MbmRTUTimerT35Expired(MbmHandle_t dev);
 
 #endif
 
 #if MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+MbErrorCode_t MbsRTUInit(Mbshandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
 void MbsRTUStart(Mbshandle_t dev);
 

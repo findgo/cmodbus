@@ -16,8 +16,8 @@
 static void prvNvicInit(void);
 
 #if MB_MASTER_ENABLED > 0
-Mbmhandle_t deviceM0;
-Mbmhandle_t deviceM1;
+MbmHandle_t deviceM0;
+MbmHandle_t deviceM1;
 
 static void nodeReqResultCB(MbReqResult_t result, MbException_t eException, void *req) {
     mo_logln(DEBUG, "error count: %d, result: %d", result, ((MbmReq_t *) req)->errcnt);

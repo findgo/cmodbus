@@ -7,7 +7,7 @@
 #include "mbmbuf.h"
 
 /* ok */
-MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                       uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate) {
     uint8_t *pAdu;
     uint16_t len;
@@ -16,20 +16,20 @@ MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
     MbReqResult_t result;
 
     /* check slave address valid */
-    if (slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
     if (Regcnt < MB_READREG_CNT_MIN || Regcnt > MB_READREG_CNT_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
-    if (slaveaddr != MB_ADDRESS_BROADCAST) {
+    if (slaveID != MB_ADDRESS_BROADCAST) {
         /* check node in host list */
-        node = MbmSearchNode(dev, slaveaddr);
+        node = MbmSearchNode(dev, slaveID);
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.reg_holding_addr_start)
-            || ((RegStartAddr + Regcnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+        if ((RegStartAddr < node->regs.holdingAddrStart)
+            || ((RegStartAddr + Regcnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
             return MBR_ENOREG;
     }
 
@@ -39,7 +39,7 @@ MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveID, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF] = MB_FUNC_READ_HOLDING_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF] = RegStartAddr >> 8;
@@ -51,7 +51,7 @@ MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     req->node = node;
     req->errcnt = 0;
-    req->slaveaddr = slaveaddr;
+    req->slaveID = slaveID;
     req->funcode = MB_FUNC_READ_HOLDING_REGISTER;
     req->regaddr = RegStartAddr;
     req->regcnt = Regcnt;
@@ -66,7 +66,7 @@ MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 }
 
 /* ok */
-MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                       uint16_t RegAddr, uint16_t val) {
     uint8_t *pAdu;
     uint16_t len;
@@ -75,17 +75,17 @@ MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
     MbReqResult_t result;
 
     /* check slave address valid */
-    if (slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* if slave address not a broadcast address, search in the host?*/
-    if (slaveaddr != MB_ADDRESS_BROADCAST) {
+    if (slaveID != MB_ADDRESS_BROADCAST) {
         /* check node in host list */
-        node = MbmSearchNode(dev, slaveaddr);
+        node = MbmSearchNode(dev, slaveID);
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegAddr < node->regs.reg_holding_addr_start)
-            || ((RegAddr + 1) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+        if ((RegAddr < node->regs.holdingAddrStart)
+            || ((RegAddr + 1) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
             return MBR_ENOREG;
     }
 
@@ -95,7 +95,7 @@ MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
+    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveID, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF] = MB_FUNC_WRITE_REGISTER;
     pAdu[len + MB_PDU_FUNC_WRITE_ADDR_OFF] = RegAddr >> 8;
@@ -107,7 +107,7 @@ MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     req->node = node;
     req->errcnt = 0;
-    req->slaveaddr = slaveaddr;
+    req->slaveID = slaveID;
     req->funcode = MB_FUNC_WRITE_REGISTER;
     req->regaddr = RegAddr;
     req->regcnt = 1;
@@ -122,7 +122,7 @@ MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 }
 
 /* ok */
-MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                          uint16_t RegStartAddr, uint16_t Regcnt,
                                          uint16_t *valbuf, uint16_t valcnt) {
     uint8_t *pAdu;
@@ -133,24 +133,24 @@ MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
     uint8_t ucByteCount;
 
     /* check slave address valid */
-    if (slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     if ((valcnt < MB_WRITEREG_CNT_MIN)
         || (valcnt > MB_WRITEREG_CNT_MAX)
         || Regcnt != valcnt)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
-    if (slaveaddr != MB_ADDRESS_BROADCAST) {
+    if (slaveID != MB_ADDRESS_BROADCAST) {
         /* check node in host list */
-        node = MbmSearchNode(dev, slaveaddr);
+        node = MbmSearchNode(dev, slaveID);
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.reg_holding_addr_start)
-            || ((RegStartAddr + valcnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+        if ((RegStartAddr < node->regs.holdingAddrStart)
+            || ((RegStartAddr + valcnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
             return MBR_ENOREG;
     }
-    /* slaveaddr +((PDU)funcode + startaddr + regcnt + bytenum + regvalue_list)  */
+    /* slaveID +((PDU)funcode + startaddr + regcnt + bytenum + regvalue_list)  */
     pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + valcnt * 2;
     req = MbmReqMsgNew(((MbmDev_t *) dev)->mode, pdulengh);
     if (req == NULL)
@@ -158,7 +158,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveaddr, pAdu, pdulengh);
+    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveID, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF] = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_WRITE_MUL_ADDR_OFF] = RegStartAddr >> 8;
@@ -180,7 +180,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     req->node = node;
     req->errcnt = 0;
-    req->slaveaddr = slaveaddr;
+    req->slaveID = slaveID;
     req->funcode = MB_FUNC_WRITE_MULTIPLE_REGISTERS;
     req->regaddr = RegStartAddr;
     req->regcnt = Regcnt;
@@ -195,7 +195,7 @@ MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 }
 
 /* ok */
-MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdInputRegister(MbmHandle_t dev, uint8_t slaveID,
                                     uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate) {
     uint8_t *pAdu;
     uint16_t len;
@@ -204,20 +204,20 @@ MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
     MbReqResult_t result;
 
     /* check slave address valid */
-    if (slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
     /* check request count range( 0 - 0x7d ) */
     if (Regcnt < MB_READREG_CNT_MIN || Regcnt > MB_READREG_CNT_MAX)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
-    if (slaveaddr != MB_ADDRESS_BROADCAST) {
+    if (slaveID != MB_ADDRESS_BROADCAST) {
         /* check node in host list */
-        node = MbmSearchNode(dev, slaveaddr);
+        node = MbmSearchNode(dev, slaveID);
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.reg_input_addr_start)
-            || ((RegStartAddr + Regcnt) > (node->regs.reg_input_addr_start + node->regs.reg_input_num)))
+        if ((RegStartAddr < node->regs.inputAddrStart)
+            || ((RegStartAddr + Regcnt) > (node->regs.inputAddrStart + node->regs.inputNum)))
             return MBR_ENOREG;
     }
 
@@ -227,7 +227,7 @@ MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveaddr, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
+    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveID, pAdu, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
 
     pAdu[len + MB_PDU_FUNCODE_OFF] = MB_FUNC_READ_INPUT_REGISTER;
     pAdu[len + MB_PDU_FUNC_READ_ADDR_OFF] = RegStartAddr >> 8;
@@ -239,7 +239,7 @@ MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     req->node = node;
     req->errcnt = 0;
-    req->slaveaddr = slaveaddr;
+    req->slaveID = slaveID;
     req->funcode = MB_FUNC_READ_INPUT_REGISTER;
     req->regaddr = RegStartAddr;
     req->regcnt = Regcnt;
@@ -254,7 +254,7 @@ MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 }
 
 /* ok */
-MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                            uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                            uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                            uint16_t *valbuf, uint16_t valcnt) {
@@ -266,7 +266,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
     uint16_t ucbyteCount;
 
     /* check slave address valid */
-    if (slaveaddr > MB_ADDRESS_MAX)
+    if (slaveID > MB_ADDRESS_MAX)
         return MBR_EINNODEADDR;
 
     if (RegReadCnt < MB_READWRITE_READREG_CNT_MIN || RegReadCnt > MB_READWRITE_READREG_CNT_MAX
@@ -274,23 +274,23 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
         || RegWriteCnt != valcnt)
         return MBR_EINVAL;
     /* if slave address not a broadcast address, search in the host?*/
-    if (slaveaddr != MB_ADDRESS_BROADCAST) {
+    if (slaveID != MB_ADDRESS_BROADCAST) {
         /* check node in host list */
-        node = MbmSearchNode(dev, slaveaddr);
+        node = MbmSearchNode(dev, slaveID);
         if (node == NULL)
             return MBR_ENODENOSETUP;
 
         /* check register addres in range*/
-        if ((RegReadStartAddr < node->regs.reg_holding_addr_start)
-            || ((RegReadStartAddr + RegReadCnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+        if ((RegReadStartAddr < node->regs.holdingAddrStart)
+            || ((RegReadStartAddr + RegReadCnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
             return MBR_ENOREG;
 
-        if ((RegWriteStartAddr < node->regs.reg_holding_addr_start)
-            || ((RegWriteStartAddr + RegWriteCnt) > (node->regs.reg_holding_addr_start + node->regs.reg_holding_num)))
+        if ((RegWriteStartAddr < node->regs.holdingAddrStart)
+            || ((RegWriteStartAddr + RegWriteCnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
             return MBR_ENOREG;
     }
 
-    /* slaveaddr +((PDU) funcode + Readstartaddr + Readregcnt 
+    /* slaveID +((PDU) funcode + Readstartaddr + Readregcnt
      *    + Writestartaddr + Writeregcnt + bytenum + Writeregvalue_list)  */
     pdulengh = MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READWRITE_SIZE_MIN + valcnt * 2;
     req = MbmReqMsgNew(((MbmDev_t *) dev)->mode, pdulengh);
@@ -299,7 +299,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     pAdu = &(req->adu[0]);
     // set header and get head size
-    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveaddr, pAdu, pdulengh);
+    len = MbmBuildHead(((MbmDev_t *) dev)->mode, 0, slaveID, pAdu, pdulengh);
 
     pAdu[len + MB_PDU_FUNCODE_OFF] = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
     pAdu[len + MB_PDU_FUNC_READWRITE_READ_ADDR_OFF] = RegReadStartAddr >> 8;
@@ -325,7 +325,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 
     req->node = node;
     req->errcnt = 0;
-    req->slaveaddr = slaveaddr;
+    req->slaveID = slaveID;
     req->funcode = MB_FUNC_READWRITE_MULTIPLE_REGISTERS;
     req->regaddr = RegReadStartAddr;
     req->regcnt = RegReadCnt;
@@ -359,7 +359,7 @@ MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *regs,
     if ((remainLength != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(regs->pHolding, ReqRegAddr - regs->holdingAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }
@@ -376,7 +376,7 @@ MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *regs,
     if (ReqRegAddr != ((premain[0] << 8) | premain[1]))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pReghold, ReqRegAddr - regs->reg_holding_addr_start, (uint8_t *) &premain[2], 1);
+    __MbmLocalWrRegRegs(regs->pHolding, ReqRegAddr - regs->holdingAddrStart, (uint8_t *) &premain[2], 1);
 
     return MBR_ENOERR;
 }
@@ -413,7 +413,7 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
     if ((remainLength != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pReginput, ReqRegAddr - regs->reg_input_addr_start, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(regs->pInput, ReqRegAddr - regs->inputAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }

@@ -73,19 +73,20 @@ typedef enum {
 
 // 定义寄存器属性  
 typedef struct {
-    uint16_t reg_holding_addr_start;
-    uint16_t reg_input_addr_start;
-    uint16_t reg_coils_addr_start;
-    uint16_t reg_discrete_addr_start;
-    uint16_t reg_holding_num;
-    uint16_t reg_input_num;
-    uint16_t reg_coils_num;
-    uint16_t reg_discrete_num;
-    uint16_t *pReghold;
-    uint16_t *pReginput;
-    uint8_t *pRegCoil;
-    uint8_t *pRegDisc;
+    uint16_t holdingAddrStart;
+    uint16_t inputAddrStart;
+    uint16_t coilsAddrStart;
+    uint16_t discreteAddrStart;
+    uint16_t holdingNum;
+    uint16_t inputNum;
+    uint16_t coilsNum;
+    uint16_t discreteNum;
+    uint16_t *pHolding;
+    uint16_t *pInput;
+    uint8_t *pCoil;
+    uint8_t *pDiscrete;
 } MbReg_t;
+
 //定义modbus头部 
 typedef struct {
     uint16_t tid;       //TCP : Transaction Identifier 
@@ -93,13 +94,14 @@ typedef struct {
     uint16_t length;    // TCP : Number of bytes UID+ PDU length
     union {
         uint8_t uid;    // TCP: same as slave ID
-        uint8_t slaveid; // slave ID
+        uint8_t slaveID; // slave ID
     } introute;
 } MbHeader_t;
-// 主机设备句柄
-typedef void *Mbmhandle_t;
 
-typedef void (*pActionHandle)(Mbmhandle_t dev);
+// 主机设备句柄
+typedef void *MbmHandle_t;
+
+typedef void (*pActionHandle)(MbmHandle_t dev);
 
 /************************************** define for master ******************************************/
 // 定义请求错误枚举
@@ -134,10 +136,10 @@ typedef MbReqResult_t (*pMbmParseRspHandler)(MbReg_t *regs,
                                              uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                              uint8_t *premain, uint16_t remainLength);
 
-typedef MbReqResult_t (*pActionMasterReceive)(Mbmhandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain,
+typedef MbReqResult_t (*pActionMasterReceive)(MbmHandle_t dev, MbHeader_t *phead, uint8_t *pfunCode, uint8_t **premain,
                                               uint16_t *premainLength);
 
-typedef MbReqResult_t (*pActionMasterSend)(Mbmhandle_t dev, const uint8_t *pAdu, uint16_t usAduLength);
+typedef MbReqResult_t (*pActionMasterSend)(MbmHandle_t dev, const uint8_t *pAdu, uint16_t usAduLength);
 
 //result may only error MBR_ENOERR,MBR_MISSBYTE, MBR_ECHECK, MBR_EINFUNCTION,MBR_EINVAL,MBR_ETIMEOUT,MBR_ERSPEXCEPTOIN
 // eException : when result is MBR_ERSPEXCEPTOIN use is
@@ -209,7 +211,7 @@ typedef struct {
 
 #define MbmSetPollmode(pdev, state)     do {pdev->Pollstate = state;}while(0)
 
-MbReqResult_t MbmSend(Mbmhandle_t dev, MbmReq_t *req);
+MbReqResult_t MbmSend(MbmHandle_t dev, MbmReq_t *req);
 
 /************************************** define for slave ******************************************/
 // 定义adu帧 解析
@@ -236,25 +238,25 @@ typedef struct {
     uint8_t inuse;
     uint8_t reserved0;
 
-    uint8_t slaveaddr;
+    uint8_t slaveID;
     MbMode_t mode;           // work mode as RTU ASCII TCP?
-    MbDevState_t devstate;   // device state
+    MbDevState_t state;   // device state
     uint8_t eventInFlag;    // for event?
 
     MbReg_t regs;            // register list
 
-    pActionHandle pMbStartCur;
-    pActionHandle pMbStopCur;
-    pActionHandle pMbCloseCur;
-    pActionSlaveReceiveParse pMbReceiveParseCur;
-    pActionSlaveSend pMbSendCur;
+    pActionHandle pStartCur;
+    pActionHandle pStopCur;
+    pActionHandle pCloseCur;
+    pActionSlaveReceiveParse pReceiveParseCur;
+    pActionSlaveSend pSendCur;
 
     /* low layer use */
     volatile uint8_t AsciiBytePos; // only for ascii
-    volatile uint8_t sndrcvState;
-    volatile uint16_t sndAduBufCount;
-    volatile uint16_t sndAduBufPos;
-    volatile uint16_t rcvAduBufPos;
+    volatile uint8_t sendRcvState;
+    volatile uint16_t sendAduBuffCount;
+    volatile uint16_t sendAduBuffPos;
+    volatile uint16_t rcvAduBuffPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 } MbsDev_t;
 

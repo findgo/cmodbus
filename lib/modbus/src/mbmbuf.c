@@ -32,9 +32,9 @@ void MbmReqMsgDelete(void *msg_ptr) {
 }
 
 /* set head and return head length */
-uint8_t MbmBuildHead(MbMode_t mode, uint16_t tid, uint8_t slaveaddr, uint8_t *pAdu, uint16_t pdulength) {
+uint8_t MbmBuildHead(MbMode_t mode, uint16_t tid, uint8_t slaveID, uint8_t *pAdu, uint16_t pdulength) {
     if (mode == MB_RTU || mode == MB_ASCII) {
-        pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveaddr;
+        pAdu[MB_SER_ADU_ADDR_OFFSET] = slaveID;
 
         /* rtu ascii header size */
         return MB_SER_ADU_SIZE_ADDR;
@@ -45,7 +45,7 @@ uint8_t MbmBuildHead(MbMode_t mode, uint16_t tid, uint8_t slaveaddr, uint8_t *pA
         pAdu[MB_TCP_ADU_PID_OFFSET + 1] = MB_TCP_PROTOCOL_ID;
         pAdu[MB_TCP_ADU_LEN_OFFSET] = (pdulength + 1) >> 8;
         pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = (pdulength + 1) & 0xff;
-        pAdu[MB_TCP_ADU_UID_OFFSET] = slaveaddr;
+        pAdu[MB_TCP_ADU_UID_OFFSET] = slaveID;
 
         //  tcp MBAP header size
         return MB_TCP_ADU_SIZE_MBAP;

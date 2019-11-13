@@ -28,73 +28,73 @@ uint32_t MbRegBufSizeCal(uint16_t reg_holding_num,
 MbErrorCode_t MbmRegisterParseHandleCB(uint8_t ucFunctionCode, pMbmParseRspHandler pxHandler);
 
 /* TODO implement modbus master */
-Mbmhandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
 
 void MbmFree(uint8_t ucPort);
 
-MbErrorCode_t MbmSetPara(Mbmhandle_t dev, uint8_t retry, uint32_t replytimeout,
+MbErrorCode_t MbmSetPara(MbmHandle_t dev, uint8_t retry, uint32_t replytimeout,
                          uint32_t delaypolltime, uint32_t broadcastturntime);
 
-MbmNode_t *MbmNodeNew(uint8_t slaveaddr,
-                      uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
-                      uint16_t reg_input_addr_start, uint16_t reg_input_num,
-                      uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
-                      uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num);
+MbmNode_t *MbmNodeNew(uint8_t slaveID,
+                      uint16_t holdingAddrStart, uint16_t holdingNum,
+                      uint16_t inputAddrStart, uint16_t inputNum,
+                      uint16_t coilsAddrStart, uint16_t coilsNum,
+                      uint16_t discreteAddrStart, uint16_t discreteNum);
 
 void MbmNodeFree(MbmNode_t *node);
 
 void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg);
 
-MbErrorCode_t MbmAddNode(Mbmhandle_t dev, MbmNode_t *node);
+MbErrorCode_t MbmAddNode(MbmHandle_t dev, MbmNode_t *node);
 
-MbErrorCode_t MbmRemoveNode(Mbmhandle_t dev, uint8_t slaveaddr);
+MbErrorCode_t MbmRemoveNode(MbmHandle_t dev, uint8_t slaveID);
 
-MbmNode_t *MbmSearchNode(Mbmhandle_t dev, uint8_t slaveaddr);
+MbmNode_t *MbmSearchNode(MbmHandle_t dev, uint8_t slaveID);
 
-MbErrorCode_t MbmStart(Mbmhandle_t dev);
+MbErrorCode_t MbmStart(MbmHandle_t dev);
 
-MbErrorCode_t MbmStop(Mbmhandle_t dev);
+MbErrorCode_t MbmStop(MbmHandle_t dev);
 
-MbErrorCode_t MbmClose(Mbmhandle_t dev);
+MbErrorCode_t MbmClose(MbmHandle_t dev);
 
 void MbmPoll(void);
 
 /* for bits */
 /* for request */
-MbReqResult_t MbmReqRdCoils(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdCoils(MbmHandle_t dev, uint8_t slaveID,
                             uint16_t RegStartAddr, uint16_t Coilcnt, uint16_t scanrate);
 
-MbReqResult_t MbmReqWrCoil(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrCoil(MbmHandle_t dev, uint8_t slaveID,
                            uint16_t RegAddr, uint16_t val);
 
-MbReqResult_t MbmReqWrMulCoils(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrMulCoils(MbmHandle_t dev, uint8_t slaveID,
                                uint16_t RegStartAddr, uint16_t Coilcnt,
                                uint8_t *valbuf, uint16_t valcnt);
 
-MbReqResult_t MbmReqRdDiscreteInputs(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdDiscreteInputs(MbmHandle_t dev, uint8_t slaveID,
                                      uint16_t RegStartAddr, uint16_t Discnt, uint16_t scanrate);
 
 /* for register */
 /* for request */
-MbReqResult_t MbmReqRdHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                       uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
 
-MbReqResult_t MbmReqWrHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                       uint16_t RegAddr, uint16_t val);
 
-MbReqResult_t MbmReqWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                          uint16_t RegStartAddr, uint16_t Regcnt,
                                          uint16_t *valbuf, uint16_t valcnt);
 
-MbReqResult_t MbmReqRdInputRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdInputRegister(MbmHandle_t dev, uint8_t slaveID,
                                     uint16_t RegStartAddr, uint16_t Regcnt, uint16_t scanrate);
 
-MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
+MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
                                            uint16_t RegReadStartAddr, uint16_t RegReadCnt,
                                            uint16_t RegWriteStartAddr, uint16_t RegWriteCnt,
                                            uint16_t *valbuf, uint16_t valcnt);
 
-#define MbmGetReqSlaveID(pReq)  (((MbmReq_t *)(pReq))->slaveaddr)
+#define MbmGetReqSlaveID(pReq)  (((MbmReq_t *)(pReq))->slaveID)
 #define MbmGetReqFunCode(pReq)  (((MbmReq_t *)(pReq))->funcode)
 #define MbmGetReqErrorCnt(pReq) (((MbmReq_t *)(pReq))->errcnt)
 #define MbmGetReqRegAddr(pReq)  (((MbmReq_t *)(pReq))->regaddr)
@@ -102,7 +102,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(Mbmhandle_t dev, uint8_t slaveaddr,
 #define MbmGetNodePtr(pReq)     (((MbmReq_t *)(pReq))->node)
 #define MbmGetArgPtr(pReq)      (((MbmReq_t *)(pReq))->node->arg)
 
-#define MbmGetSlaveID(pNode)    (((MbmNode_t *)(pNode))->slaveaddr)
+#define MbmGetSlaveID(pNode)    (((MbmNode_t *)(pNode))->slaveID)
 #define MbmGetRegsPtr(pNode)    (&(((MbmNode_t *)(pNode))->regs))
 
 #endif
@@ -135,15 +135,15 @@ MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHan
 
 /*********************************************************************
  * @brief   create new slave modbus device  
- * @param   eMode - MB_RTU or MB_ASCII
- * @param   ucSlaveAddress - slave id
- * @param   ucPort - use which usart port 
- * @param   ulBaudRate - bandrate
- * @param   eParity - Parity used for characters in serial mode
+ * @param   mode - MB_RTU or MB_ASCII
+ * @param   slaveID - slave id
+ * @param   port - use which usart port
+ * @param   baudRate - bandrate
+ * @param   parity - Parity used for characters in serial mode
  * @param   Mbshandle_t - slave device handle ,if failed return NULL 句柄
  * @return  
  */
-Mbshandle_t MbsNew(MbMode_t eMode, uint8_t ucSlaveAddress, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
+Mbshandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRate, MbParity_t parity);
 
 /*********************************************************************
  * @brief   free the slave modbus device with port
@@ -158,10 +158,10 @@ void MbsFree(uint8_t ucPort);
  */
 MbErrorCode_t MbsRegAssign(Mbshandle_t dev,
                            uint8_t *regStorageBuf, uint32_t regStorageSize,
-                           uint16_t reg_holding_addr_start, uint16_t reg_holding_num,
-                           uint16_t reg_input_addr_start, uint16_t reg_input_num,
-                           uint16_t reg_coils_addr_start, uint16_t reg_coils_num,
-                           uint16_t reg_discrete_addr_start, uint16_t reg_discrete_num);
+                           uint16_t regHoldingAddrStart, uint16_t regHoldingNum,
+                           uint16_t regInputAddrStart, uint16_t regInputNum,
+                           uint16_t regCoilsAddrStart, uint16_t regCoilsNum,
+                           uint16_t regDiscreteAddrStart, uint16_t regDiscreteNum);
 
 MbErrorCode_t MbsRegAssignSingle(Mbshandle_t dev,
                                  uint16_t *reg_holdingbuf, uint16_t reg_holding_addr_start, uint16_t reg_holding_num,

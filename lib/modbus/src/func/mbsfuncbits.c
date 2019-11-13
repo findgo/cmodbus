@@ -18,14 +18,14 @@ __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16
     int16_t iNCoils = (int16_t) usNCoils;
     uint16_t usBitOffset;
 
-    if (((int16_t) usAddress >= regs->reg_coils_addr_start) && \
-        ((usAddress + usNCoils) <= (regs->reg_coils_addr_start + regs->reg_coils_num))) {
+    if (((int16_t) usAddress >= regs->coilsAddrStart) && \
+        ((usAddress + usNCoils) <= (regs->coilsAddrStart + regs->coilsNum))) {
 
-        usBitOffset = (uint16_t) (usAddress - regs->reg_coils_addr_start);
+        usBitOffset = (uint16_t) (usAddress - regs->coilsAddrStart);
         switch (eMode) {
             case MB_REG_READ:
                 while (iNCoils > 0) {
-                    *pucRegBuffer++ = MbGetBits(regs->pRegCoil, usBitOffset, (uint8_t) (iNCoils > 8 ? 8 : iNCoils));
+                    *pucRegBuffer++ = MbGetBits(regs->pCoil, usBitOffset, (uint8_t) (iNCoils > 8 ? 8 : iNCoils));
                     iNCoils -= 8;
                     usBitOffset += 8;
                 }
@@ -33,7 +33,7 @@ __MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16
 
             case MB_REG_WRITE:
                 while (iNCoils > 0) {
-                    MbSetBits(regs->pRegCoil, usBitOffset, (uint8_t) (iNCoils > 8 ? 8 : iNCoils), *pucRegBuffer++);
+                    MbSetBits(regs->pCoil, usBitOffset, (uint8_t) (iNCoils > 8 ? 8 : iNCoils), *pucRegBuffer++);
                     iNCoils -= 8;
                     usBitOffset += 8;
                 }
@@ -59,12 +59,12 @@ __MbsRegDiscreteCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uin
     int16_t iNDiscrete = (int16_t) usNDiscrete;
     uint16_t usBitOffset;
 
-    if (((int16_t) usAddress >= regs->reg_discrete_addr_start) \
- && (usAddress + usNDiscrete <= regs->reg_discrete_addr_start + regs->reg_discrete_num)) {
+    if (((int16_t) usAddress >= regs->discreteAddrStart) \
+ && (usAddress + usNDiscrete <= regs->discreteAddrStart + regs->discreteNum)) {
 
-        usBitOffset = (uint16_t) (usAddress - regs->reg_discrete_addr_start);
+        usBitOffset = (uint16_t) (usAddress - regs->discreteAddrStart);
         while (iNDiscrete > 0) {
-            *pucRegBuffer++ = MbGetBits(regs->pRegDisc, usBitOffset, (uint8_t) (iNDiscrete > 8 ? 8 : iNDiscrete));
+            *pucRegBuffer++ = MbGetBits(regs->pDiscrete, usBitOffset, (uint8_t) (iNDiscrete > 8 ? 8 : iNDiscrete));
             iNDiscrete -= 8;
             usBitOffset += 8;
         }

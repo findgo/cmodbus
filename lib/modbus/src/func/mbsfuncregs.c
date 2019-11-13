@@ -15,18 +15,18 @@
 static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs, MbRegisterMode_t eMode) {
     int16_t iRegIndex;
 
-    if (((int16_t) usAddress >= regs->reg_holding_addr_start) \
- && ((usAddress + usNRegs) <= (regs->reg_holding_addr_start + regs->reg_holding_num))) {
+    if (((int16_t) usAddress >= regs->holdingAddrStart) \
+ && ((usAddress + usNRegs) <= (regs->holdingAddrStart + regs->holdingNum))) {
 
         //offset index
-        iRegIndex = (int16_t) (usAddress - regs->reg_holding_addr_start);
+        iRegIndex = (int16_t) (usAddress - regs->holdingAddrStart);
         switch (eMode) {
             case MB_REG_READ:
                 while (usNRegs > 0) {
                     //high byte
-                    *pucRegBuffer++ = (uint8_t) (regs->pReghold[iRegIndex] >> 8);
+                    *pucRegBuffer++ = (uint8_t) (regs->pHolding[iRegIndex] >> 8);
                     //low byte
-                    *pucRegBuffer++ = (uint8_t) (regs->pReghold[iRegIndex] & 0xFF);
+                    *pucRegBuffer++ = (uint8_t) (regs->pHolding[iRegIndex] & 0xFF);
                     iRegIndex++;
                     usNRegs--;
                 }
@@ -34,8 +34,8 @@ static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uin
 
             case MB_REG_WRITE:
                 while (usNRegs > 0) {
-                    regs->pReghold[iRegIndex] = *pucRegBuffer++ << 8;
-                    regs->pReghold[iRegIndex] |= *pucRegBuffer++;
+                    regs->pHolding[iRegIndex] = *pucRegBuffer++ << 8;
+                    regs->pHolding[iRegIndex] |= *pucRegBuffer++;
                     iRegIndex++;
                     usNRegs--;
                 }
@@ -59,17 +59,17 @@ static MbErrorCode_t __MbsRegHoldingCB(MbReg_t *regs, uint8_t *pucRegBuffer, uin
 static MbErrorCode_t __MbsRegInputCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNRegs) {
     int16_t iRegIndex;
 
-    if (((int16_t) usAddress >= regs->reg_input_addr_start) \
- && ((usAddress + usNRegs) <= (regs->reg_input_addr_start + regs->reg_input_num))) {
+    if (((int16_t) usAddress >= regs->inputAddrStart) \
+ && ((usAddress + usNRegs) <= (regs->inputAddrStart + regs->inputNum))) {
 
         //offset index
-        iRegIndex = (int16_t) (usAddress - regs->reg_input_addr_start);
+        iRegIndex = (int16_t) (usAddress - regs->inputAddrStart);
 
         while (usNRegs > 0) {
             //high byte
-            *pucRegBuffer++ = (uint8_t) (regs->pReginput[iRegIndex] >> 8);
+            *pucRegBuffer++ = (uint8_t) (regs->pInput[iRegIndex] >> 8);
             //low byte
-            *pucRegBuffer++ = (uint8_t) (regs->pReginput[iRegIndex] & 0xFF);
+            *pucRegBuffer++ = (uint8_t) (regs->pInput[iRegIndex] & 0xFF);
             iRegIndex++;
             usNRegs--;
         }

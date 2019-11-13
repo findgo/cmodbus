@@ -15,8 +15,8 @@
 #define MBCOM1_RXEN()  GPIO_ResetBits(GPIOD,GPIO_Pin_9)
 #define MBCOM1_RXDIS() GPIO_SetBits(GPIOD,GPIO_Pin_9)
 
-extern Mbmhandle_t deviceM0;
-extern Mbmhandle_t deviceM1;
+extern MbmHandle_t deviceM0;
+extern MbmHandle_t deviceM1;
 extern Mbshandle_t device0;
 extern Mbshandle_t device1;
 
