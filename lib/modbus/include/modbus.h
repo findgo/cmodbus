@@ -103,7 +103,7 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
 #define MbmGetArgPtr(pReq)      (((MbmReq_t *)(pReq))->node->arg)
 
 #define MbmGetSlaveID(pNode)    (((MbmNode_t *)(pNode))->slaveID)
-#define MbmGetRegsPtr(pNode)    (&(((MbmNode_t *)(pNode))->regs))
+#define MbmGetRegsPtr(pNode)    (&(((MbmNode_t *)(pNode))->pRegs))
 
 #endif
 

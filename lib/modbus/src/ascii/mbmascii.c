@@ -172,7 +172,7 @@ void MbmASCIIReceiveFSM(MbsHandle_t dev) {
 
                 /* Notify the caller of MbsASCIIReceive that a new frame was received. */
                 if (pdev->Pollstate == MBM_WAITRSP)
-                    MbmSetPollmode(pdev, MBM_RSPEXCUTE);
+                    MbmSetPollMode(pdev, MBM_RSPEXCUTE);
             } else if (ucByte == ':') {
                 /* Empty receive buffer and back to receive state. */
                 pdev->AsciiBytePos = BYTE_HIGH_NIBBLE;

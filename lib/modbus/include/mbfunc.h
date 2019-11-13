@@ -52,40 +52,40 @@ pMbmParseRspHandler MbmFuncHandleSearch(uint8_t functionCode);
 
 /****************************** for parse response *************************/
 /****************************** for bits *******************************/
-MbReqResult_t MbmParseRspRdCoils(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdCoils(MbReg_t *pRegs,
                                  uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                  uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspWrCoil(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrCoil(MbReg_t *pRegs,
                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                 uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *pRegs,
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *pRegs,
                                           uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                           uint8_t *premain, uint16_t remainLength);
 
 /****************************** for register *******************************/
-MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *pRegs,
                                            uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                            uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *pRegs,
                                            uint16_t ReqRegAddr, uint16_t Regcnt,
                                            uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspWrMulHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrMulHoldingRegister(MbReg_t *pRegs,
                                               uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                               uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRspRdWrMulHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdWrMulHoldingRegister(MbReg_t *pRegs,
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength);
 
-MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRdInputRegister(MbReg_t *pRegs,
                                       uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                       uint8_t *premain, uint16_t remainLength);
 

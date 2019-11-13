@@ -191,7 +191,7 @@ MbmNode_t *MbmNodeNew(uint8_t slaveID,
     }
     memset(regbuf, 0, lens);
 
-    reg = (MbReg_t *) &node->regs;
+    reg = (MbReg_t *) &node->pRegs;
 
     reg->holdingAddrStart = holdingAddrStart;
     reg->holdingNum = holdingNum;
@@ -232,8 +232,8 @@ void MbmNodeCallBackAssign(MbmNode_t *node, pfnReqResultCB cb, void *arg) {
 /* 释放节点，释放由MbmNodeNew创建的节点内存 */
 void MbmNodeFree(MbmNode_t *node) {
     if (node) {
-        if (node->regs.pHolding)
-            KFree(node->regs.pHolding);
+        if (node->pRegs.pHolding)
+            KFree(node->pRegs.pHolding);
         MsgFree(node);
     }
 }
@@ -452,7 +452,7 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
                     result = MBR_EINFUNCTION;
                     handle = MbmFuncHandleSearch(functionCode);
                     if (handle)
-                        result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);
+                        result = handle(&req->node->pRegs, req->regaddr, req->regcnt, pRemainFrame, usLength);
                 }
             }
 

@@ -202,14 +202,14 @@ typedef struct {
 
     /* low layer use */
     volatile uint8_t AsciiBytePos; // only for ascii
-    volatile uint8_t sndrcvState;
-    volatile uint16_t sndAduBufCount;
-    volatile uint16_t sndAduBufPos;
+    volatile uint8_t sendRcvState;
+    volatile uint16_t sendAduBufCount;
+    volatile uint16_t sendAduBufPos;
     volatile uint16_t rcvAduBufPos;
     volatile uint8_t AduBuf[MB_ADU_SIZE_MAX];
 } MbmDev_t;
 
-#define MbmSetPollmode(pdev, state)     do {pdev->Pollstate = state;}while(0)
+#define MbmSetPollMode(pDev, state)     do {pDev->Pollstate = state;}while(0)
 
 MbReqResult_t MbmSend(MbmHandle_t dev, MbmReq_t *req);
 
@@ -217,7 +217,7 @@ MbReqResult_t MbmSend(MbmHandle_t dev, MbmReq_t *req);
 // 定义adu帧 解析
 typedef struct {
     MbHeader_t hdr;
-    uint8_t FunctionCode;       // pdu function
+    uint8_t functionCode;       // pdu function
     uint16_t pduFrameLength;    // pdu frame length
     uint8_t *pPduFrame;         // pdu frame
 } MbsAduFrame_t;
@@ -225,12 +225,11 @@ typedef struct {
 //从机设备句柄
 typedef void *MbsHandle_t;
 
-typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *regs, uint8_t *pPdu, uint16_t *pusLength);
+typedef MbException_t (*pMbsFunctionHandler)(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *pLength);
 
 typedef MbErrorCode_t (*pActionSlaveReceiveParse)(MbsHandle_t dev, MbsAduFrame_t *pAduFramePkt);
 
-typedef MbErrorCode_t (*pActionSlaveSend)(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu,
-                                          uint16_t usLength);
+typedef MbErrorCode_t (*pActionSlaveSend)(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t length);
 
 // 从机设备描述
 typedef struct {
@@ -261,6 +260,6 @@ typedef struct {
 } MbsDev_t;
 
 // 发送个信号
-#define MbsSemGive(pdev) do { pdev->eventInFlag = true;}while(0)
+#define MbsSemGive(pDev) do { pDev->eventInFlag = true;}while(0)
 
 #endif

@@ -28,8 +28,8 @@ MbReqResult_t MbmReqRdHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.holdingAddrStart)
-            || ((RegStartAddr + Regcnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
+        if ((RegStartAddr < node->pRegs.holdingAddrStart)
+            || ((RegStartAddr + Regcnt) > (node->pRegs.holdingAddrStart + node->pRegs.holdingNum)))
             return MBR_ENOREG;
     }
 
@@ -84,8 +84,8 @@ MbReqResult_t MbmReqWrHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegAddr < node->regs.holdingAddrStart)
-            || ((RegAddr + 1) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
+        if ((RegAddr < node->pRegs.holdingAddrStart)
+            || ((RegAddr + 1) > (node->pRegs.holdingAddrStart + node->pRegs.holdingNum)))
             return MBR_ENOREG;
     }
 
@@ -146,8 +146,8 @@ MbReqResult_t MbmReqWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.holdingAddrStart)
-            || ((RegStartAddr + valcnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
+        if ((RegStartAddr < node->pRegs.holdingAddrStart)
+            || ((RegStartAddr + valcnt) > (node->pRegs.holdingAddrStart + node->pRegs.holdingNum)))
             return MBR_ENOREG;
     }
     /* slaveID +((PDU)funcode + startaddr + regcnt + bytenum + regvalue_list)  */
@@ -216,8 +216,8 @@ MbReqResult_t MbmReqRdInputRegister(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.inputAddrStart)
-            || ((RegStartAddr + Regcnt) > (node->regs.inputAddrStart + node->regs.inputNum)))
+        if ((RegStartAddr < node->pRegs.inputAddrStart)
+            || ((RegStartAddr + Regcnt) > (node->pRegs.inputAddrStart + node->pRegs.inputNum)))
             return MBR_ENOREG;
     }
 
@@ -281,12 +281,12 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
             return MBR_ENODENOSETUP;
 
         /* check register addres in range*/
-        if ((RegReadStartAddr < node->regs.holdingAddrStart)
-            || ((RegReadStartAddr + RegReadCnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
+        if ((RegReadStartAddr < node->pRegs.holdingAddrStart)
+            || ((RegReadStartAddr + RegReadCnt) > (node->pRegs.holdingAddrStart + node->pRegs.holdingNum)))
             return MBR_ENOREG;
 
-        if ((RegWriteStartAddr < node->regs.holdingAddrStart)
-            || ((RegWriteStartAddr + RegWriteCnt) > (node->regs.holdingAddrStart + node->regs.holdingNum)))
+        if ((RegWriteStartAddr < node->pRegs.holdingAddrStart)
+            || ((RegWriteStartAddr + RegWriteCnt) > (node->pRegs.holdingAddrStart + node->pRegs.holdingNum)))
             return MBR_ENOREG;
     }
 
@@ -350,7 +350,7 @@ void __MbmLocalWrRegRegs(uint16_t *pRegRegs, uint16_t usAddressidx, uint8_t *puc
 }
 
 /* ok */
-MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *pRegs,
                                            uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                            uint8_t *premain, uint16_t remainLength) {
 
@@ -359,13 +359,13 @@ MbReqResult_t MbmParseRspRdHoldingRegister(MbReg_t *regs,
     if ((remainLength != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pHolding, ReqRegAddr - regs->holdingAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(pRegs->pHolding, ReqRegAddr - pRegs->holdingAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }
 
 /* ok */
-MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *pRegs,
                                            uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                            uint8_t *premain, uint16_t remainLength) {
     (void) ReqRegcnt;
@@ -376,13 +376,13 @@ MbReqResult_t MbmParseRspWrHoldingRegister(MbReg_t *regs,
     if (ReqRegAddr != ((premain[0] << 8) | premain[1]))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pHolding, ReqRegAddr - regs->holdingAddrStart, (uint8_t *) &premain[2], 1);
+    __MbmLocalWrRegRegs(pRegs->pHolding, ReqRegAddr - pRegs->holdingAddrStart, (uint8_t *) &premain[2], 1);
 
     return MBR_ENOERR;
 }
 
 /* ok */
-MbReqResult_t MbmParseRspWrMulHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrMulHoldingRegister(MbReg_t *pRegs,
                                               uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                               uint8_t *premain, uint16_t remainLength) {
     if (remainLength != 4)
@@ -396,16 +396,16 @@ MbReqResult_t MbmParseRspWrMulHoldingRegister(MbReg_t *regs,
 }
 
 /* ok */
-MbReqResult_t MbmParseRspRdWrMulHoldingRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdWrMulHoldingRegister(MbReg_t *pRegs,
                                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                                 uint8_t *premain, uint16_t remainLength) {
 
-    return MbmParseRspRdHoldingRegister(regs, ReqRegAddr, ReqRegcnt, premain, remainLength);
+    return MbmParseRspRdHoldingRegister(pRegs, ReqRegAddr, ReqRegcnt, premain, remainLength);
 
 }
 
 /* ok */
-MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
+MbReqResult_t MbmParseRdInputRegister(MbReg_t *pRegs,
                                       uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                       uint8_t *premain, uint16_t remainLength) {
     /* check frame is right length */
@@ -413,7 +413,7 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *regs,
     if ((remainLength != (1 + ReqRegcnt * 2)) || (premain[0] != ReqRegcnt * 2))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegRegs(regs->pInput, ReqRegAddr - regs->inputAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegRegs(pRegs->pInput, ReqRegAddr - pRegs->inputAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }

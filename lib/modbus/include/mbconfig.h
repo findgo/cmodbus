@@ -16,9 +16,9 @@ extern "C" {
 #define MB_SLAVE_ENABLED         ( 1 )
 
 /*! \brief If modbus RTU support is enabled. */
-#define MB_RTU_ENABLED                          (  1 )
+#define MB_RTU_ENABLED                          (  0 )
 /*! \brief If modbus ASCII support is enabled. */
-#define MB_ASCII_ENABLED                        (  0 )
+#define MB_ASCII_ENABLED                        (  1 )
 /*! \brief If modbus TCP support is enabled. */
 #define MB_TCP_ENABLED                          (  0 )
 

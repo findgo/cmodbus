@@ -213,14 +213,14 @@ bool MbPortSerialPutByte(uint8_t port, char byte) {
   * @param  None
   * @retval None
   */
-bool MbPortSerialGetByte(uint8_t port, char *pucByte) {
+bool MbPortSerialGetByte(uint8_t port, char *pByte) {
     switch (port) {
         case MBCOM0:
-            *pucByte = USART_ReceiveData(USART1);
+            *pByte = USART_ReceiveData(USART1);
             break;
 
         case MBCOM1:
-            *pucByte = USART_ReceiveData(USART2);
+            *pByte = USART_ReceiveData(USART2);
             break;
 
         default:

@@ -28,8 +28,8 @@ MbReqResult_t MbmReqRdCoils(MbmHandle_t dev, uint8_t slaveID, uint16_t RegStartA
             return MBR_ENODENOSETUP;
 
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.coilsAddrStart)
-            || ((RegStartAddr + Coilcnt) > (node->regs.coilsAddrStart + node->regs.coilsNum)))
+        if ((RegStartAddr < node->pRegs.coilsAddrStart)
+            || ((RegStartAddr + Coilcnt) > (node->pRegs.coilsAddrStart + node->pRegs.coilsNum)))
             return MBR_ENOREG;
     }
 
@@ -83,8 +83,8 @@ MbReqResult_t MbmReqWrCoil(MbmHandle_t dev, uint8_t slaveID, uint16_t RegAddr, u
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegAddr < node->regs.coilsAddrStart)
-            || ((RegAddr + 1) > (node->regs.coilsAddrStart + node->regs.coilsNum)))
+        if ((RegAddr < node->pRegs.coilsAddrStart)
+            || ((RegAddr + 1) > (node->pRegs.coilsAddrStart + node->pRegs.coilsNum)))
             return MBR_ENOREG;
     }
 
@@ -151,8 +151,8 @@ MbReqResult_t MbmReqWrMulCoils(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.coilsAddrStart)
-            || ((RegStartAddr + Coilcnt) > (node->regs.coilsAddrStart + node->regs.coilsNum)))
+        if ((RegStartAddr < node->pRegs.coilsAddrStart)
+            || ((RegStartAddr + Coilcnt) > (node->pRegs.coilsAddrStart + node->pRegs.coilsNum)))
             return MBR_ENOREG;
     }
 
@@ -218,8 +218,8 @@ MbReqResult_t MbmReqRdDiscreteInputs(MbmHandle_t dev, uint8_t slaveID,
         if (node == NULL)
             return MBR_ENODENOSETUP;
         /* check register addres in range*/
-        if ((RegStartAddr < node->regs.discreteAddrStart)
-            || ((RegStartAddr + Discnt) > (node->regs.discreteAddrStart + node->regs.discreteNum)))
+        if ((RegStartAddr < node->pRegs.discreteAddrStart)
+            || ((RegStartAddr + Discnt) > (node->pRegs.discreteAddrStart + node->pRegs.discreteNum)))
             return MBR_ENOREG;
     }
     req = MbmReqMsgNew(((MbmDev_t *) dev)->mode, MB_PDU_SIZE_FUNCODE + MB_PDU_FUNC_READ_SIZE);
@@ -269,7 +269,7 @@ static void __MbmLocalWrRegBits(uint8_t *pRegBits, uint16_t usStartAddress, uint
 }
 
 /* ok */
-MbReqResult_t MbmParseRspRdCoils(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdCoils(MbReg_t *pRegs,
                                  uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                  uint8_t *premain, uint16_t remainLength) {
     uint8_t ucByteCount;
@@ -280,13 +280,13 @@ MbReqResult_t MbmParseRspRdCoils(MbReg_t *regs,
     if ((remainLength != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegBits(regs->pCoil, ReqRegAddr - regs->coilsAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegBits(pRegs->pCoil, ReqRegAddr - pRegs->coilsAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }
 
 /* ok */
-MbReqResult_t MbmParseRspWrCoil(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrCoil(MbReg_t *pRegs,
                                 uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                 uint8_t *premain, uint16_t remainLength) {
     uint8_t bitval = 0;
@@ -303,13 +303,13 @@ MbReqResult_t MbmParseRspWrCoil(MbReg_t *regs,
     if (premain[2] == 0xFF)
         bitval |= 0x01;
 
-    __MbmLocalWrRegBits(regs->pCoil, ReqRegAddr - regs->coilsAddrStart, (uint8_t *) &bitval, 1);
+    __MbmLocalWrRegBits(pRegs->pCoil, ReqRegAddr - pRegs->coilsAddrStart, (uint8_t *) &bitval, 1);
 
     return MBR_ENOERR;
 }
 
 /* ok */
-MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *regs,
+MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *pRegs,
                                     uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                     uint8_t *premain, uint16_t remainLength) {
     if (remainLength != 4)
@@ -323,7 +323,7 @@ MbReqResult_t MbmParseRspWrMulCoils(MbReg_t *regs,
 }
 
 /* ok */
-MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *regs,
+MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *pRegs,
                                           uint16_t ReqRegAddr, uint16_t ReqRegcnt,
                                           uint8_t *premain, uint16_t remainLength) {
     uint8_t ucByteCount;
@@ -334,7 +334,7 @@ MbReqResult_t MbmParseRspRdDiscreteInputs(MbReg_t *regs,
     if ((remainLength != (1 + ucByteCount)) || (ucByteCount != premain[0]))
         return MBR_EINVAL;
 
-    __MbmLocalWrRegBits(regs->pDiscrete, ReqRegAddr - regs->discreteAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
+    __MbmLocalWrRegBits(pRegs->pDiscrete, ReqRegAddr - pRegs->discreteAddrStart, (uint8_t *) &premain[1], ReqRegcnt);
 
     return MBR_ENOERR;
 }

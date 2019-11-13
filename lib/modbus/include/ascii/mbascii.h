@@ -49,12 +49,12 @@ void MbmASCIITimerT1SExpired(MbsHandle_t dev);
 
 #if MB_SLAVE_ENABLED > 0
     
-MbErrorCode_t MbsASCIIInit(MbsHandle_t dev, uint8_t ucPort,uint32_t ulBaudRate, MbParity_t eParity);
+MbErrorCode_t MbsASCIIInit(MbsHandle_t dev, uint8_t port, uint32_t baudRate, MbParity_t parity);
 void MbsASCIIStart(MbsHandle_t dev);
 void MbsASCIIStop(MbsHandle_t dev);
 void MbsASCIIClose(MbsHandle_t dev);
 MbErrorCode_t MbsASCIIReceiveParse(MbsHandle_t dev,MbsAduFrame_t *aduFrame);
-MbErrorCode_t MbsASCIISend(MbsHandle_t dev, uint8_t ucSlaveAddress, const uint8_t *pPdu, uint16_t usLength);
+MbErrorCode_t MbsASCIISend(MbsHandle_t dev, uint8_t slaveID, const uint8_t *pPdu, uint16_t len);
 
 void MbsASCIIReceiveFSM(MbsHandle_t dev);
 void MbsASCIITransmitFSM(MbsHandle_t dev);

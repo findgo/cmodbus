@@ -83,7 +83,7 @@ MbErrorCode_t MbsRTUReceiveParse(MbsHandle_t dev, MbsAduFrame_t *aduFrame) {
          * and the decision if a frame is used is done there.
          */
         aduFrame->hdr.introute.slaveID = pDev->AduBuf[MB_SER_ADU_ADDR_OFFSET];
-        aduFrame->FunctionCode = pDev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
+        aduFrame->functionCode = pDev->AduBuf[MB_SER_ADU_PDU_OFFSET + MB_PDU_FUNCODE_OFF];
         /* Total length of Modbus-PDU is Modbus-Serial-Line-PDU minus
          * size of address field and CRC checksum.
          */

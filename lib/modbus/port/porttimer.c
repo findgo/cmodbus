@@ -20,7 +20,7 @@ extern MbsHandle_t device1;
   * @param  None
   * @retval None
   */
-uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us) {
+uint8_t MbPortTimersInit(uint8_t port, uint16_t timeOut50us) {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     NVIC_InitTypeDef NVIC_InitStructure;
     uint16_t PrescalerValue = 0;
@@ -37,7 +37,7 @@ uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us) {
             //TIM最大计数值为usTim1Timerout50u
             PrescalerValue = (uint16_t) (SystemCoreClock / 20000) - 1;
             //定时器1初始化
-            TIM_TimeBaseStructure.TIM_Period = (uint16_t) usTim1Timerout50us;
+            TIM_TimeBaseStructure.TIM_Period = (uint16_t) timeOut50us;
             TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
             TIM_TimeBaseStructure.TIM_ClockDivision = 0;
             TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
@@ -70,7 +70,7 @@ uint8_t MbPortTimersInit(uint8_t port, uint16_t usTim1Timerout50us) {
             //TIM最大计数值为usTim1Timerout50u
             PrescalerValue = (uint16_t) (SystemCoreClock / 20000) - 1;
             //定时器1初始化
-            TIM_TimeBaseStructure.TIM_Period = (uint16_t) usTim1Timerout50us;
+            TIM_TimeBaseStructure.TIM_Period = (uint16_t) timeOut50us;
             TIM_TimeBaseStructure.TIM_Prescaler = PrescalerValue;
             TIM_TimeBaseStructure.TIM_ClockDivision = 0;
             TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;

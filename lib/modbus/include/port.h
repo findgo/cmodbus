@@ -18,12 +18,12 @@ void MbPortSerialClose(uint8_t port);
 
 void MbPortSerialEnable(uint8_t port, bool rxEnable, bool txEnable);
 
-bool MbPortSerialGetByte(uint8_t port, char *pucByte);
+bool MbPortSerialGetByte(uint8_t port, char *pByte);
 
 bool MbPortSerialPutByte(uint8_t port, char byte);
 
 /* ------------ Timers functions ---------------------------------*/
-uint8_t MbPortTimersInit(uint8_t port, uint16_t usTimeOut50us);
+uint8_t MbPortTimersInit(uint8_t port, uint16_t timeOut50us);
 
 void MbPortTimersClose(uint8_t port);
 
@@ -31,7 +31,7 @@ void MbPortTimersEnable(uint8_t port);
 
 void MbPortTimersDisable(uint8_t port);
 
-void MbPortTimersDelay(uint8_t port, uint16_t usTimeOutMS);
+void MbPortTimersDelay(uint8_t port, uint16_t timeOutMS);
 
 uint32_t MbSys_now(void);
 

@@ -262,7 +262,7 @@ static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
         /* Check if the frame is for us. If not ignore the frame. */
         if ((RcvAddress == dev->slaveID) || (RcvAddress == MB_ADDRESS_BROADCAST)) {
             eException = MB_EX_ILLEGAL_FUNCTION;
-            handle = MbsFuncHandleSearch(aduFramePkt.FunctionCode);
+            handle = MbsFuncHandleSearch(aduFramePkt.functionCode);
             if (handle)
                 eException = handle(&dev->regs, aduFramePkt.pPduFrame, &aduFramePkt.pduFrameLength);
 
@@ -273,7 +273,7 @@ static MbErrorCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
             if (eException != MB_EX_NONE) {
                 /* An exception occured. Build an error frame. */
                 aduFramePkt.pPduFrame = 0;
-                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = (uint8_t) (aduFramePkt.FunctionCode |
+                aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = (uint8_t) (aduFramePkt.functionCode |
                                                                                  MB_FUNC_ERROR);
                 aduFramePkt.pPduFrame[aduFramePkt.pduFrameLength++] = eException;
             }

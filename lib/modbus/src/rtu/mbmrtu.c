@@ -193,7 +193,7 @@ void MbmRTUTimerT35Expired(MbmHandle_t dev) {
     /* A frame was received and t35 expired. Notify the listener that
      * a new frame was received. */
     if (pdev->sendRcvState == STATE_RTU_RX_RCV && pdev->Pollstate == MBM_WAITRSP);
-    MbmSetPollmode(pdev, MBM_RSPEXCUTE);
+    MbmSetPollMode(pdev, MBM_RSPEXCUTE);
 
     MbPortTimersDisable(pdev->port);
     pdev->sendRcvState = STATE_RTU_RX_IDLE;
