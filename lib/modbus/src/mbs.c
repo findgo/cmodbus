@@ -95,11 +95,11 @@ MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRa
     return (MbsHandle_t) dev;
 }
 
-void MbsFree(uint8_t ucPort) {
+void MbsFree(uint8_t port) {
     uint8_t i;
 
     for (i = 0; i < MBS_SUPPORT_MULTIPLE_NUMBER; i++) {
-        if ((mbsDevTable[i].inuse == 1) && (mbsDevTable[i].port == ucPort)) {
+        if ((mbsDevTable[i].inuse == 1) && (mbsDevTable[i].port == port)) {
             mbsDevTable[i].inuse = 0; // mark it not in use!
             break;
         }

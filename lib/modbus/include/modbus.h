@@ -7,11 +7,8 @@
 
 #if MB_RTU_ENABLED > 0 || MB_ASCII_ENABLED > 0
 
-//public
-uint32_t MbRegBufSizeCal(uint16_t holdingNum,
-                         uint16_t inputNum,
-                         uint16_t coilsNum,
-                         uint16_t discreteNum);
+// public
+uint32_t MbRegBufSizeCal(uint16_t holdingNum, uint16_t inputNum, uint16_t coilsNum, uint16_t discreteNum);
 
 #define MbGetRegsHoldPtr(pReg)       ((uint16_t *)(((MbReg_t *)(pReg))->pReghold))
 #define MbGetRegsInputPtr(pReg)      ((uint16_t *)(((MbReg_t *)(pReg))->pReginput))
@@ -147,10 +144,10 @@ MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRa
 
 /*********************************************************************
  * @brief   free the slave modbus device with port
- * @param   ucPort - use which usart port 
+ * @param   port - use which usart port
  * @return  
  */
-void MbsFree(uint8_t ucPort);
+void MbsFree(uint8_t port);
 
 /*********************************************************************
  * @brief   assign buffer for register

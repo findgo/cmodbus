@@ -39,11 +39,15 @@ uint32_t MbSys_now(void);
 /* ----------------------- TCP port functions -------------------------------*/
 #if MB_TCP_ENABLED > 0
 
-uint8_t MbTCPPortInit( uint16_t usTCPPort );
-void MbTCPPortClose( void );
-void MbTCPPortDisable( void );
-uint8_t MbTCPPortGetRequest( uint8_t **ppucMBTCPFrame, uint16_t * usTCPLength );
-uint8_t MbTCPPortSendResponse( const uint8_t *pucMBTCPFrame, uint16_t usTCPLength );
+uint8_t MbTCPPortInit(uint16_t usTCPPort);
+
+void MbTCPPortClose(void);
+
+void MbTCPPortDisable(void);
+
+uint8_t MbTCPPortGetRequest(uint8_t **ppucMBTCPFrame, uint16_t *usTCPLength);
+
+uint8_t MbTCPPortSendResponse(const uint8_t *pucMBTCPFrame, uint16_t usTCPLength);
 
 #endif
 

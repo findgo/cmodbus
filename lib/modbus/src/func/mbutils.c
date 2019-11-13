@@ -185,54 +185,46 @@ uint16_t MbCRC16(uint8_t *pFrame, uint16_t len) {
 #endif
 
 #if MB_ASCII_ENABLED > 0
-uint8_t MbChar2Bin( uint8_t ucCharacter )
-{
-    if( ( ucCharacter >= '0' ) && ( ucCharacter <= '9' ) ){
-        return ( uint8_t )( ucCharacter - '0' );
-    }
-    else if( ( ucCharacter >= 'A' ) && ( ucCharacter <= 'F' ) ){
-        return ( uint8_t )( ucCharacter - 'A' + 0x0A );
-    }
-    else{
+
+uint8_t MbChar2Bin(uint8_t character) {
+    if ((character >= '0') && (character <= '9')) {
+        return (uint8_t) (character - '0');
+    } else if ((character >= 'A') && (character <= 'F')) {
+        return (uint8_t) (character - 'A' + 0x0A);
+    } else {
         return 0xFF;
     }
 }
 
-uint8_t MbBin2Char( uint8_t ucByte )
-{
-    if( ucByte <= 0x09 ){
-        return ( uint8_t )( '0' + ucByte );
-    }
-    else if( ( ucByte >= 0x0A ) && ( ucByte <= 0x0F ) ){
-        return ( uint8_t )( ucByte - 0x0A + 'A' );
-    }
-    else{
+uint8_t MbBin2Char(uint8_t byte) {
+    if (byte <= 0x09) {
+        return (uint8_t) ('0' + byte);
+    } else if ((byte >= 0x0A) && (byte <= 0x0F)) {
+        return (uint8_t) (byte - 0x0A + 'A');
+    } else {
         /* Programming error. */
-        assert( 0 );
+        assert(0);
     }
-    
+
     return '0';
 }
 
 
-uint8_t MbLRC(uint8_t *pucFrame, uint16_t usLen)
-{
+uint8_t MbLRC(uint8_t *pFrame, uint16_t len) {
     uint8_t ucLRC = 0;  /* LRC char initialized */
 
-    while( usLen-- )
-    {
-        ucLRC += *pucFrame++;   /* Add buffer byte without carry */
+    while (len--) {
+        ucLRC += *pFrame++;   /* Add buffer byte without carry */
     }
 
     /* Return twos complement */
-    ucLRC = (uint8_t) ( -((char)ucLRC) );
-    
-    return ucLRC;
+    return (uint8_t) (-((char) ucLRC));
 }
+
 #endif
 
-MbException_t MbError2Exception(MbErrorCode_t eErrorCode) {
-    switch (eErrorCode) {
+MbException_t MbError2Exception(MbErrorCode_t errorCode) {
+    switch (errorCode) {
         case MB_ENOERR:
             return MB_EX_NONE;
 

@@ -20,13 +20,13 @@ uint8_t MbGetBits(uint8_t *byteBuf, uint16_t bitOffset, uint8_t nBits);
 
 uint16_t MbCRC16(uint8_t *pFrame, uint16_t len);
 
-uint8_t MbChar2Bin(uint8_t ucCharacter);
+uint8_t MbChar2Bin(uint8_t character);
 
-uint8_t MbBin2Char(uint8_t ucByte);
+uint8_t MbBin2Char(uint8_t byte);
 
-uint8_t MbLRC(uint8_t *pucFrame, uint16_t usLen);
+uint8_t MbLRC(uint8_t *pFrame, uint16_t len);
 
-MbException_t MbError2Exception(MbErrorCode_t eErrorCode);
+MbException_t MbError2Exception(MbErrorCode_t errorCode);
 
 const char *MbError2Str(MbException_t exCode);
 

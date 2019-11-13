@@ -93,6 +93,7 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *pRegs,
 
 
 #if MB_SLAVE_ENABLED > 0
+
 /*
 * @brief search function handle with function code  
 * @param   functionCode - 功能码
@@ -102,9 +103,11 @@ MbReqResult_t MbmParseRdInputRegister(MbReg_t *pRegs,
 pMbsFunctionHandler MbsFuncHandleSearch(uint8_t functionCode);
 
 /****************************** for parse host request *************************/
-MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t * len);
-/****************************** for bits *******************************/                                    
-MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t * len);
+MbException_t MbsFuncReportSlaveID(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+
+/****************************** for bits *******************************/
+MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+
 /**
  * @brief   function handlers:  read holding register 
  * @param   pRegs - real slave register pointer
@@ -112,7 +115,8 @@ MbException_t MbsFuncRdHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
  * @param   len - usLen pdu frame length pointer
  * @return  exception code , see mbproto.h
  */
-MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t * len);
+MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+
 /**
  * @brief   function handlers:  write holding register 
  * @param   pRegs - real slave register pointer
@@ -121,6 +125,7 @@ MbException_t MbsFuncWrHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *
  * @return  exception code , see mbproto.h
  */
 MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+
 /**
  * @brief   function handlers:  reand and write multi holding register 
  * @param   pRegs - real slave register pointer
@@ -129,25 +134,27 @@ MbException_t MbsFuncWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_
  * @return  exception code , see mbproto.h
  */
 MbException_t MbsFuncRdWrMulHoldingRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
- /**
- * @brief   function handlers:  read input register 
- * @param   pRegs - real slave register pointer
- * @param   pPdu - pdu frame pointer 
- * @param   len - usLen pdu frame length pointer
- * @return  exception code , see mbproto.h
- */
-MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t * len);
 
-/****************************** for register *******************************/  
- /**
+/**
+* @brief   function handlers:  read input register
+* @param   pRegs - real slave register pointer
+* @param   pPdu - pdu frame pointer
+* @param   len - usLen pdu frame length pointer
+* @return  exception code , see mbproto.h
+*/
+MbException_t MbsFuncRdInputRegister(MbReg_t *pRegs, uint8_t *pPdu, uint16_t *len);
+
+/****************************** for register *******************************/
+/**
 * @brief   function handlers:  read coils register 
 * @param   regs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
 * @param   usLen - usLen pdu frame length pointer
 * @return  exception code , see mbproto.h
 */
-MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen );
- /**
+MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
+
+/**
 * @brief   function handlers:  write coils register 
 * @param   regs - real slave register pointer
 * @param   pPdu - pdu frame pointer 
@@ -155,7 +162,8 @@ MbException_t MbsFuncRdCoils(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen );
 * @return  exception code , see mbproto.h
 */
 MbException_t MbsFuncWrCoil(MbReg_t *regs, uint8_t *pPdu, uint16_t *usLen);
- /**
+
+/**
 * @brief   function handlers:  write multi coils register 
 * @param   regs - real slave register pointer
 * @param   pPdu - pdu frame pointer 

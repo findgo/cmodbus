@@ -7,72 +7,66 @@
 /* ----------------------- Start implementation -----------------------------*/
 #if MB_SLAVE_ENABLED > 0
 
-MbErrorCode_t MbsTCPInit(uint16_t ucTCPPort)
-{
-    if( MbTCPPortInit( ucTCPPort ) == false )
+MbErrorCode_t MbsTCPInit(uint16_t port) {
+    if (MbsTCPPortInit(port) == false)
         return MB_EPORTERR;
-    
+
     return MB_ENOERR;
 }
 
-void MbsTCPStart(  void *dev)
-{
+void MbsTCPStart(void *dev) {
 
 }
 
-void MbsTCPStop(  void *dev)
-{
+void MbsTCPStop(void *dev) {
     /* Make sure that no more clients are connected. */
-    MbTCPPortDisable( );
+    MbTCPPortDisable();
 }
 
-MbErrorCode_t MbsTCPReceive(void *dev, uint8_t *pucRcvAddress, uint8_t **pPdu, uint16_t *pusLength )
-{
-    MbErrorCode_t    eStatus = MB_EIO;
-    uint8_t          *pucMBTCPFrame;
-    uint16_t          usLength;
-    uint16_t          usPID;
+MbErrorCode_t MbsTCPReceive(void *dev, uint8_t *pRcvAddress, uint8_t **pPdu, uint16_t *pLen) {
+    MbErrorCode_t eStatus = MB_EIO;
+    uint8_t *pucMBTCPFrame;
+    uint16_t usLength;
+    uint16_t usPID;
 
-    if( MbTCPPortGetRequest( &pucMBTCPFrame, &usLength ) != false ) {
-        
+    if (MbTCPPortGetRequest(&pucMBTCPFrame, &usLength) != false) {
+
         usPID = pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET] << 8U;
         usPID |= pucMBTCPFrame[MB_TCP_ADU_PID_OFFSET + 1];
 
-        if( usPID == MB_TCP_PROTOCOL_ID ){
-            
+        if (usPID == MB_TCP_PROTOCOL_ID) {
+
             *pPdu = &pucMBTCPFrame[MB_TCP_ADU_PDU_OFFSET];
-            *pusLength = usLength - MB_TCP_ADU_PDU_OFFSET;
+            *pLen = usLength - MB_TCP_ADU_PDU_OFFSET;
             eStatus = MB_ENOERR;
 
             /* Modbus TCP does not use any addresses. Fake the source address such
              * that the processing part deals with this frame.
              */
-            *pucRcvAddress = MB_TCP_PSEUDO_ADDRESS;
+            *pRcvAddress = MB_TCP_PSEUDO_ADDRESS;
         }
-    }
-    else{
+    } else {
         eStatus = MB_EIO;
     }
-    
+
     return eStatus;
 }
 
-MbErrorCode_t MbsTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t usLength )
-{
-    uint8_t *pAdu = ( uint8_t * ) pPdu - MB_TCP_ADU_PDU_OFFSET;
-    uint16_t usTCPAduLength = usLength + MB_TCP_ADU_PDU_OFFSET;
+MbErrorCode_t MbsTCPSend(void *dev, uint8_t _unused, const uint8_t *pPdu, uint16_t len) {
+    uint8_t *pAdu = (uint8_t *) pPdu - MB_TCP_ADU_PDU_OFFSET;
+    uint16_t usTCPAduLength = len + MB_TCP_ADU_PDU_OFFSET;
 
     /* The MBAP header is already initialized because the caller calls this
      * function with the buffer returned by the previous call. Therefore we 
      * only have to update the length in the header. Note that the length 
      * header includes the size of the Modbus PDU and the UID Byte. Therefore 
-     * the length is usLength plus one.
+     * the length is len plus one.
      */
-    pAdu[MB_TCP_ADU_LEN_OFFSET] = ( usLength + 1 ) >> 8U;
-    pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = ( usLength + 1 ) & 0xFF;
-    if( MbTCPPortSendResponse( pAdu, usTCPAduLength ) == false )
+    pAdu[MB_TCP_ADU_LEN_OFFSET] = (len + 1) >> 8U;
+    pAdu[MB_TCP_ADU_LEN_OFFSET + 1] = (len + 1) & 0xFF;
+    if (MbTCPPortSendResponse(pAdu, usTCPAduLength) == false)
         return MB_EIO;
-    
+
     return MB_ENOERR;
 }
 

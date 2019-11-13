@@ -3,7 +3,7 @@
 #include "mbutils.h"
 #include "mbascii.h"
 
-#if MB_ASCII_ENABLED > 0 &&  MB_MASTER_ENABLED > 0
+#if MB_ASCII_ENABLED > 0 && MB_MASTER_ENABLED > 0
 
 MbErrorCode_t MbmASCIIInit(MbsHandle_t dev, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity) {
     MbErrorCode_t eStatus = MB_ENOERR;
