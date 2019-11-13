@@ -5,7 +5,7 @@
 
 #if MB_RTU_ENABLED > 0
 
-#include "mbrtu.h"
+#include "rtu/mbrtu.h"
 
 #endif
 
@@ -81,7 +81,7 @@ MbsHandle_t MbsNew(MbMode_t mode, uint8_t slaveID, uint8_t port, uint32_t baudRa
     }
 
     // init failed
-    if (status != MB_ENOERR) {
+    if (status != MB_ESUCCESS) {
         return NULL;
     }
 
@@ -148,7 +148,7 @@ MbErrCode_t MbsRegAssign(MbsHandle_t dev,
     pRegs->pDiscrete = &storageBuf[offset];
     //offset += (discreteNum >> 3) + (((discreteNum & 0x07) > 0) ? 1 : 0);
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbsRegAssignSingle(MbsHandle_t dev,
@@ -179,7 +179,7 @@ MbErrCode_t MbsRegAssignSingle(MbsHandle_t dev,
     pRegs->discreteNum = discreteNum;
     pRegs->pDiscrete = discreteBuff;
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbsStart(MbsHandle_t dev) {
@@ -194,7 +194,7 @@ MbErrCode_t MbsStart(MbsHandle_t dev) {
         pDev->state = DEV_STATE_ENABLED;
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbsStop(MbsHandle_t dev) {
@@ -208,7 +208,7 @@ MbErrCode_t MbsStop(MbsHandle_t dev) {
         pDev->state = DEV_STATE_DISABLED;
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 MbErrCode_t MbsClose(MbsHandle_t dev) {
@@ -220,7 +220,7 @@ MbErrCode_t MbsClose(MbsHandle_t dev) {
             pDev->pCloseCur(dev);
         }
 
-        return MB_ENOERR;
+        return MB_ESUCCESS;
     }
 
     return MB_EILLSTATE;
@@ -241,7 +241,7 @@ static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
     MbException_t exception;
     uint8_t rcvAddress;
     pMbsFunctionHandler handle;
-    MbErrCode_t status = MB_ENOERR;
+    MbErrCode_t status = MB_ESUCCESS;
 
     /* Check if the protocol stack is ready. */
     if (dev->state != DEV_STATE_ENABLED) {
@@ -254,7 +254,7 @@ static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
         dev->eventInFlag = false;
         /* parser a receive adu frame */
         status = dev->pReceiveParseCur(dev, &aduFramePkt);
-        if (status != MB_ENOERR)
+        if (status != MB_ESUCCESS)
             return status;
 
         rcvAddress = aduFramePkt.hdr.inRoute.slaveID;
@@ -269,7 +269,7 @@ static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
 
             /* If the request was not sent to the broadcast address and then we return a reply. */
             if (rcvAddress == MB_ADDRESS_BROADCAST)
-                return MB_ENOERR;
+                return MB_ESUCCESS;
 
             if (exception != MB_EX_NONE) {
                 /* An exception occured. Build an error frame. */
@@ -288,7 +288,7 @@ static MbErrCode_t __MbsAduFrameHandle(MbsDev_t *dev) {
         }
     }
 
-    return MB_ENOERR;
+    return MB_ESUCCESS;
 }
 
 #endif

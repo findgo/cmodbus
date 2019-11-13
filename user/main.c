@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 //        node = MbmNodeNew(0x01, 0, REG_HOLDING_NREGS, 0, REG_INPUT_NREGS,
 //                          0, REG_COILS_SIZE, 0, REG_DISCRETE_SIZE);
 //        status = MbmAddNode(deviceM0, node);
-//        if (status == MB_ENOERR) {
+//        if (status == MB_ESUCCESS) {
 //            (void) MbmReqRdHoldingRegister(deviceM0, 0x01, 0, REG_HOLDING_NREGS, 1000);
 //            (void) MbmReqRdInputRegister(deviceM0, 0x01, 0, REG_INPUT_NREGS, 1000);
 //            (void) MbmReqRdCoils(deviceM0, 0x01, 0, REG_COILS_SIZE, 1000);
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
         MbmNodeCallBackAssign(node, nodeReqResultCB, NULL);
         status = MbmAddNode(deviceM1, node);
-        if (status == MB_ENOERR) {
+        if (status == MB_ESUCCESS) {
             (void) MbmReqRdHoldingRegister(deviceM1, 0x01, 0, REG_HOLDING_NREGS, 1000);
 //           (void)MbmReqRdInputRegister(deviceM1, 0x01, 0, REG_INPUT_NREGS, 1000);        
 //           (void)MbmReqRdCoils(deviceM1, 0x01, 0, REG_COILS_SIZE, 1000);        
@@ -116,7 +116,7 @@ int main(int argc,char **argv) {
 //                              0, REG_INPUT_NREGS,
 //                              0, REG_COILS_SIZE,
 //                              0, REG_DISCRETE_SIZE);
-//        if (status == MB_ENOERR){
+//        if (status == MB_ESUCCESS){
 //            (void) MbsStart(device0);
 //        }
 //    }
@@ -130,7 +130,7 @@ int main(int argc,char **argv) {
                                     0, REG_COILS_SIZE,
                                     dev1DiscreteBuf,
                                     0, REG_DISCRETE_SIZE);
-        if (status == MB_ENOERR) {
+        if (status == MB_ESUCCESS) {
             (void) MbsStart(device1);
         }
     }
