@@ -25,7 +25,7 @@ uint32_t MbRegBufSizeCal(uint16_t holdingNum,
 
 #if MB_MASTER_ENABLED
 
-MbErrorCode_t MbmRegisterParseHandleCB(uint8_t ucFunctionCode, pMbmParseRspHandler pxHandler);
+MbErrorCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler pHandler);
 
 /* TODO implement modbus master */
 MbmHandle_t MbmNew(MbMode_t eMode, uint8_t ucPort, uint32_t ulBaudRate, MbParity_t eParity);
@@ -122,8 +122,8 @@ MbReqResult_t MbmReqRdWrMulHoldingRegister(MbmHandle_t dev, uint8_t slaveID,
 #define MbsGetRegsDiscNum(dev)      (((MbsDev_t *)(dev))->regs.reg_discrete_num)
 
 
-MbErrorCode_t MbsSetSlaveID(MbReg_t *regs, uint8_t ucSlaveID, uint8_t xIsRunning,
-                            uint8_t const *pucAdditional, uint16_t usAdditionalLen);
+MbErrorCode_t MbsSetSlaveID(MbReg_t *pRegs, uint8_t slaveID, uint8_t isRunning,
+                            uint8_t const *pAdditional, uint16_t additionalLen);
 
 /*********************************************************************
  * @brief   register function code handle

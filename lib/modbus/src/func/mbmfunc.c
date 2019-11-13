@@ -4,8 +4,8 @@
 #if MB_MASTER_ENABLED > 0
 
 typedef struct {
-    uint8_t ucFunctionCode;
-    pMbmParseRspHandler pxHandler;
+    uint8_t functionCode;
+    pMbmParseRspHandler pHandler;
 } MbmParseRspHandler;
 
 
@@ -45,29 +45,29 @@ static MbmParseRspHandler parseRspHandlers[MBM_PARSE_RSP_HANDLERS_MAX] = {
 /*********************************************************************
  * @brief 注册功能码回调函数  
  *
- * @param   ucFunctionCode - 功能码
- * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ * @param   functionCode - 功能码
+ * @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
  *
  * @return  
  */
-MbErrorCode_t MbmRegisterParseHandleCB(uint8_t ucFunctionCode, pMbmParseRspHandler pxHandler) {
+MbErrorCode_t MbmRegisterParseHandleCB(uint8_t functionCode, pMbmParseRspHandler pHandler) {
     int i;
     MbErrorCode_t eStatus = MB_ENORES;
 
-    if ((ucFunctionCode < MB_FUNC_MIN) || (ucFunctionCode > MB_FUNC_MAX))
+    if ((functionCode < MB_FUNC_MIN) || (functionCode > MB_FUNC_MAX))
         return MB_EINVAL;
 
     for (i = 0; i < MBS_FUNC_HANDLERS_MAX; i++) {
-        if ((parseRspHandlers[i].ucFunctionCode == 0) || (parseRspHandlers[i].ucFunctionCode == ucFunctionCode)) {
-            // pxHandler != NULL register,  NULL is unregister
-            parseRspHandlers[i].ucFunctionCode = pxHandler ? ucFunctionCode : 0;
-            parseRspHandlers[i].pxHandler = pxHandler;
+        if ((parseRspHandlers[i].functionCode == 0) || (parseRspHandlers[i].functionCode == functionCode)) {
+            // pHandler != NULL register,  NULL is unregister
+            parseRspHandlers[i].functionCode = pHandler ? functionCode : 0;
+            parseRspHandlers[i].pHandler = pHandler;
 
             eStatus = MB_ENOERR;
             break;
         }
     }
-    if (!pxHandler) // remove can't failed!
+    if (!pHandler) // remove can't failed!
         eStatus = MB_ENOERR;
 
     return eStatus;
@@ -75,15 +75,15 @@ MbErrorCode_t MbmRegisterParseHandleCB(uint8_t ucFunctionCode, pMbmParseRspHandl
 
 
 // search function code handle
-pMbmParseRspHandler MbmFuncHandleSearch(uint8_t ucFunctionCode) {
+pMbmParseRspHandler MbmFuncHandleSearch(uint8_t functionCode) {
     uint8_t i;
 
     for (i = 0; i < MBM_PARSE_RSP_HANDLERS_MAX; i++) {
         /* No more function handlers registered. Abort. */
-        if (parseRspHandlers[i].ucFunctionCode == 0) {
+        if (parseRspHandlers[i].functionCode == 0) {
             return NULL;
-        } else if (parseRspHandlers[i].ucFunctionCode == ucFunctionCode) {
-            return (parseRspHandlers[i].pxHandler);
+        } else if (parseRspHandlers[i].functionCode == functionCode) {
+            return (parseRspHandlers[i].pHandler);
         }
     }
 

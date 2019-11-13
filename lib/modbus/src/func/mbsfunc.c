@@ -3,15 +3,14 @@
 #if MB_SLAVE_ENABLED > 0
 
 typedef struct {
-    uint8_t ucFunctionCode;
-    pMbsFunctionHandler pxHandler;
+    uint8_t functionCode;
+    pMbsFunctionHandler pHandler;
 } MbsFunctionHandler;
 
 /* An array of Modbus functions handlers which associates Modbus function
  * codes with implementing functions.
  */
-static MbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
-
+static MbsFunctionHandler funcHandlers[MBS_FUNC_HANDLERS_MAX] = {
 #if MBS_FUNC_OTHER_REP_SLAVEID_ENABLED > 0
         {MB_FUNC_OTHER_REPORT_SLAVEID, MbsFuncReportSlaveID},
 #endif
@@ -54,54 +53,54 @@ static MbsFunctionHandler xFuncHandlers[MBS_FUNC_HANDLERS_MAX] = {
 };
 
 /*********************************************************************
- * @brief   register funcction code handle   
- * @param   ucFunctionCode - 功能码
- * @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+ * @brief   register function code handle
+ * @param   functionCode - 功能码
+ * @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
  * @return  
  */
-MbErrorCode_t MbsRegisterHandleCB(uint8_t ucFunctionCode, pMbsFunctionHandler pxHandler) {
+MbErrorCode_t MbsRegisterHandleCB(uint8_t functionCode, pMbsFunctionHandler pHandler) {
     int i;
-    MbErrorCode_t eStatus = MB_ENORES;
+    MbErrorCode_t status = MB_ENORES;
 
-    if ((ucFunctionCode < MB_FUNC_MIN) || (ucFunctionCode > MB_FUNC_MAX))
+    if ((functionCode < MB_FUNC_MIN) || (functionCode > MB_FUNC_MAX))
         return MB_EINVAL;
 
     for (i = 0; i < MBS_FUNC_HANDLERS_MAX; i++) {
-        if ((xFuncHandlers[i].ucFunctionCode == 0) || (xFuncHandlers[i].ucFunctionCode == ucFunctionCode)) {
-            // pxHandler != NULL register,  NULL is unregister
-            xFuncHandlers[i].ucFunctionCode = pxHandler ? ucFunctionCode : 0;
-            xFuncHandlers[i].pxHandler = pxHandler;
+        if ((funcHandlers[i].functionCode == 0) || (funcHandlers[i].functionCode == functionCode)) {
+            // pHandler != NULL register,  NULL is unregister
+            funcHandlers[i].functionCode = pHandler ? functionCode : 0;
+            funcHandlers[i].pHandler = pHandler;
 
-            eStatus = MB_ENOERR;
+            status = MB_ENOERR;
             break;
         }
     }
-    if (!pxHandler) // remove can't failed!
-        eStatus = MB_ENOERR;
+    if (!pHandler) // remove can't failed!
+        status = MB_ENOERR;
 
-    return eStatus;
+    return status;
 }
 
 /*
 * @brief search function handle with function code  
-* @param   ucFunctionCode - 功能码
-* @param   pxHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
+* @param   functionCode - 功能码
+* @param   pHandler - 功能码对应的回调函数, NULL: 为注销对应功能码回调
 * @return  function handle point, if not exist return NULL
 */
-pMbsFunctionHandler MbsFuncHandleSearch(uint8_t ucFunctionCode) {
+pMbsFunctionHandler MbsFuncHandleSearch(uint8_t functionCode) {
     int i;
-    pMbsFunctionHandler srch = NULL;
+    pMbsFunctionHandler search = NULL;
 
     for (i = 0; i < MBS_FUNC_HANDLERS_MAX; i++) {
         /* No more function handlers registered. Abort. */
-        if (xFuncHandlers[i].ucFunctionCode == 0) {
+        if (funcHandlers[i].functionCode == 0) {
             break;
-        } else if (xFuncHandlers[i].ucFunctionCode == ucFunctionCode) {
-            srch = xFuncHandlers[i].pxHandler;
+        } else if (funcHandlers[i].functionCode == functionCode) {
+            search = funcHandlers[i].pHandler;
         }
     }
 
-    return srch;
+    return search;
 }
 
 #endif

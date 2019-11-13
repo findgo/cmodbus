@@ -14,7 +14,7 @@
   * @return               错误状态
   */
 static MbErrorCode_t
-__MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, MbRegisterMode_t eMode) {
+__MbsRegCoilsCB(MbReg_t *regs, uint8_t *pucRegBuffer, uint16_t usAddress, uint16_t usNCoils, MbRegMode_t eMode) {
     int16_t iNCoils = (int16_t) usNCoils;
     uint16_t usBitOffset;
 

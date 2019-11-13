@@ -394,7 +394,7 @@ void MbmPoll(void) {
 
 static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
     uint8_t *pRemainFrame; // remain fram
-    uint8_t ucFunctionCode;
+    uint8_t functionCode;
     uint16_t usLength;
     MbException_t exception;
     MbReqResult_t result;
@@ -436,21 +436,21 @@ static MbErrorCode_t __MbmHandle(MbmDev_t *dev, uint32_t timediff) {
             }
 
             /* parser a adu fram */
-            result = dev->pMbReceivedCur(dev, &header, &ucFunctionCode, &pRemainFrame, &usLength);
+            result = dev->pMbReceivedCur(dev, &header, &functionCode, &pRemainFrame, &usLength);
             if (result == MBR_ENOERR) {
                 /* not for us ,continue to wait response */
-                if ((req->funcode != (ucFunctionCode & 0x7f)) || (req->slaveID != header.introute.slaveID)) {
+                if ((req->funcode != (functionCode & 0x7f)) || (req->slaveID != header.introute.slaveID)) {
                     dev->Pollstate = MBM_WAITRSP;
                     break;
                 }
 
                 /* funcode and slaveID same, this frame for us and then excute it*/
-                if (ucFunctionCode & 0x80) { // 异常
+                if (functionCode & 0x80) { // 异常
                     result = MBR_ERSPEXCEPTOIN;
                     exception = (MbException_t) pRemainFrame[0]; //异常码
                 } else {
                     result = MBR_EINFUNCTION;
-                    handle = MbmFuncHandleSearch(ucFunctionCode);
+                    handle = MbmFuncHandleSearch(functionCode);
                     if (handle)
                         result = handle(&req->node->regs, req->regaddr, req->regcnt, pRemainFrame, usLength);
                 }
